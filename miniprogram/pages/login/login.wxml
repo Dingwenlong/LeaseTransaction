@@ -1,0 +1,25 @@
+<view class="container">
+  <view class="header">
+    <view class="logo">
+      <text class="logo-text">◆ 校园租赁 ◆</text>
+    </view>
+    <view class="subtitle">个人物品租赁与交易平台</view>
+  </view>
+
+  <view class="form">
+    <view class="form-item">
+      <input class="input" placeholder="请输入学号/手机号" v-model="username" bindinput="onUsernameInput" />
+    </view>
+    <view class="form-item">
+      <input class="input" placeholder="请输入密码" password bindinput="onPasswordInput" />
+    </view>
+    <button class="login-btn" bindtap="handleLogin">登录</button>
+  </view>
+
+  <view class="footer">
+    <text class="footer-text">登录即表示同意</text>
+    <text class="link">用户协议</text>
+    <text class="footer-text">和</text>
+    <text class="link">隐私政策</text>
+  </view>
+</view>

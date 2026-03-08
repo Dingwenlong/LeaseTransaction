@@ -1,0 +1,36 @@
+<view class="container">
+  <view class="image-section">
+    <image class="main-image" src="{{item.image}}" mode="aspectFill" />
+  </view>
+
+  <view class="info-section">
+    <view class="title-row">
+      <text class="title">{{item.title}}</text>
+      <view class="type-badge {{item.typeClass}}">{{item.type}}</view>
+    </view>
+    <view class="price-row">
+      <text class="price-symbol">¥</text>
+      <text class="price-value">{{item.price}}</text>
+      <text class="price-unit" wx:if="{{item.type === '租赁'}}">/天</text>
+    </view>
+    <view class="meta-row">
+      <text class="meta">📍 {{item.location}}</text>
+      <text class="meta">👤 {{item.ownerName}}</text>
+    </view>
+  </view>
+
+  <view class="description-section">
+    <view class="section-title">◆ 物品描述 ◆</view>
+    <view class="description">{{item.description}}</view>
+  </view>
+
+  <view class="bottom-bar">
+    <view class="contact-btn" bindtap="handleContact">
+      <text class="btn-icon">💬</text>
+      <text class="btn-text">联系卖家</text>
+    </view>
+    <view class="action-btn" bindtap="handleRent">
+      <text class="btn-text">{{item.type === '租赁' ? '立即租赁' : '立即购买'}}</text>
+    </view>
+  </view>
+</view>

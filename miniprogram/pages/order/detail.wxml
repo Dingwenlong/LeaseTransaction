@@ -1,0 +1,52 @@
+<view class="container">
+  <view class="status-section">
+    <view class="status-icon">✓</view>
+    <view class="status-text">{{order.status}}</view>
+    <view class="status-desc">{{order.statusDesc}}</view>
+  </view>
+
+  <view class="info-section">
+    <view class="section-title">◆ 订单信息 ◆</view>
+    <view class="info-row">
+      <text class="label">订单号</text>
+      <text class="value">{{order.orderNo}}</text>
+    </view>
+    <view class="info-row">
+      <text class="label">下单时间</text>
+      <text class="value">{{order.createTime}}</text>
+    </view>
+  </view>
+
+  <view class="item-section">
+    <view class="section-title">◆ 物品信息 ◆</view>
+    <view class="item-card">
+      <image class="item-image" src="{{order.itemImage}}" mode="aspectFill" />
+      <view class="item-info">
+        <view class="item-title">{{order.itemTitle}}</view>
+        <view class="item-type {{order.typeClass}}">{{order.type}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="price-section">
+    <view class="section-title">◆ 费用明细 ◆</view>
+    <view class="price-row">
+      <text class="label">{{order.type === '租赁' ? '租金' : '商品价格'}}</text>
+      <text class="value">¥{{order.amount}}</text>
+    </view>
+    <view class="price-row" wx:if="{{order.deposit}}">
+      <text class="label">押金</text>
+      <text class="value">¥{{order.deposit}}</text>
+    </view>
+    <view class="total-row">
+      <text class="label">实付金额</text>
+      <text class="total">¥{{order.totalAmount}}</text>
+    </view>
+  </view>
+
+  <view class="action-bar">
+    <view class="btn secondary" wx:if="{{order.status === '待付款'}}" bindtap="handleCancel">取消订单</view>
+    <view class="btn primary" wx:if="{{order.status === '待付款'}}" bindtap="handlePay">立即付款</view>
+    <view class="btn primary" wx:if="{{order.status === '进行中'}}" bindtap="handleContact">联系卖家</view>
+  </view>
+</view>

@@ -1,0 +1,35 @@
+<view class="container">
+  <view class="header">
+    <view class="search-bar">
+      <input class="search-input" placeholder="搜索物品..." value="{{searchKeyword}}" bindinput="onSearchInput" confirm-type="search" bindconfirm="onSearch" />
+      <text class="search-btn" bindtap="onSearch">🔍</text>
+    </view>
+    <view class="filter-tabs">
+      <text class="tab {{activeTab === index ? 'active' : ''}}" wx:for="{{tabs}}" wx:key="index" bindtap="onTabTap" data-index="{{index}}">
+        {{item}}
+      </text>
+    </view>
+  </view>
+
+  <view class="item-list">
+    <view class="item-card" wx:for="{{items}}" wx:key="id" bindtap="onItemTap" data-id="{{item.id}}">
+      <image class="item-image" src="{{item.image}}" mode="aspectFill" />
+      <view class="item-info">
+        <view class="item-title">{{item.title}}</view>
+        <view class="item-location">📍 {{item.location}}</view>
+        <view class="item-bottom">
+          <view class="item-price">
+            <text class="price-symbol">¥</text>
+            <text class="price-value">{{item.price}}</text>
+          </view>
+          <view class="item-type {{item.typeClass}}">{{item.type}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="publish-btn" bindtap="onPublishTap">
+    <text class="publish-icon">+</text>
+    <text class="publish-text">发布</text>
+  </view>
+</view>

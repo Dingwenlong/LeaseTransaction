@@ -1,0 +1,60 @@
+# 编译产物
+target/
+node_modules/
+dist/
+build/
+
+# IDE 相关
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 日志文件
+logs
+*.log
+
+# 临时文件
+*.tmp
+*.temp
+
+# 测试报告
+coverage/
+.nyc_output/
+
+# 包管理器
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 后端相关
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# 前端相关
+*.vuec
+*.swc
+
+# 小程序相关
+miniprogram/nodes_modules/
+miniprogram/.vscode/
+
+# 脚本文件
+start-backend.bat
+start-backend.ps1

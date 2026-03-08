@@ -1,0 +1,77 @@
+<view class="container">
+  <view class="form-section">
+    <view class="section-title">◆ 基本信息 ◆</view>
+    
+    <view class="form-item">
+      <view class="label">物品图片</view>
+      <view class="image-upload">
+        <view class="image-list">
+          <view class="image-item" wx:for="{{form.images}}" wx:key="index">
+            <image class="image" src="{{item}}" mode="aspectFill" />
+            <view class="image-delete" bindtap="deleteImage" data-index="{{index}}">×</view>
+          </view>
+          <view class="image-add" wx:if="{{form.images.length < 9}}" bindtap="chooseImage">
+            <text class="add-icon">+</text>
+            <text class="add-text">添加图片</text>
+          </view>
+        </view>
+        <view class="image-tip">最多上传9张图片</view>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <view class="label">物品名称</view>
+      <input class="input" placeholder="请输入物品名称" value="{{form.title}}" bindinput="onInput" data-field="title" />
+    </view>
+
+    <view class="form-item">
+      <view class="label">物品类型</view>
+      <view class="type-selector">
+        <view class="type-option {{form.type === 'lease' ? 'active' : ''}}" bindtap="selectType" data-type="lease">
+          <text class="type-icon">📦</text>
+          <text class="type-text">租赁</text>
+        </view>
+        <view class="type-option {{form.type === 'sale' ? 'active' : ''}}" bindtap="selectType" data-type="sale">
+          <text class="type-icon">💰</text>
+          <text class="type-text">出售</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <view class="label">物品分类</view>
+      <picker class="picker" mode="selector" range="{{categories}}" bindchange="onCategoryChange">
+        <view class="picker-text">{{form.category || '请选择分类'}}</view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <view class="label">价格（元）</view>
+      <input class="input" type="digit" placeholder="{{form.type === 'lease' ? '请输入每日租金' : '请输入售价'}}" value="{{form.price}}" bindinput="onInput" data-field="price" />
+    </view>
+
+    <view class="form-item" wx:if="{{form.type === 'lease'}}">
+      <view class="label">押金（元）</view>
+      <input class="input" type="digit" placeholder="请输入押金金额" value="{{form.deposit}}" bindinput="onInput" data-field="deposit" />
+    </view>
+
+    <view class="form-item">
+      <view class="label">所在校区</view>
+      <picker class="picker" mode="selector" range="{{campuses}}" bindchange="onCampusChange">
+        <view class="picker-text">{{form.campus || '请选择校区'}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="form-section">
+    <view class="section-title">◆ 物品描述 ◆</view>
+    <view class="form-item">
+      <textarea class="textarea" placeholder="请详细描述物品的成色、使用情况等..." value="{{form.description}}" bindinput="onInput" data-field="description" maxlength="500" />
+      <view class="char-count">{{form.description.length}}/500</view>
+    </view>
+  </view>
+
+  <view class="submit-btn" bindtap="handleSubmit">
+    <text class="btn-text">发布物品</text>
+  </view>
+</view>
