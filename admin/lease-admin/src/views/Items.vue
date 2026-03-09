@@ -1,116 +1,171 @@
 <template>
   <div class="p-8">
+    <!-- Page Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-neon to-fuchsia-500 mb-2">
-        物品管理
-      </h1>
-      <p class="text-slate-400">审核和管理平台物品</p>
-    </div>
-
-    <div class="mb-6 flex flex-wrap gap-4 items-center justify-between">
-      <div class="flex gap-4 flex-wrap">
-        <input
-          v-model="searchKeyword"
-          type="text"
-          placeholder="搜索物品..."
-          class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-neon/50 transition-all duration-150"
-        />
-        <select
-          v-model="filterType"
-          class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-cyan-neon/50 transition-all duration-150"
-        >
-          <option value="">全部类型</option>
-          <option value="1">租赁</option>
-          <option value="2">出售</option>
-        </select>
-        <select
-          v-model="filterStatus"
-          class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-cyan-neon/50 transition-all duration-150"
-        >
-          <option value="">全部状态</option>
-          <option value="0">待审核</option>
-          <option value="1">已上架</option>
-          <option value="2">已租出</option>
-          <option value="3">已售出</option>
-        </select>
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 rounded-xl bg-fuchsia-500/10 flex items-center justify-center">
+          <span class="text-xl">📦</span>
+        </div>
+        <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-fuchsia-400">
+          物品管理
+        </h1>
       </div>
-      <button class="px-6 py-2 rounded-xl bg-gradient-to-r from-cyan-neon to-fuchsia-500 font-semibold text-white hover:opacity-90 transition-opacity transition-all duration-150 hover:scale-105">
-        批量审核
-      </button>
+      <p class="text-slate-400 ml-13">审核和管理平台物品，维护物品质量</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Search Filter Card -->
+    <div class="card-base p-6 mb-6">
+      <div class="flex flex-col lg:flex-row gap-4 items-end">
+        <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+          <div>
+            <label class="block text-fuchsia-500 mb-2 text-sm font-bold flex items-center gap-2">
+              <span>🔍</span>
+              <span>关键词搜索</span>
+            </label>
+            <input
+              v-model="searchKeyword"
+              type="text"
+              placeholder="搜索物品名称..."
+              class="input-base w-full"
+            />
+          </div>
+          <div>
+            <label class="block text-fuchsia-500 mb-2 text-sm font-bold flex items-center gap-2">
+              <span>📋</span>
+              <span>物品类型</span>
+            </label>
+            <select
+              v-model="filterType"
+              class="input-base w-full appearance-none cursor-pointer"
+            >
+              <option value="" class="bg-slate-900">全部类型</option>
+              <option value="1" class="bg-slate-900">租赁</option>
+              <option value="2" class="bg-slate-900">出售</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-fuchsia-500 mb-2 text-sm font-bold flex items-center gap-2">
+              <span>📊</span>
+              <span>物品状态</span>
+            </label>
+            <select
+              v-model="filterStatus"
+              class="input-base w-full appearance-none cursor-pointer"
+            >
+              <option value="" class="bg-slate-900">全部状态</option>
+              <option value="0" class="bg-slate-900">待审核</option>
+              <option value="1" class="bg-slate-900">已上架</option>
+              <option value="2" class="bg-slate-900">已租出</option>
+              <option value="3" class="bg-slate-900">已售出</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary whitespace-nowrap flex items-center gap-2">
+          <span>✓</span>
+          <span>批量审核</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Items Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
       <div
         v-for="item in items"
         :key="item.id"
-        class="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 transition-all duration-150 hover:-translate-y-2 hover:border-cyan-neon/50 hover:bg-white/10"
+        class="card-hover group cursor-pointer"
       >
-        <div class="absolute inset-0 bg-gradient-to-br from-cyan-neon/5 via-fuchsia-500/5 to-violet-neon/5 opacity-0 transition-opacity duration-150 group-hover:opacity-100"></div>
-        <div class="relative z-10">
+        <!-- Card Header -->
+        <div class="p-5">
           <div class="flex items-start justify-between mb-4">
-            <span
-              :class="getTypeClass(item.type)"
-              class="px-3 py-1 rounded-full text-xs font-bold border"
-            >
-              {{ item.type === 1 ? '租赁' : '出售' }}
-            </span>
-            <span
-              :class="getStatusClass(item.status)"
-              class="px-3 py-1 rounded-full text-xs font-bold border"
-            >
-              {{ getStatusText(item.status) }}
-            </span>
+            <div class="flex gap-2">
+              <span
+                :class="getTypeClass(item.type)"
+                class="tag-base"
+              >
+                {{ item.type === 1 ? '租赁' : '出售' }}
+              </span>
+              <span
+                :class="getStatusClass(item.status)"
+                class="tag-base"
+              >
+                <span class="flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full" :class="getStatusDotClass(item.status)"></span>
+                  {{ getStatusText(item.status) }}
+                </span>
+              </span>
+            </div>
+            <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all duration-150 opacity-0 group-hover:opacity-100">
+              <span>⋮</span>
+            </button>
           </div>
 
-          <h3 class="text-lg font-bold text-white mb-2 truncate">{{ item.title }}</h3>
+          <!-- Title & Description -->
+          <h3 class="text-lg font-bold text-white mb-2 line-clamp-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-fuchsia-500 group-hover:to-fuchsia-400 transition-all duration-200">
+            {{ item.title }}
+          </h3>
           <p class="text-slate-400 text-sm mb-4 line-clamp-2">{{ item.description }}</p>
 
-          <div class="flex items-center justify-between mb-4">
+          <!-- Price Info -->
+          <div class="flex items-center justify-between mb-4 p-3 rounded-xl bg-white/5">
             <div class="flex items-baseline gap-1">
-              <span class="text-cyan-neon text-xl font-black">¥{{ item.price }}</span>
+              <span class="text-fuchsia-500 text-2xl font-black">¥{{ item.price }}</span>
               <span v-if="item.type === 1" class="text-slate-500 text-sm">/天</span>
             </div>
-            <span v-if="item.deposit" class="text-fuchsia-500 text-sm">押金: ¥{{ item.deposit }}</span>
+            <span v-if="item.deposit" class="text-slate-400 text-sm">
+              押金: <span class="text-cyan-neon font-semibold">¥{{ item.deposit }}</span>
+            </span>
           </div>
 
+          <!-- Stats -->
           <div class="flex items-center justify-between text-sm text-slate-500 mb-4">
-            <span>浏览: {{ item.viewCount }}</span>
-            <span>校区: {{ item.campus }}</span>
+            <span class="flex items-center gap-1">
+              <span>👁</span>
+              <span>{{ item.viewCount }} 浏览</span>
+            </span>
+            <span class="flex items-center gap-1">
+              <span>📍</span>
+              <span>{{ item.campus }}</span>
+            </span>
           </div>
 
+          <!-- Actions -->
           <div class="flex gap-2">
-            <button class="flex-1 px-3 py-2 rounded-lg bg-cyan-neon/20 text-cyan-neon text-sm font-semibold hover:bg-cyan-neon/30 transition-colors">
-              查看详情
+            <button class="flex-1 px-4 py-2.5 rounded-xl bg-cyan-neon/10 text-cyan-neon text-sm font-semibold border border-cyan-neon/30 hover:bg-cyan-neon/20 transition-all duration-150 flex items-center justify-center gap-1">
+              <span>👁</span>
+              <span>查看详情</span>
             </button>
-            <button
-              v-if="item.status === 0"
-              class="px-3 py-2 rounded-lg bg-acid-green/20 text-acid-green text-sm font-semibold hover:bg-acid-green/30 transition-colors"
-            >
-              通过
-            </button>
-            <button
-              v-if="item.status === 0"
-              class="px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-sm font-semibold hover:bg-red-500/30 transition-colors"
-            >
-              拒绝
-            </button>
+            <template v-if="item.status === 0">
+              <button class="px-4 py-2.5 rounded-xl bg-acid-green/10 text-acid-green text-sm font-semibold border border-acid-green/30 hover:bg-acid-green/20 transition-all duration-150">
+                ✓
+              </button>
+              <button class="px-4 py-2.5 rounded-xl bg-red-500/10 text-red-400 text-sm font-semibold border border-red-500/30 hover:bg-red-500/20 transition-all duration-150">
+                ✕
+              </button>
+            </template>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="mt-8 flex justify-between items-center">
-      <span class="text-slate-400">显示 1-9 共 {{ items.length }} 条</span>
-      <div class="flex gap-2">
-        <button class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all duration-150">
-          上一页
-        </button>
-        <button class="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-neon to-fuchsia-500 text-white font-semibold">
-          1
-        </button>
-        <button class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all duration-150">
-          下一页
-        </button>
+    <!-- Pagination -->
+    <div class="card-base p-5">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="text-slate-400 text-sm">
+          显示 1-{{ items.length }} 条，共 {{ items.length }} 条
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-4 py-2 rounded-lg bg-white/5 text-slate-300 font-medium border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
+            <span>←</span>
+            <span>上一页</span>
+          </button>
+          <button class="w-10 h-10 rounded-lg bg-gradient-to-r from-fuchsia-500 to-fuchsia-400 text-navy-deep font-bold">
+            1
+          </button>
+          <button class="px-4 py-2 rounded-lg bg-white/5 text-slate-300 font-medium border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
+            <span>下一页</span>
+            <span>→</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -133,22 +188,39 @@ const items = ref([
 ])
 
 const getTypeClass = (type: number) => {
-  return type === 1 ? 'bg-cyan-neon/20 text-cyan-neon border-cyan-neon/50' : 'bg-fuchsia-500/20 text-fuchsia-500 border-fuchsia-500/50'
+  return type === 1 
+    ? 'bg-cyan-neon/10 text-cyan-neon border-cyan-neon/30' 
+    : 'bg-fuchsia-500/10 text-fuchsia-500 border-fuchsia-500/30'
 }
 
 const getStatusClass = (status: number) => {
-  const classes = {
-    0: 'bg-yellow-500/20 text-yellow-400 border-yellow-400/50',
-    1: 'bg-acid-green/20 text-acid-green border-acid-green/50',
-    2: 'bg-cyan-neon/20 text-cyan-neon border-cyan-neon/50',
-    3: 'bg-violet-neon/20 text-violet-neon border-violet-neon/50'
+  const classes: Record<number, string> = {
+    0: 'bg-yellow-500/10 text-yellow-400 border-yellow-400/30',
+    1: 'bg-acid-green/10 text-acid-green border-acid-green/30',
+    2: 'bg-cyan-neon/10 text-cyan-neon border-cyan-neon/30',
+    3: 'bg-violet-neon/10 text-violet-neon border-violet-neon/30'
   }
-  return classes[status as keyof typeof classes] || 'bg-white/10 text-slate-400 border-white/20'
+  return classes[status] || 'bg-white/10 text-slate-400 border-white/20'
+}
+
+const getStatusDotClass = (status: number) => {
+  const classes: Record<number, string> = {
+    0: 'bg-yellow-400',
+    1: 'bg-acid-green',
+    2: 'bg-cyan-neon',
+    3: 'bg-violet-neon'
+  }
+  return classes[status] || 'bg-slate-400'
 }
 
 const getStatusText = (status: number) => {
-  const texts = { 0: '待审核', 1: '已上架', 2: '已租出', 3: '已售出' }
-  return texts[status as keyof typeof texts] || '未知'
+  const texts: Record<number, string> = { 
+    0: '待审核', 
+    1: '已上架', 
+    2: '已租出', 
+    3: '已售出' 
+  }
+  return texts[status] || '未知'
 }
 
 onMounted(() => {

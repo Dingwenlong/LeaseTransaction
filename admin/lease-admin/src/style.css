@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 * {
   margin: 0;
@@ -8,13 +6,44 @@
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #0f172a;
-  color: #f1f5f9;
-  min-height: 100vh;
+:root {
+  --color-cyan-neon: #22d3ee;
+  --color-magenta-neon: #ec4899;
+  --color-violet-neon: #8b5cf6;
+  --color-acid-green: #84cc16;
+  --color-navy-deep: #0f172a;
+  --color-slate-850: #1e293b;
 }
 
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--color-navy-deep);
+  color: #f1f5f9;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.5);
+}
+
+/* Scanlines Effect */
 .scanlines::before {
   content: "";
   position: absolute;
@@ -25,13 +54,14 @@ body {
   background: linear-gradient(
     to bottom,
     transparent 50%,
-    rgba(0, 0, 0, 0.05) 51%
+    rgba(0, 0, 0, 0.03) 51%
   );
   background-size: 100% 4px;
   pointer-events: none;
   z-index: 10;
 }
 
+/* Noise Effect */
 .noise::after {
   content: "";
   position: absolute;
@@ -39,8 +69,214 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  opacity: 0.03;
+  opacity: 0.02;
   pointer-events: none;
   z-index: 11;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Glass Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Neon Text Glow */
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(34, 211, 238, 0.5), 0 0 20px rgba(34, 211, 238, 0.3);
+}
+
+.text-glow-pink {
+  text-shadow: 0 0 10px rgba(236, 72, 153, 0.5), 0 0 20px rgba(236, 72, 153, 0.3);
+}
+
+.text-glow-green {
+  text-shadow: 0 0 10px rgba(132, 204, 22, 0.5), 0 0 20px rgba(132, 204, 22, 0.3);
+}
+
+/* Button Base Styles - 不使用 @apply */
+.btn-base {
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 150ms;
+}
+
+.btn-primary {
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 150ms;
+  background: linear-gradient(to right, #22d3ee, #06b6d4);
+  color: #0f172a;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.4);
+  transform: scale(1.05);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 150ms;
+  border: 2px solid #ec4899;
+  color: #ec4899;
+}
+
+.btn-secondary:hover {
+  background: rgba(236, 72, 153, 0.1);
+  box-shadow: 0 0 20px rgba(236, 72, 153, 0.4);
+}
+
+.btn-success {
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 150ms;
+  background: linear-gradient(to right, #84cc16, #22c55e);
+  color: #0f172a;
+}
+
+.btn-success:hover {
+  box-shadow: 0 0 20px rgba(132, 204, 22, 0.4);
+  transform: scale(1.05);
+}
+
+.btn-success:active {
+  transform: scale(0.98);
+}
+
+.btn-danger {
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 150ms;
+  background: linear-gradient(to right, #ef4444, #dc2626);
+  color: white;
+}
+
+.btn-danger:hover {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+  transform: scale(1.05);
+}
+
+.btn-danger:active {
+  transform: scale(0.98);
+}
+
+/* Card Base Styles - 不使用 @apply */
+.card-base {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(4px);
+  transition: all 150ms;
+}
+
+.card-hover {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(4px);
+  transition: all 150ms;
+}
+
+.card-hover:hover {
+  transform: translateY(-0.25rem);
+  border-color: rgba(34, 211, 238, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(34, 211, 238, 0.15);
+}
+
+/* Input Base Styles - 不使用 @apply */
+.input-base {
+  padding: 0.625rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: all 150ms;
+}
+
+.input-base::placeholder {
+  color: #64748b;
+}
+
+.input-base:focus {
+  outline: none;
+  border-color: rgba(34, 211, 238, 0.5);
+}
+
+/* Table Base Styles - 不使用 @apply */
+.table-container {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(4px);
+  overflow: hidden;
+}
+
+.table-header {
+  background: linear-gradient(to right, rgba(34, 211, 238, 0.1), rgba(236, 72, 153, 0.1));
+}
+
+.table-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color 150ms;
+}
+
+.table-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Tag/Base Styles - 不使用 @apply */
+.tag-base {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid;
+}
+
+/* Animation Utilities */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(to right, var(--tw-gradient-stops));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Selection */
+::selection {
+  background: rgba(34, 211, 238, 0.3);
+  color: white;
 }

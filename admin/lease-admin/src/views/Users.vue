@@ -1,195 +1,310 @@
 <template>
-  <div class="p-6">
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold mb-2 text-cyan-400">
-        <span class="text-pink-500">◆</span> 用户管理 <span class="text-pink-500">◆</span>
-      </h1>
-      <p class="text-gray-400">管理和审核平台用户</p>
+  <div class="p-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 rounded-xl bg-cyan-neon/10 flex items-center justify-center">
+          <span class="text-xl">👥</span>
+        </div>
+        <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-neon to-cyan-400">
+          用户管理
+        </h1>
+      </div>
+      <p class="text-slate-400 ml-13">管理和审核平台用户，维护校园交易环境</p>
     </div>
 
-    <div class="bg-gray-900 border-2 border-cyan-500 p-4 mb-6 shadow-[4px_4px_0px_0px_rgba(0,255,255,0.5)]">
+    <!-- Search Filter Card -->
+    <div class="card-base p-6 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
-          <label class="block text-cyan-400 mb-1 text-sm font-bold">关键词搜索</label>
+          <label class="block text-cyan-neon mb-2 text-sm font-bold flex items-center gap-2">
+            <span>🔍</span>
+            <span>关键词搜索</span>
+          </label>
           <input
             v-model="searchKeyword"
             type="text"
             placeholder="输入用户名/昵称查询..."
-            class="w-full bg-gray-800 border-2 border-pink-500 text-white px-3 py-2 focus:outline-none focus:border-cyan-400"
+            class="input-base w-full"
             @keyup.enter="handleSearch"
           />
         </div>
         <div>
-          <label class="block text-cyan-400 mb-1 text-sm font-bold">用户状态</label>
+          <label class="block text-cyan-neon mb-2 text-sm font-bold flex items-center gap-2">
+            <span>📊</span>
+            <span>用户状态</span>
+          </label>
           <select
             v-model="searchStatus"
-            class="w-full bg-gray-800 border-2 border-pink-500 text-white px-3 py-2 focus:outline-none focus:border-cyan-400"
+            class="input-base w-full appearance-none cursor-pointer"
           >
-            <option value="">全部状态</option>
-            <option :value="1">正常</option>
-            <option :value="0">禁用</option>
+            <option value="" class="bg-slate-900">全部状态</option>
+            <option :value="1" class="bg-slate-900">正常</option>
+            <option :value="0" class="bg-slate-900">禁用</option>
           </select>
         </div>
         <div>
-          <label class="block text-cyan-400 mb-1 text-sm font-bold">信用分筛选</label>
+          <label class="block text-cyan-neon mb-2 text-sm font-bold flex items-center gap-2">
+            <span>⭐</span>
+            <span>信用分筛选</span>
+          </label>
           <select
             v-model="searchCredit"
-            class="w-full bg-gray-800 border-2 border-pink-500 text-white px-3 py-2 focus:outline-none focus:border-cyan-400"
+            class="input-base w-full appearance-none cursor-pointer"
           >
-            <option value="">全部信用</option>
-            <option value="high">优秀(≥80)</option>
-            <option value="medium">良好(60-79)</option>
-            <option value="low">较差(<60)</option>
+            <option value="" class="bg-slate-900">全部信用</option>
+            <option value="high" class="bg-slate-900">优秀(≥80)</option>
+            <option value="medium" class="bg-slate-900">良好(60-79)</option>
+            <option value="low" class="bg-slate-900">较差(&lt;60)</option>
           </select>
         </div>
         <div class="flex items-end">
           <button
             @click="handleSearch"
-            class="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-2 px-4 border-2 border-white hover:from-cyan-500 hover:to-blue-500 transition-all shadow-[2px_2px_0px_0px_#fff]"
+            class="btn-primary w-full flex items-center justify-center gap-2"
           >
-            🔍 搜索
+            <span>搜索</span>
+            <span>→</span>
           </button>
         </div>
       </div>
     </div>
 
-    <div class="bg-gray-900 border-2 border-pink-500 shadow-[4px_4px_0px_0px_rgba(255,0,255,0.5)]">
+    <!-- Data Table Card -->
+    <div class="card-base overflow-hidden">
+      <!-- Table Header -->
+      <div class="p-5 border-b border-white/10 bg-gradient-to-r from-cyan-neon/5 to-fuchsia-500/5">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-cyan-neon animate-pulse"></span>
+            用户列表
+          </h3>
+          <span class="text-sm text-slate-400">共 {{ total }} 位用户</span>
+        </div>
+      </div>
+
+      <!-- Table -->
       <div class="overflow-x-auto">
         <table class="w-full">
-          <thead class="bg-gradient-to-r from-cyan-900 to-purple-900">
-            <tr>
-              <th class="px-4 py-3 text-left text-cyan-400 font-bold">用户ID</th>
-              <th class="px-4 py-3 text-left text-cyan-400 font-bold">用户名</th>
-              <th class="px-4 py-3 text-left text-cyan-400 font-bold">昵称</th>
-              <th class="px-4 py-3 text-left text-cyan-400 font-bold">校区</th>
-              <th class="px-4 py-3 text-left text-cyan-400 font-bold">信用分</th>
-              <th class="px-4 py-3 text-left text-cyan-400 font-bold">状态</th>
-              <th class="px-4 py-3 text-left text-cyan-400 font-bold">操作</th>
+          <thead>
+            <tr class="text-left border-b border-white/10">
+              <th class="p-5 font-bold text-cyan-neon">用户ID</th>
+              <th class="p-5 font-bold text-cyan-neon">用户名</th>
+              <th class="p-5 font-bold text-cyan-neon">昵称</th>
+              <th class="p-5 font-bold text-cyan-neon">校区</th>
+              <th class="p-5 font-bold text-cyan-neon">信用分</th>
+              <th class="p-5 font-bold text-cyan-neon">状态</th>
+              <th class="p-5 font-bold text-cyan-neon text-right">操作</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="user in users" :key="user.id" class="border-t border-gray-700 hover:bg-gray-800 transition-colors">
-              <td class="px-4 py-3 text-white font-mono">{{ user.id }}</td>
-              <td class="px-4 py-3 text-white">{{ user.username }}</td>
-              <td class="px-4 py-3 text-white">{{ user.nickname || '-' }}</td>
-              <td class="px-4 py-3 text-white">{{ user.campus || '-' }}</td>
-              <td class="px-4 py-3">
-                <span :class="getCreditClass(user.creditScore)" class="font-bold">
-                  {{ user.creditScore }}
+          <tbody class="divide-y divide-white/5">
+            <tr v-for="user in users" :key="user.id" class="table-row">
+              <td class="p-5">
+                <span class="text-white font-mono bg-white/5 px-3 py-1.5 rounded-lg text-sm">{{ user.id }}</span>
+              </td>
+              <td class="p-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-neon/20 to-fuchsia-500/20 flex items-center justify-center">
+                    <span class="text-sm">👤</span>
+                  </div>
+                  <span class="text-white font-medium">{{ user.username }}</span>
+                </div>
+              </td>
+              <td class="p-5 text-slate-300">{{ user.nickname || '-' }}</td>
+              <td class="p-5">
+                <span class="flex items-center gap-1 text-slate-300">
+                  <span>📍</span>
+                  <span>{{ user.campus || '-' }}</span>
                 </span>
               </td>
-              <td class="px-4 py-3">
-                <span :class="getStatusClass(user.status)" class="px-2 py-1 text-xs font-bold border-2">
-                  {{ user.status === 1 ? '正常' : '禁用' }}
+              <td class="p-5">
+                <div class="flex items-center gap-2">
+                  <div class="w-16 h-2 rounded-full bg-white/10 overflow-hidden">
+                    <div 
+                      class="h-full rounded-full transition-all duration-500"
+                      :class="getCreditBarClass(user.creditScore)"
+                      :style="{ width: user.creditScore + '%' }"
+                    ></div>
+                  </div>
+                  <span :class="getCreditClass(user.creditScore)" class="font-bold text-sm">
+                    {{ user.creditScore }}
+                  </span>
+                </div>
+              </td>
+              <td class="p-5">
+                <span :class="getStatusClass(user.status)" class="tag-base">
+                  <span class="flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full" :class="user.status === 1 ? 'bg-acid-green' : 'bg-red-400'"></span>
+                    {{ user.status === 1 ? '正常' : '禁用' }}
+                  </span>
                 </span>
               </td>
-              <td class="px-4 py-3">
-                <div class="flex gap-2">
+              <td class="p-5 text-right">
+                <div class="flex items-center justify-end gap-2">
                   <button
                     @click="viewUser(user)"
-                    class="bg-cyan-600 text-white px-3 py-1 text-sm font-bold border-2 border-cyan-400 hover:bg-cyan-500 transition-colors"
+                    class="px-3 py-1.5 rounded-lg bg-cyan-neon/10 text-cyan-neon text-sm font-semibold border border-cyan-neon/30 hover:bg-cyan-neon/20 transition-all duration-150 flex items-center gap-1"
                   >
-                    查看
+                    <span>👁</span>
+                    <span>查看</span>
                   </button>
                   <button
                     @click="toggleStatus(user)"
-                    :class="user.status === 1 ? 'bg-red-600 border-red-400 hover:bg-red-500' : 'bg-green-600 border-green-400 hover:bg-green-500'"
-                    class="text-white px-3 py-1 text-sm font-bold border-2 transition-colors"
+                    :class="user.status === 1 
+                      ? 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20' 
+                      : 'bg-acid-green/10 text-acid-green border-acid-green/30 hover:bg-acid-green/20'"
+                    class="px-3 py-1.5 rounded-lg text-sm font-semibold border transition-all duration-150 flex items-center gap-1"
                   >
-                    {{ user.status === 1 ? '禁用' : '启用' }}
+                    <span>{{ user.status === 1 ? '🚫' : '✓' }}</span>
+                    <span>{{ user.status === 1 ? '禁用' : '启用' }}</span>
                   </button>
                 </div>
               </td>
             </tr>
             <tr v-if="loading">
-              <td colspan="7" class="px-4 py-8 text-center text-cyan-400">
-                <div class="text-4xl mb-2 animate-spin">⏳</div>
-                <p>加载中...</p>
+              <td colspan="7" class="p-12 text-center">
+                <div class="flex flex-col items-center gap-4">
+                  <div class="w-12 h-12 rounded-full border-4 border-cyan-neon/20 border-t-cyan-neon animate-spin"></div>
+                  <p class="text-cyan-neon">加载中...</p>
+                </div>
               </td>
             </tr>
             <tr v-if="!loading && users.length === 0">
-              <td colspan="7" class="px-4 py-8 text-center text-gray-400">
-                <div class="text-4xl mb-2">👥</div>
-                <p>暂无用户数据</p>
+              <td colspan="7" class="p-12 text-center">
+                <div class="flex flex-col items-center gap-4">
+                  <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center">
+                    <span class="text-4xl">👥</span>
+                  </div>
+                  <p class="text-slate-400">暂无用户数据</p>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div class="flex items-center justify-between p-4 border-t border-gray-700">
-        <div class="text-gray-400 text-sm">
-          共 {{ total }} 条记录
+      <!-- Pagination -->
+      <div class="flex items-center justify-between p-5 border-t border-white/10">
+        <div class="text-slate-400 text-sm">
+          显示 {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, total) }} 条，共 {{ total }} 条
         </div>
-        <div class="flex gap-2">
+        <div class="flex items-center gap-2">
           <button
             @click="prevPage"
             :disabled="currentPage === 1"
-            class="px-4 py-2 bg-gray-800 text-cyan-400 font-bold border-2 border-cyan-500 hover:bg-cyan-900 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-2 rounded-lg bg-white/5 text-slate-300 font-medium border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
           >
-            ← 上一页
+            <span>←</span>
+            <span>上一页</span>
           </button>
-          <span class="px-4 py-2 bg-pink-900 text-pink-400 font-bold border-2 border-pink-500">
-            {{ currentPage }} / {{ totalPages }}
-          </span>
+          <div class="flex items-center gap-1">
+            <button
+              v-for="page in displayedPages"
+              :key="page"
+              @click="goToPage(page)"
+              :class="currentPage === page 
+                ? 'bg-gradient-to-r from-cyan-neon to-cyan-400 text-navy-deep font-bold' 
+                : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'"
+              class="w-10 h-10 rounded-lg border border-white/10 transition-all duration-150"
+            >
+              {{ page }}
+            </button>
+          </div>
           <button
             @click="nextPage"
             :disabled="currentPage === totalPages"
-            class="px-4 py-2 bg-gray-800 text-cyan-400 font-bold border-2 border-cyan-500 hover:bg-cyan-900 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-2 rounded-lg bg-white/5 text-slate-300 font-medium border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
           >
-            下一页 →
+            <span>下一页</span>
+            <span>→</span>
           </button>
         </div>
       </div>
     </div>
 
-    <div v-if="showDetail" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
-      <div class="bg-gray-900 border-4 border-cyan-500 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-[8px_8px_0px_0px_rgba(0,255,255,0.5)]">
-        <div class="bg-gradient-to-r from-cyan-900 to-purple-900 p-4 border-b-2 border-cyan-500">
-          <div class="flex justify-between items-center">
-            <h2 class="text-xl font-bold text-cyan-400">◆ 用户详情 ◆</h2>
-            <button @click="showDetail = false" class="text-pink-500 text-2xl font-bold hover:text-pink-400">✕</button>
+    <!-- User Detail Modal -->
+    <div v-if="showDetail" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="card-base w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in">
+        <!-- Modal Header -->
+        <div class="p-6 border-b border-white/10 bg-gradient-to-r from-cyan-neon/10 to-fuchsia-500/10">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-cyan-neon/20 flex items-center justify-center">
+                <span class="text-xl">👤</span>
+              </div>
+              <h2 class="text-xl font-bold text-white">用户详情</h2>
+            </div>
+            <button 
+              @click="showDetail = false" 
+              class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all duration-150"
+            >
+              <span class="text-xl">✕</span>
+            </button>
           </div>
         </div>
+        
+        <!-- Modal Content -->
         <div class="p-6" v-if="currentUser">
-          <div class="grid grid-cols-2 gap-4 mb-6">
+          <!-- User Avatar & Basic Info -->
+          <div class="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-neon to-fuchsia-500 flex items-center justify-center text-4xl">
+              👤
+            </div>
             <div>
-              <label class="text-cyan-400 font-bold text-sm">用户ID</label>
+              <h3 class="text-2xl font-bold text-white mb-1">{{ currentUser.username }}</h3>
+              <p class="text-slate-400">{{ currentUser.nickname || '暂无昵称' }}</p>
+              <div class="flex items-center gap-2 mt-2">
+                <span :class="getStatusClass(currentUser.status)" class="tag-base">
+                  {{ currentUser.status === 1 ? '正常' : '禁用' }}
+                </span>
+                <span :class="getCreditTagClass(currentUser.creditScore)" class="tag-base">
+                  信用 {{ currentUser.creditScore }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detail Grid -->
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+              <label class="text-slate-400 text-sm mb-1 block">用户ID</label>
               <p class="text-white font-mono">{{ currentUser.id }}</p>
             </div>
-            <div>
-              <label class="text-cyan-400 font-bold text-sm">用户名</label>
-              <p class="text-white">{{ currentUser.username }}</p>
-            </div>
-            <div>
-              <label class="text-cyan-400 font-bold text-sm">昵称</label>
-              <p class="text-white">{{ currentUser.nickname || '-' }}</p>
-            </div>
-            <div>
-              <label class="text-cyan-400 font-bold text-sm">信用分</label>
-              <p :class="getCreditClass(currentUser.creditScore)" class="font-bold text-lg">{{ currentUser.creditScore }}</p>
-            </div>
-            <div>
-              <label class="text-cyan-400 font-bold text-sm">手机号</label>
+            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+              <label class="text-slate-400 text-sm mb-1 block">手机号</label>
               <p class="text-white">{{ currentUser.phone || '-' }}</p>
             </div>
-            <div>
-              <label class="text-cyan-400 font-bold text-sm">邮箱</label>
+            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+              <label class="text-slate-400 text-sm mb-1 block">邮箱</label>
               <p class="text-white">{{ currentUser.email || '-' }}</p>
             </div>
-            <div>
-              <label class="text-cyan-400 font-bold text-sm">校区</label>
-              <p class="text-white">{{ currentUser.campus || '-' }}</p>
-            </div>
-            <div>
-              <label class="text-cyan-400 font-bold text-sm">状态</label>
-              <p :class="getStatusClass(currentUser.status)" class="px-2 py-1 text-xs font-bold border-2 inline-block">
-                {{ currentUser.status === 1 ? '正常' : '禁用' }}
+            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+              <label class="text-slate-400 text-sm mb-1 block">校区</label>
+              <p class="text-white flex items-center gap-1">
+                <span>📍</span>
+                <span>{{ currentUser.campus || '-' }}</span>
               </p>
             </div>
-            <div class="col-span-2">
-              <label class="text-cyan-400 font-bold text-sm">注册时间</label>
+            <div class="col-span-2 p-4 rounded-xl bg-white/5 border border-white/10">
+              <label class="text-slate-400 text-sm mb-1 block">注册时间</label>
               <p class="text-white">{{ currentUser.createdAt }}</p>
+            </div>
+          </div>
+
+          <!-- Credit Score Bar -->
+          <div class="p-4 rounded-xl bg-white/5 border border-white/10 mb-6">
+            <label class="text-slate-400 text-sm mb-3 block">信用评分</label>
+            <div class="flex items-center gap-4">
+              <div class="flex-1 h-3 rounded-full bg-white/10 overflow-hidden">
+                <div 
+                  class="h-full rounded-full transition-all duration-500"
+                  :class="getCreditBarClass(currentUser.creditScore)"
+                  :style="{ width: currentUser.creditScore + '%' }"
+                ></div>
+              </div>
+              <span :class="getCreditClass(currentUser.creditScore)" class="font-bold text-xl">
+                {{ currentUser.creditScore }}
+              </span>
             </div>
           </div>
         </div>
@@ -216,16 +331,45 @@ const users = ref<User[]>([])
 const total = ref(0)
 const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
 
+// Display page numbers
+const displayedPages = computed(() => {
+  const pages: number[] = []
+  const maxDisplay = 5
+  let start = Math.max(1, currentPage.value - Math.floor(maxDisplay / 2))
+  let end = Math.min(totalPages.value, start + maxDisplay - 1)
+  
+  if (end - start + 1 < maxDisplay) {
+    start = Math.max(1, end - maxDisplay + 1)
+  }
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  return pages
+})
+
 const getCreditClass = (score: number) => {
-  if (score >= 80) return 'text-green-400'
+  if (score >= 80) return 'text-acid-green'
   if (score >= 60) return 'text-yellow-400'
   return 'text-red-400'
 }
 
+const getCreditTagClass = (score: number) => {
+  if (score >= 80) return 'bg-acid-green/10 text-acid-green border-acid-green/30'
+  if (score >= 60) return 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30'
+  return 'bg-red-400/10 text-red-400 border-red-400/30'
+}
+
+const getCreditBarClass = (score: number) => {
+  if (score >= 80) return 'bg-gradient-to-r from-acid-green to-green-400'
+  if (score >= 60) return 'bg-gradient-to-r from-yellow-400 to-yellow-500'
+  return 'bg-gradient-to-r from-red-400 to-red-500'
+}
+
 const getStatusClass = (status: number) => {
   return status === 1 
-    ? 'bg-green-900 text-green-400 border-green-500' 
-    : 'bg-red-900 text-red-400 border-red-500'
+    ? 'bg-acid-green/10 text-acid-green border-acid-green/30' 
+    : 'bg-red-400/10 text-red-400 border-red-400/30'
 }
 
 const loadUsers = async () => {
@@ -237,7 +381,7 @@ const loadUsers = async () => {
       keyword: searchKeyword.value || undefined,
       status: searchStatus.value !== '' ? searchStatus.value : undefined
     }
-    const res = await userApi.getList(params)
+    const res = await userApi.getList(params) as any
     users.value = res.records || []
     total.value = res.total || 0
   } catch (error) {
@@ -276,6 +420,11 @@ const toggleStatus = async (user: User) => {
       console.error('操作失败:', error)
     }
   }
+}
+
+const goToPage = (page: number) => {
+  currentPage.value = page
+  loadUsers()
 }
 
 const prevPage = () => {
