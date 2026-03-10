@@ -1,23 +1,23 @@
 <template>
-  <div class="p-8">
+  <div class="animate-fade-in">
     <!-- Page Header -->
-    <div class="mb-8">
-      <div class="flex items-center gap-3 mb-2">
-        <div class="w-10 h-10 rounded-xl bg-cyan-neon/10 flex items-center justify-center">
-          <span class="text-xl">👥</span>
+    <div class="page-header">
+      <div class="page-header-title">
+        <div class="page-header-icon bg-cyan-neon/10">
+          <span>👥</span>
         </div>
-        <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-neon to-cyan-400">
+        <h1 class="page-header-text text-transparent bg-clip-text bg-gradient-to-r from-cyan-neon to-cyan-400">
           用户管理
         </h1>
       </div>
-      <p class="text-slate-400 ml-13">管理和审核平台用户，维护校园交易环境</p>
+      <p class="page-header-desc">管理和审核平台用户，维护校园交易环境</p>
     </div>
 
     <!-- Search Filter Card -->
-    <div class="card-base p-6 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-          <label class="block text-cyan-neon mb-2 text-sm font-bold flex items-center gap-2">
+    <div class="filter-card">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="filter-item">
+          <label class="filter-label text-cyan-neon">
             <span>🔍</span>
             <span>关键词搜索</span>
           </label>
@@ -25,32 +25,32 @@
             v-model="searchKeyword"
             type="text"
             placeholder="输入用户名/昵称查询..."
-            class="input-base w-full"
+            class="input-base"
             @keyup.enter="handleSearch"
           />
         </div>
-        <div>
-          <label class="block text-cyan-neon mb-2 text-sm font-bold flex items-center gap-2">
+        <div class="filter-item">
+          <label class="filter-label text-cyan-neon">
             <span>📊</span>
             <span>用户状态</span>
           </label>
           <select
             v-model="searchStatus"
-            class="input-base w-full appearance-none cursor-pointer"
+            class="input-base appearance-none cursor-pointer"
           >
             <option value="" class="bg-slate-900">全部状态</option>
             <option :value="1" class="bg-slate-900">正常</option>
             <option :value="0" class="bg-slate-900">禁用</option>
           </select>
         </div>
-        <div>
-          <label class="block text-cyan-neon mb-2 text-sm font-bold flex items-center gap-2">
+        <div class="filter-item">
+          <label class="filter-label text-cyan-neon">
             <span>⭐</span>
             <span>信用分筛选</span>
           </label>
           <select
             v-model="searchCredit"
-            class="input-base w-full appearance-none cursor-pointer"
+            class="input-base appearance-none cursor-pointer"
           >
             <option value="" class="bg-slate-900">全部信用</option>
             <option value="high" class="bg-slate-900">优秀(≥80)</option>
@@ -61,7 +61,7 @@
         <div class="flex items-end">
           <button
             @click="handleSearch"
-            class="btn-primary w-full flex items-center justify-center gap-2"
+            class="btn-primary w-full"
           >
             <span>搜索</span>
             <span>→</span>
@@ -71,9 +71,9 @@
     </div>
 
     <!-- Data Table Card -->
-    <div class="card-base overflow-hidden">
+    <div class="table-container">
       <!-- Table Header -->
-      <div class="p-5 border-b border-white/10 bg-gradient-to-r from-cyan-neon/5 to-fuchsia-500/5">
+      <div class="table-header">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-bold text-white flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-cyan-neon animate-pulse"></span>
@@ -87,22 +87,22 @@
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead>
-            <tr class="text-left border-b border-white/10">
-              <th class="p-5 font-bold text-cyan-neon">用户ID</th>
-              <th class="p-5 font-bold text-cyan-neon">用户名</th>
-              <th class="p-5 font-bold text-cyan-neon">昵称</th>
-              <th class="p-5 font-bold text-cyan-neon">校区</th>
-              <th class="p-5 font-bold text-cyan-neon">信用分</th>
-              <th class="p-5 font-bold text-cyan-neon">状态</th>
-              <th class="p-5 font-bold text-cyan-neon text-right">操作</th>
+            <tr class="border-b border-white/10">
+              <th class="table-head">用户ID</th>
+              <th class="table-head">用户名</th>
+              <th class="table-head">昵称</th>
+              <th class="table-head">校区</th>
+              <th class="table-head">信用分</th>
+              <th class="table-head">状态</th>
+              <th class="table-head text-right">操作</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5">
             <tr v-for="user in users" :key="user.id" class="table-row">
-              <td class="p-5">
+              <td class="table-cell">
                 <span class="text-white font-mono bg-white/5 px-3 py-1.5 rounded-lg text-sm">{{ user.id }}</span>
               </td>
-              <td class="p-5">
+              <td class="table-cell">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-neon/20 to-fuchsia-500/20 flex items-center justify-center">
                     <span class="text-sm">👤</span>
@@ -110,15 +110,15 @@
                   <span class="text-white font-medium">{{ user.username }}</span>
                 </div>
               </td>
-              <td class="p-5 text-slate-300">{{ user.nickname || '-' }}</td>
-              <td class="p-5">
+              <td class="table-cell text-slate-300">{{ user.nickname || '-' }}</td>
+              <td class="table-cell">
                 <span class="flex items-center gap-1 text-slate-300">
                   <span>📍</span>
                   <span>{{ user.campus || '-' }}</span>
                 </span>
               </td>
-              <td class="p-5">
-                <div class="flex items-center gap-2">
+              <td class="table-cell">
+                <div class="flex items-center gap-3">
                   <div class="w-16 h-2 rounded-full bg-white/10 overflow-hidden">
                     <div 
                       class="h-full rounded-full transition-all duration-500"
@@ -126,34 +126,31 @@
                       :style="{ width: user.creditScore + '%' }"
                     ></div>
                   </div>
-                  <span :class="getCreditClass(user.creditScore)" class="font-bold text-sm">
+                  <span :class="getCreditClass(user.creditScore)" class="font-bold text-sm min-w-[2rem]">
                     {{ user.creditScore }}
                   </span>
                 </div>
               </td>
-              <td class="p-5">
+              <td class="table-cell">
                 <span :class="getStatusClass(user.status)" class="tag-base">
-                  <span class="flex items-center gap-1">
+                  <span class="flex items-center gap-1.5">
                     <span class="w-1.5 h-1.5 rounded-full" :class="user.status === 1 ? 'bg-acid-green' : 'bg-red-400'"></span>
                     {{ user.status === 1 ? '正常' : '禁用' }}
                   </span>
                 </span>
               </td>
-              <td class="p-5 text-right">
+              <td class="table-cell text-right">
                 <div class="flex items-center justify-end gap-2">
                   <button
                     @click="viewUser(user)"
-                    class="px-3 py-1.5 rounded-lg bg-cyan-neon/10 text-cyan-neon text-sm font-semibold border border-cyan-neon/30 hover:bg-cyan-neon/20 transition-all duration-150 flex items-center gap-1"
+                    class="btn-ghost btn-sm"
                   >
                     <span>👁</span>
                     <span>查看</span>
                   </button>
                   <button
                     @click="toggleStatus(user)"
-                    :class="user.status === 1 
-                      ? 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20' 
-                      : 'bg-acid-green/10 text-acid-green border-acid-green/30 hover:bg-acid-green/20'"
-                    class="px-3 py-1.5 rounded-lg text-sm font-semibold border transition-all duration-150 flex items-center gap-1"
+                    :class="user.status === 1 ? 'btn-danger btn-sm' : 'btn-success btn-sm'"
                   >
                     <span>{{ user.status === 1 ? '🚫' : '✓' }}</span>
                     <span>{{ user.status === 1 ? '禁用' : '启用' }}</span>
@@ -184,15 +181,16 @@
       </div>
 
       <!-- Pagination -->
-      <div class="flex items-center justify-between p-5 border-t border-white/10">
-        <div class="text-slate-400 text-sm">
+      <div class="pagination-container">
+        <div class="pagination-info">
           显示 {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, total) }} 条，共 {{ total }} 条
         </div>
-        <div class="flex items-center gap-2">
+        <div class="pagination-controls">
           <button
             @click="prevPage"
             :disabled="currentPage === 1"
-            class="px-4 py-2 rounded-lg bg-white/5 text-slate-300 font-medium border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            class="pagination-btn"
+            :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
           >
             <span>←</span>
             <span>上一页</span>
@@ -202,10 +200,8 @@
               v-for="page in displayedPages"
               :key="page"
               @click="goToPage(page)"
-              :class="currentPage === page 
-                ? 'bg-gradient-to-r from-cyan-neon to-cyan-400 text-navy-deep font-bold' 
-                : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'"
-              class="w-10 h-10 rounded-lg border border-white/10 transition-all duration-150"
+              class="pagination-page"
+              :class="{ 'active': currentPage === page }"
             >
               {{ page }}
             </button>
@@ -213,7 +209,8 @@
           <button
             @click="nextPage"
             :disabled="currentPage === totalPages"
-            class="px-4 py-2 rounded-lg bg-white/5 text-slate-300 font-medium border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            class="pagination-btn"
+            :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
           >
             <span>下一页</span>
             <span>→</span>
@@ -223,28 +220,26 @@
     </div>
 
     <!-- User Detail Modal -->
-    <div v-if="showDetail" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div class="card-base w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in">
+    <div v-if="showDetail" class="modal-overlay" @click.self="showDetail = false">
+      <div class="modal-container">
         <!-- Modal Header -->
-        <div class="p-6 border-b border-white/10 bg-gradient-to-r from-cyan-neon/10 to-fuchsia-500/10">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-cyan-neon/20 flex items-center justify-center">
-                <span class="text-xl">👤</span>
-              </div>
-              <h2 class="text-xl font-bold text-white">用户详情</h2>
+        <div class="modal-header">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-cyan-neon/20 flex items-center justify-center">
+              <span class="text-xl">👤</span>
             </div>
-            <button 
-              @click="showDetail = false" 
-              class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all duration-150"
-            >
-              <span class="text-xl">✕</span>
-            </button>
+            <h2 class="text-xl font-bold text-white">用户详情</h2>
           </div>
+          <button 
+            @click="showDetail = false" 
+            class="modal-close"
+          >
+            <span>✕</span>
+          </button>
         </div>
         
         <!-- Modal Content -->
-        <div class="p-6" v-if="currentUser">
+        <div class="modal-body" v-if="currentUser">
           <!-- User Avatar & Basic Info -->
           <div class="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
             <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-neon to-fuchsia-500 flex items-center justify-center text-4xl">
@@ -355,9 +350,9 @@ const getCreditClass = (score: number) => {
 }
 
 const getCreditTagClass = (score: number) => {
-  if (score >= 80) return 'bg-acid-green/10 text-acid-green border-acid-green/30'
-  if (score >= 60) return 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30'
-  return 'bg-red-400/10 text-red-400 border-red-400/30'
+  if (score >= 80) return 'tag-green'
+  if (score >= 60) return 'tag-yellow'
+  return 'tag-red'
 }
 
 const getCreditBarClass = (score: number) => {
@@ -367,9 +362,7 @@ const getCreditBarClass = (score: number) => {
 }
 
 const getStatusClass = (status: number) => {
-  return status === 1 
-    ? 'bg-acid-green/10 text-acid-green border-acid-green/30' 
-    : 'bg-red-400/10 text-red-400 border-red-400/30'
+  return status === 1 ? 'tag-green' : 'tag-red'
 }
 
 const loadUsers = async () => {

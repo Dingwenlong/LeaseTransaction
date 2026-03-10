@@ -1,23 +1,23 @@
 <template>
-  <div class="p-8">
+  <div class="animate-fade-in">
     <!-- Page Header -->
-    <div class="mb-8">
-      <div class="flex items-center gap-3 mb-2">
-        <div class="w-10 h-10 rounded-xl bg-violet-neon/10 flex items-center justify-center">
-          <span class="text-xl">📋</span>
+    <div class="page-header">
+      <div class="page-header-title">
+        <div class="page-header-icon bg-violet-neon/10">
+          <span>📋</span>
         </div>
-        <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-neon to-violet-400">
+        <h1 class="page-header-text text-transparent bg-clip-text bg-gradient-to-r from-violet-neon to-violet-400">
           订单管理
         </h1>
       </div>
-      <p class="text-slate-400 ml-13">管理所有租赁与交易订单，跟踪订单状态</p>
+      <p class="page-header-desc">管理所有租赁与交易订单，跟踪订单状态</p>
     </div>
 
     <!-- Search Filter Card -->
-    <div class="card-base p-6 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-          <label class="block text-violet-neon mb-2 text-sm font-bold flex items-center gap-2">
+    <div class="filter-card">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="filter-item">
+          <label class="filter-label text-violet-neon">
             <span>🔍</span>
             <span>订单号/关键词</span>
           </label>
@@ -25,31 +25,31 @@
             v-model="searchKeyword"
             type="text"
             placeholder="输入订单号查询..."
-            class="input-base w-full"
+            class="input-base"
           />
         </div>
-        <div>
-          <label class="block text-violet-neon mb-2 text-sm font-bold flex items-center gap-2">
+        <div class="filter-item">
+          <label class="filter-label text-violet-neon">
             <span>📋</span>
             <span>订单类型</span>
           </label>
           <select
             v-model="searchType"
-            class="input-base w-full appearance-none cursor-pointer"
+            class="input-base appearance-none cursor-pointer"
           >
             <option value="" class="bg-slate-900">全部类型</option>
             <option value="lease" class="bg-slate-900">租赁订单</option>
             <option value="sale" class="bg-slate-900">交易订单</option>
           </select>
         </div>
-        <div>
-          <label class="block text-violet-neon mb-2 text-sm font-bold flex items-center gap-2">
+        <div class="filter-item">
+          <label class="filter-label text-violet-neon">
             <span>📊</span>
             <span>订单状态</span>
           </label>
           <select
             v-model="searchStatus"
-            class="input-base w-full appearance-none cursor-pointer"
+            class="input-base appearance-none cursor-pointer"
           >
             <option value="" class="bg-slate-900">全部状态</option>
             <option value="pending" class="bg-slate-900">待付款</option>
@@ -63,7 +63,7 @@
         <div class="flex items-end">
           <button
             @click="handleSearch"
-            class="btn-primary w-full flex items-center justify-center gap-2"
+            class="btn-primary w-full"
           >
             <span>搜索</span>
             <span>→</span>
@@ -73,9 +73,9 @@
     </div>
 
     <!-- Data Table Card -->
-    <div class="card-base overflow-hidden">
+    <div class="table-container">
       <!-- Table Header -->
-      <div class="p-5 border-b border-white/10 bg-gradient-to-r from-violet-neon/5 to-fuchsia-500/5">
+      <div class="table-header">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-bold text-white flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-violet-neon animate-pulse"></span>
@@ -89,24 +89,24 @@
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead>
-            <tr class="text-left border-b border-white/10">
-              <th class="p-5 font-bold text-violet-neon">订单号</th>
-              <th class="p-5 font-bold text-violet-neon">物品</th>
-              <th class="p-5 font-bold text-violet-neon">买家/承租人</th>
-              <th class="p-5 font-bold text-violet-neon">卖家/出租人</th>
-              <th class="p-5 font-bold text-violet-neon">类型</th>
-              <th class="p-5 font-bold text-violet-neon">金额</th>
-              <th class="p-5 font-bold text-violet-neon">状态</th>
-              <th class="p-5 font-bold text-violet-neon">创建时间</th>
-              <th class="p-5 font-bold text-violet-neon text-right">操作</th>
+            <tr class="border-b border-white/10">
+              <th class="table-head">订单号</th>
+              <th class="table-head">物品</th>
+              <th class="table-head">买家/承租人</th>
+              <th class="table-head">卖家/出租人</th>
+              <th class="table-head">类型</th>
+              <th class="table-head">金额</th>
+              <th class="table-head">状态</th>
+              <th class="table-head">创建时间</th>
+              <th class="table-head text-right">操作</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5">
             <tr v-for="order in orders" :key="order.id" class="table-row">
-              <td class="p-5">
+              <td class="table-cell">
                 <span class="text-white font-mono bg-white/5 px-3 py-1.5 rounded-lg text-sm">{{ order.orderNo }}</span>
               </td>
-              <td class="p-5">
+              <td class="table-cell">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-neon/20 to-fuchsia-500/20 flex items-center justify-center">
                     <span class="text-sm">📦</span>
@@ -114,7 +114,7 @@
                   <span class="text-white font-medium line-clamp-1 max-w-[150px]">{{ order.itemName }}</span>
                 </div>
               </td>
-              <td class="p-5">
+              <td class="table-cell">
                 <div class="flex items-center gap-2">
                   <div class="w-6 h-6 rounded-full bg-cyan-neon/20 flex items-center justify-center">
                     <span class="text-xs">👤</span>
@@ -122,7 +122,7 @@
                   <span class="text-slate-300">{{ order.buyerName }}</span>
                 </div>
               </td>
-              <td class="p-5">
+              <td class="table-cell">
                 <div class="flex items-center gap-2">
                   <div class="w-6 h-6 rounded-full bg-fuchsia-500/20 flex items-center justify-center">
                     <span class="text-xs">👤</span>
@@ -130,15 +130,15 @@
                   <span class="text-slate-300">{{ order.sellerName }}</span>
                 </div>
               </td>
-              <td class="p-5">
-                <span :class="order.type === 'lease' ? 'bg-cyan-neon/10 text-cyan-neon border-cyan-neon/30' : 'bg-fuchsia-500/10 text-fuchsia-500 border-fuchsia-500/30'" class="tag-base">
+              <td class="table-cell">
+                <span :class="order.type === 'lease' ? 'tag-cyan' : 'tag-fuchsia'" class="tag-base">
                   {{ order.type === 'lease' ? '租赁' : '交易' }}
                 </span>
               </td>
-              <td class="p-5">
+              <td class="table-cell">
                 <span class="text-fuchsia-400 font-bold">¥{{ order.amount.toFixed(2) }}</span>
               </td>
-              <td class="p-5">
+              <td class="table-cell">
                 <span :class="getStatusClass(order.status)" class="tag-base">
                   <span class="flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full" :class="getStatusDotClass(order.status)"></span>
@@ -146,12 +146,12 @@
                   </span>
                 </span>
               </td>
-              <td class="p-5 text-slate-400 text-sm">{{ order.createdAt }}</td>
-              <td class="p-5 text-right">
+              <td class="table-cell text-slate-400 text-sm">{{ order.createdAt }}</td>
+              <td class="table-cell text-right">
                 <div class="flex items-center justify-end gap-2">
                   <button
                     @click="viewOrder(order)"
-                    class="px-3 py-1.5 rounded-lg bg-violet-neon/10 text-violet-neon text-sm font-semibold border border-violet-neon/30 hover:bg-violet-neon/20 transition-all duration-150 flex items-center gap-1"
+                    class="btn-ghost btn-sm"
                   >
                     <span>👁</span>
                     <span>查看</span>
@@ -159,7 +159,7 @@
                   <button
                     v-if="order.status === 'pending'"
                     @click="cancelOrder(order)"
-                    class="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 text-sm font-semibold border border-red-500/30 hover:bg-red-500/20 transition-all duration-150 flex items-center gap-1"
+                    class="btn-danger btn-sm"
                   >
                     <span>✕</span>
                     <span>取消</span>
@@ -182,15 +182,16 @@
       </div>
 
       <!-- Pagination -->
-      <div class="flex items-center justify-between p-5 border-t border-white/10">
-        <div class="text-slate-400 text-sm">
+      <div class="pagination-container">
+        <div class="pagination-info">
           共 {{ total }} 条记录
         </div>
-        <div class="flex items-center gap-2">
+        <div class="pagination-controls">
           <button
             @click="prevPage"
             :disabled="currentPage === 1"
-            class="px-4 py-2 rounded-lg bg-white/5 text-slate-300 font-medium border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            class="pagination-btn"
+            :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
           >
             <span>←</span>
             <span>上一页</span>
@@ -200,10 +201,8 @@
               v-for="page in displayedPages"
               :key="page"
               @click="goToPage(page)"
-              :class="currentPage === page 
-                ? 'bg-gradient-to-r from-violet-neon to-violet-400 text-navy-deep font-bold' 
-                : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'"
-              class="w-10 h-10 rounded-lg border border-white/10 transition-all duration-150"
+              class="pagination-page"
+              :class="{ 'active': currentPage === page }"
             >
               {{ page }}
             </button>
@@ -211,7 +210,8 @@
           <button
             @click="nextPage"
             :disabled="currentPage === totalPages"
-            class="px-4 py-2 rounded-lg bg-white/5 text-slate-300 font-medium border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            class="pagination-btn"
+            :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
           >
             <span>下一页</span>
             <span>→</span>
@@ -221,31 +221,29 @@
     </div>
 
     <!-- Order Detail Modal -->
-    <div v-if="showDetail" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div class="card-base w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in">
+    <div v-if="showDetail" class="modal-overlay" @click.self="showDetail = false">
+      <div class="modal-container">
         <!-- Modal Header -->
-        <div class="p-6 border-b border-white/10 bg-gradient-to-r from-violet-neon/10 to-fuchsia-500/10">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-violet-neon/20 flex items-center justify-center">
-                <span class="text-xl">📋</span>
-              </div>
-              <div>
-                <h2 class="text-xl font-bold text-white">订单详情</h2>
-                <p class="text-slate-400 text-sm">{{ currentOrder?.orderNo }}</p>
-              </div>
+        <div class="modal-header">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-violet-neon/20 flex items-center justify-center">
+              <span class="text-xl">📋</span>
             </div>
-            <button 
-              @click="showDetail = false" 
-              class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all duration-150"
-            >
-              <span class="text-xl">✕</span>
-            </button>
+            <div>
+              <h2 class="text-xl font-bold text-white">订单详情</h2>
+              <p class="text-slate-400 text-sm">{{ currentOrder?.orderNo }}</p>
+            </div>
           </div>
+          <button 
+            @click="showDetail = false" 
+            class="modal-close"
+          >
+            <span>✕</span>
+          </button>
         </div>
         
         <!-- Modal Content -->
-        <div class="p-6" v-if="currentOrder">
+        <div class="modal-body" v-if="currentOrder">
           <!-- Status Banner -->
           <div class="mb-6 p-4 rounded-xl border" :class="getStatusBannerClass(currentOrder.status)">
             <div class="flex items-center gap-3">
@@ -433,14 +431,14 @@ const displayedPages = computed(() => {
 
 const getStatusClass = (status: string) => {
   const classes: Record<string, string> = {
-    pending: 'bg-yellow-500/10 text-yellow-400 border-yellow-400/30',
-    paid: 'bg-blue-500/10 text-blue-400 border-blue-400/30',
-    in_progress: 'bg-cyan-neon/10 text-cyan-neon border-cyan-neon/30',
-    completed: 'bg-acid-green/10 text-acid-green border-acid-green/30',
-    cancelled: 'bg-slate-500/10 text-slate-400 border-slate-400/30',
-    refunded: 'bg-red-500/10 text-red-400 border-red-400/30'
+    pending: 'tag-yellow',
+    paid: 'tag-cyan',
+    in_progress: 'tag-cyan',
+    completed: 'tag-green',
+    cancelled: 'tag-slate',
+    refunded: 'tag-red'
   }
-  return classes[status] || 'bg-white/10 text-slate-400 border-white/20'
+  return classes[status] || 'tag-slate'
 }
 
 const getStatusDotClass = (status: string) => {

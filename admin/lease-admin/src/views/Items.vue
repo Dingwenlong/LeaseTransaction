@@ -1,24 +1,24 @@
 <template>
-  <div class="p-8">
+  <div class="animate-fade-in">
     <!-- Page Header -->
-    <div class="mb-8">
-      <div class="flex items-center gap-3 mb-2">
-        <div class="w-10 h-10 rounded-xl bg-fuchsia-500/10 flex items-center justify-center">
-          <span class="text-xl">📦</span>
+    <div class="page-header">
+      <div class="page-header-title">
+        <div class="page-header-icon bg-fuchsia-500/10">
+          <span>📦</span>
         </div>
-        <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-fuchsia-400">
+        <h1 class="page-header-text text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-fuchsia-400">
           物品管理
         </h1>
       </div>
-      <p class="text-slate-400 ml-13">审核和管理平台物品，维护物品质量</p>
+      <p class="page-header-desc">审核和管理平台物品，维护物品质量</p>
     </div>
 
     <!-- Search Filter Card -->
-    <div class="card-base p-6 mb-6">
-      <div class="flex flex-col lg:flex-row gap-4 items-end">
-        <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-          <div>
-            <label class="block text-fuchsia-500 mb-2 text-sm font-bold flex items-center gap-2">
+    <div class="filter-card">
+      <div class="flex flex-col lg:flex-row gap-5 items-end">
+        <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-5 w-full">
+          <div class="filter-item">
+            <label class="filter-label text-fuchsia-500">
               <span>🔍</span>
               <span>关键词搜索</span>
             </label>
@@ -26,31 +26,31 @@
               v-model="searchKeyword"
               type="text"
               placeholder="搜索物品名称..."
-              class="input-base w-full"
+              class="input-base"
             />
           </div>
-          <div>
-            <label class="block text-fuchsia-500 mb-2 text-sm font-bold flex items-center gap-2">
+          <div class="filter-item">
+            <label class="filter-label text-fuchsia-500">
               <span>📋</span>
               <span>物品类型</span>
             </label>
             <select
               v-model="filterType"
-              class="input-base w-full appearance-none cursor-pointer"
+              class="input-base appearance-none cursor-pointer"
             >
               <option value="" class="bg-slate-900">全部类型</option>
               <option value="1" class="bg-slate-900">租赁</option>
               <option value="2" class="bg-slate-900">出售</option>
             </select>
           </div>
-          <div>
-            <label class="block text-fuchsia-500 mb-2 text-sm font-bold flex items-center gap-2">
+          <div class="filter-item">
+            <label class="filter-label text-fuchsia-500">
               <span>📊</span>
               <span>物品状态</span>
             </label>
             <select
               v-model="filterStatus"
-              class="input-base w-full appearance-none cursor-pointer"
+              class="input-base appearance-none cursor-pointer"
             >
               <option value="" class="bg-slate-900">全部状态</option>
               <option value="0" class="bg-slate-900">待审核</option>
@@ -60,7 +60,7 @@
             </select>
           </div>
         </div>
-        <button class="btn-primary whitespace-nowrap flex items-center gap-2">
+        <button class="btn-primary whitespace-nowrap">
           <span>✓</span>
           <span>批量审核</span>
         </button>
@@ -77,7 +77,7 @@
         <!-- Card Header -->
         <div class="p-5">
           <div class="flex items-start justify-between mb-4">
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-wrap">
               <span
                 :class="getTypeClass(item.type)"
                 class="tag-base"
@@ -130,16 +130,16 @@
 
           <!-- Actions -->
           <div class="flex gap-2">
-            <button class="flex-1 px-4 py-2.5 rounded-xl bg-cyan-neon/10 text-cyan-neon text-sm font-semibold border border-cyan-neon/30 hover:bg-cyan-neon/20 transition-all duration-150 flex items-center justify-center gap-1">
+            <button class="flex-1 btn-ghost btn-sm">
               <span>👁</span>
               <span>查看详情</span>
             </button>
             <template v-if="item.status === 0">
-              <button class="px-4 py-2.5 rounded-xl bg-acid-green/10 text-acid-green text-sm font-semibold border border-acid-green/30 hover:bg-acid-green/20 transition-all duration-150">
-                ✓
+              <button class="btn-success btn-sm">
+                <span>✓</span>
               </button>
-              <button class="px-4 py-2.5 rounded-xl bg-red-500/10 text-red-400 text-sm font-semibold border border-red-500/30 hover:bg-red-500/20 transition-all duration-150">
-                ✕
+              <button class="btn-danger btn-sm">
+                <span>✕</span>
               </button>
             </template>
           </div>
@@ -149,19 +149,19 @@
 
     <!-- Pagination -->
     <div class="card-base p-5">
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="text-slate-400 text-sm">
+      <div class="pagination-container border-0 p-0">
+        <div class="pagination-info">
           显示 1-{{ items.length }} 条，共 {{ items.length }} 条
         </div>
-        <div class="flex items-center gap-2">
-          <button class="px-4 py-2 rounded-lg bg-white/5 text-slate-300 font-medium border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
+        <div class="pagination-controls">
+          <button class="pagination-btn">
             <span>←</span>
             <span>上一页</span>
           </button>
-          <button class="w-10 h-10 rounded-lg bg-gradient-to-r from-fuchsia-500 to-fuchsia-400 text-navy-deep font-bold">
+          <button class="pagination-page active">
             1
           </button>
-          <button class="px-4 py-2 rounded-lg bg-white/5 text-slate-300 font-medium border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
+          <button class="pagination-btn">
             <span>下一页</span>
             <span>→</span>
           </button>
@@ -188,19 +188,17 @@ const items = ref([
 ])
 
 const getTypeClass = (type: number) => {
-  return type === 1 
-    ? 'bg-cyan-neon/10 text-cyan-neon border-cyan-neon/30' 
-    : 'bg-fuchsia-500/10 text-fuchsia-500 border-fuchsia-500/30'
+  return type === 1 ? 'tag-cyan' : 'tag-fuchsia'
 }
 
 const getStatusClass = (status: number) => {
   const classes: Record<number, string> = {
-    0: 'bg-yellow-500/10 text-yellow-400 border-yellow-400/30',
-    1: 'bg-acid-green/10 text-acid-green border-acid-green/30',
-    2: 'bg-cyan-neon/10 text-cyan-neon border-cyan-neon/30',
-    3: 'bg-violet-neon/10 text-violet-neon border-violet-neon/30'
+    0: 'tag-yellow',
+    1: 'tag-green',
+    2: 'tag-cyan',
+    3: 'tag-violet'
   }
-  return classes[status] || 'bg-white/10 text-slate-400 border-white/20'
+  return classes[status] || 'tag-slate'
 }
 
 const getStatusDotClass = (status: number) => {
