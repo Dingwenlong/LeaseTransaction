@@ -2,16 +2,16 @@
   <section class="page-header">
     <div class="page-header-main">
       <p class="page-eyebrow">Orders</p>
-      <h1 class="page-title">订单页只保留与决策直接相关的信息。</h1>
+      <h1 class="page-title">订单流程、金额和异常状态直接挂钩处理动作。</h1>
       <p class="page-description">
-        订单管理改成强状态导向的表格：先看状态与金额，再看物品与交易双方，详情弹窗也保持同样的阅读顺序。
+        订单页按状态驱动处理，待付款、履约中、待验收和纠纷态都可在列表或详情中快速推进。
       </p>
     </div>
     <div class="page-actions">
       <button class="button button-ghost" @click="resetFilters">重置条件</button>
-      <button class="button button-primary" @click="handleSearch">
-        <span>应用筛选</span>
-        <span>→</span>
+      <button class="button button-primary" @click="loadOrders">
+        <span>刷新订单</span>
+        <span>↻</span>
       </button>
     </div>
   </section>
@@ -31,46 +31,40 @@
     <div class="panel-header">
       <div>
         <h2 class="panel-title">订单筛选</h2>
-        <p class="panel-subtitle">维持后台与客户端同样的状态语义，避免前后台文案错位。</p>
+        <p class="panel-subtitle">状态和类型均与后端枚举保持一致，避免前后台文案错位。</p>
       </div>
     </div>
     <div class="panel-body">
       <div class="toolbar-grid">
         <label class="field">
           <span class="field-label">订单号 / 关键词</span>
-          <input
-            v-model="searchKeyword"
-            class="field-control"
-            type="text"
-            placeholder="输入订单号、物品名或用户"
-            @keyup.enter="handleSearch"
-          />
+          <input v-model="searchKeyword" class="field-control" type="text" placeholder="订单号、物品、买家、卖家" @keyup.enter="loadOrders" />
         </label>
         <label class="field">
           <span class="field-label">订单类型</span>
           <select v-model="searchType" class="field-control">
             <option value="">全部类型</option>
-            <option value="lease">租赁订单</option>
-            <option value="sale">交易订单</option>
+            <option :value="1">租赁订单</option>
+            <option :value="2">交易订单</option>
           </select>
         </label>
         <label class="field">
           <span class="field-label">订单状态</span>
           <select v-model="searchStatus" class="field-control">
             <option value="">全部状态</option>
-            <option value="pending">待付款</option>
-            <option value="paid">已付款</option>
-            <option value="in_progress">进行中</option>
-            <option value="completed">已完成</option>
-            <option value="cancelled">已取消</option>
-            <option value="refunded">已退款</option>
+            <option :value="1">待付款</option>
+            <option :value="2">待交付</option>
+            <option :value="3">进行中</option>
+            <option :value="4">待归还验收</option>
+            <option :value="5">已完成</option>
+            <option :value="6">已取消</option>
+            <option :value="7">纠纷中</option>
+            <option :value="8">退款中</option>
           </select>
         </label>
         <div class="field">
           <span class="field-label">当前结果</span>
-          <div class="field-control" style="display: flex; align-items: center;">
-            当前展示 {{ filteredOrders.length }} 条订单
-          </div>
+          <div class="field-control field-static">当前展示 {{ orders.length }} 条订单</div>
         </div>
       </div>
     </div>
@@ -80,7 +74,7 @@
     <div class="panel-header">
       <div>
         <h2 class="panel-title">订单列表</h2>
-        <p class="panel-subtitle">把订单号、物品名和交易双方拆成稳定列，避免一行信息过载。</p>
+        <p class="panel-subtitle">优先突出订单状态、交易双方和金额，详情弹窗再展开时间区间与备注。</p>
       </div>
       <span class="mini-chip">总额 ¥{{ totalAmount }}</span>
     </div>
@@ -100,15 +94,13 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="order in filteredOrders" :key="order.id">
-            <td>
-              <span class="table-id wrap-break">{{ order.orderNo }}</span>
-            </td>
+          <tr v-for="order in orders" :key="order.id">
+            <td><span class="table-id wrap-break">{{ order.orderNo }}</span></td>
             <td>
               <div class="avatar-line">
                 <div class="avatar-badge">📦</div>
                 <div class="truncate">
-                  <p class="table-primary truncate">{{ order.itemName }}</p>
+                  <p class="table-primary truncate">{{ order.itemTitle }}</p>
                   <p class="table-secondary">物品 ID {{ order.itemId }}</p>
                 </div>
               </div>
@@ -118,37 +110,43 @@
               <p class="table-secondary">卖家 / 出租人 {{ order.sellerName }}</p>
             </td>
             <td>
-              <span class="status-pill" :class="order.type === 'lease' ? 'cyan' : 'magenta'">
-                {{ order.type === 'lease' ? '租赁' : '交易' }}
-              </span>
+              <span class="status-pill" :class="order.type === 1 ? 'cyan' : 'magenta'">{{ order.typeText }}</span>
             </td>
             <td>
-              <p class="table-primary table-amount">¥{{ order.amount.toFixed(2) }}</p>
+              <p class="table-primary table-amount">¥{{ Number(order.totalAmount).toFixed(2) }}</p>
               <p class="table-secondary">{{ order.remark || '无额外备注' }}</p>
             </td>
             <td>
-              <span class="status-pill" :class="getStatusClass(order.status)">
-                {{ getStatusText(order.status) }}
-              </span>
+              <span class="status-pill" :class="getStatusClass(order.status)">{{ order.statusText }}</span>
             </td>
             <td>
-              <p class="table-primary">{{ order.createdAt }}</p>
-              <p class="table-secondary">更新于 {{ order.updatedAt }}</p>
+              <p class="table-primary">{{ formatDate(order.createdAt) }}</p>
+              <p class="table-secondary">更新于 {{ formatDate(order.updatedAt) }}</p>
             </td>
             <td>
               <div class="table-actions" style="justify-content: flex-end;">
                 <button class="button button-ghost button-sm" @click="viewOrder(order)">查看</button>
                 <button
-                  v-if="order.status === 'pending'"
-                  class="button button-danger button-sm"
-                  @click="cancelOrder(order)"
+                  v-for="action in getActions(order)"
+                  :key="action.label"
+                  class="button button-sm"
+                  :class="action.className"
+                  @click="updateStatus(order, action.status, action.remark)"
                 >
-                  取消
+                  {{ action.label }}
                 </button>
               </div>
             </td>
           </tr>
-          <tr v-if="filteredOrders.length === 0">
+          <tr v-if="loading">
+            <td colspan="8">
+              <div class="empty-state">
+                <strong>正在加载订单数据</strong>
+                <span>后台正在同步订单流程信息。</span>
+              </div>
+            </td>
+          </tr>
+          <tr v-else-if="orders.length === 0">
             <td colspan="8">
               <div class="empty-state">
                 <strong>暂无订单数据</strong>
@@ -170,21 +168,20 @@
         </div>
         <button class="modal-close" @click="showDetail = false">✕</button>
       </div>
-
       <div class="modal-body">
-        <div class="status-banner" :class="getStatusBannerClass(currentOrder.status)">
+        <div class="status-banner" :class="getStatusClass(currentOrder.status)">
           <p class="detail-label">订单状态</p>
-          <p class="detail-value">{{ getStatusText(currentOrder.status) }} · {{ currentOrder.type === 'lease' ? '租赁流程' : '交易流程' }}</p>
+          <p class="detail-value">{{ currentOrder.statusText }} · {{ currentOrder.typeText }}</p>
         </div>
 
         <div class="detail-grid">
           <div class="detail-card">
             <p class="detail-label">物品名称</p>
-            <p class="detail-value">{{ currentOrder.itemName }}</p>
+            <p class="detail-value">{{ currentOrder.itemTitle }}</p>
           </div>
           <div class="detail-card">
-            <p class="detail-label">订单金额</p>
-            <p class="detail-value">¥{{ currentOrder.amount.toFixed(2) }}</p>
+            <p class="detail-label">总金额</p>
+            <p class="detail-value">¥{{ Number(currentOrder.totalAmount).toFixed(2) }}</p>
           </div>
           <div class="detail-card">
             <p class="detail-label">买家 / 承租人</p>
@@ -195,20 +192,20 @@
             <p class="detail-value">{{ currentOrder.sellerName }}</p>
           </div>
           <div class="detail-card">
-            <p class="detail-label">创建时间</p>
-            <p class="detail-value">{{ currentOrder.createdAt }}</p>
+            <p class="detail-label">交付方式</p>
+            <p class="detail-value">{{ currentOrder.deliveryMethod || '校内面交' }}</p>
           </div>
           <div class="detail-card">
-            <p class="detail-label">更新时间</p>
-            <p class="detail-value">{{ currentOrder.updatedAt }}</p>
+            <p class="detail-label">押金</p>
+            <p class="detail-value">{{ currentOrder.deposit ? `¥${currentOrder.deposit}` : '无' }}</p>
           </div>
-          <div v-if="currentOrder.leaseStart" class="detail-card">
+          <div class="detail-card" v-if="currentOrder.startDate">
             <p class="detail-label">租赁开始</p>
-            <p class="detail-value">{{ currentOrder.leaseStart }}</p>
+            <p class="detail-value">{{ formatDate(currentOrder.startDate) }}</p>
           </div>
-          <div v-if="currentOrder.leaseEnd" class="detail-card">
+          <div class="detail-card" v-if="currentOrder.endDate">
             <p class="detail-label">租赁结束</p>
-            <p class="detail-value">{{ currentOrder.leaseEnd }}</p>
+            <p class="detail-value">{{ formatDate(currentOrder.endDate) }}</p>
           </div>
         </div>
 
@@ -222,217 +219,154 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-
-interface Order {
-  id: number
-  orderNo: string
-  itemId: number
-  itemName: string
-  buyerId: number
-  buyerName: string
-  sellerId: number
-  sellerName: string
-  type: 'lease' | 'sale'
-  amount: number
-  status: string
-  leaseStart?: string
-  leaseEnd?: string
-  remark?: string
-  createdAt: string
-  updatedAt: string
-}
+import { computed, onMounted, ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { orderApi, type Order } from '../api'
 
 const searchKeyword = ref('')
-const searchType = ref('')
-const searchStatus = ref('')
+const searchType = ref<string | number>('')
+const searchStatus = ref<string | number>('')
+const loading = ref(false)
+const orders = ref<Order[]>([])
 const showDetail = ref(false)
 const currentOrder = ref<Order | null>(null)
 
-const orders = ref<Order[]>([
-  {
-    id: 1,
-    orderNo: 'ORD202412010001',
-    itemId: 101,
-    itemName: 'iPhone 15 Pro Max',
-    buyerId: 2,
-    buyerName: '李四同学',
-    sellerId: 1,
-    sellerName: '张三同学',
-    type: 'lease',
-    amount: 150,
-    status: 'in_progress',
-    leaseStart: '2024-12-01',
-    leaseEnd: '2024-12-07',
-    remark: '租期一周，押金 5000 元',
-    createdAt: '2024-12-01 10:30:00',
-    updatedAt: '2024-12-01 10:35:00'
-  },
-  {
-    id: 2,
-    orderNo: 'ORD202412010002',
-    itemId: 102,
-    itemName: '高等数学教材',
-    buyerId: 3,
-    buyerName: '王五同学',
-    sellerId: 1,
-    sellerName: '张三同学',
-    type: 'sale',
-    amount: 25,
-    status: 'completed',
-    remark: '当面交易',
-    createdAt: '2024-12-01 11:20:00',
-    updatedAt: '2024-12-02 15:00:00'
-  },
-  {
-    id: 3,
-    orderNo: 'ORD202412010003',
-    itemId: 103,
-    itemName: '羽毛球拍',
-    buyerId: 1,
-    buyerName: '张三同学',
-    sellerId: 4,
-    sellerName: '赵六同学',
-    type: 'lease',
-    amount: 30,
-    status: 'pending',
-    leaseStart: '2024-12-03',
-    leaseEnd: '2024-12-05',
-    remark: '等待买家付款',
-    createdAt: '2024-12-01 14:45:00',
-    updatedAt: '2024-12-01 14:45:00'
-  },
-  {
-    id: 4,
-    orderNo: 'ORD202412010004',
-    itemId: 104,
-    itemName: '露营帐篷',
-    buyerId: 5,
-    buyerName: '陈七同学',
-    sellerId: 6,
-    sellerName: '刘八同学',
-    type: 'lease',
-    amount: 80,
-    status: 'refunded',
-    remark: '因天气取消行程，已退款',
-    createdAt: '2024-12-02 08:12:00',
-    updatedAt: '2024-12-02 10:18:00'
-  }
-])
-
-const filteredOrders = computed(() => {
-  const keyword = searchKeyword.value.trim().toLowerCase()
-  return orders.value.filter((order) => {
-    const matchesKeyword =
-      keyword.length === 0 ||
-      order.orderNo.toLowerCase().includes(keyword) ||
-      order.itemName.toLowerCase().includes(keyword) ||
-      order.buyerName.toLowerCase().includes(keyword) ||
-      order.sellerName.toLowerCase().includes(keyword)
-
-    const matchesType = searchType.value === '' || order.type === searchType.value
-    const matchesStatus = searchStatus.value === '' || order.status === searchStatus.value
-
-    return matchesKeyword && matchesType && matchesStatus
-  })
-})
-
 const totalAmount = computed(() => {
-  return filteredOrders.value.reduce((sum, order) => sum + order.amount, 0).toFixed(2)
+  return orders.value.reduce((sum, order) => sum + Number(order.totalAmount), 0).toFixed(2)
 })
 
 const orderMetrics = computed(() => {
-  const list = filteredOrders.value
-  const pending = list.filter((order) => order.status === 'pending').length
-  const active = list.filter((order) => order.status === 'in_progress').length
-  const completed = list.filter((order) => order.status === 'completed').length
-
+  const list = orders.value
+  const pending = list.filter((order) => order.status === 1).length
+  const active = list.filter((order) => order.status === 3 || order.status === 4).length
+  const dispute = list.filter((order) => order.status === 7).length
   return [
     {
       label: '订单总数',
       value: `${list.length}`,
       tag: '当前筛选',
       tone: 'cyan',
-      note: '状态、金额和双方信息在一行内完成主扫描。'
+      note: '真实订单数据已接入后台列表。'
     },
     {
       label: '待付款',
       value: `${pending}`,
-      tag: pending > 0 ? '待跟进' : '正常',
+      tag: pending > 0 ? '待跟进' : '稳定',
       tone: pending > 0 ? 'yellow' : 'green',
-      note: '待付款单提供快速取消入口，缩短处理路径。'
+      note: '待付款单支持直接取消或推进支付。'
     },
     {
-      label: '进行中',
+      label: '履约中',
       value: `${active}`,
-      tag: '履约中',
-      tone: 'magenta',
-      note: '进行中订单在弹窗内突出时间区间与备注。'
+      tag: '进行中',
+      tone: active > 0 ? 'magenta' : 'slate',
+      note: '重点关注租赁结束前的提醒与验收。'
     },
     {
-      label: '已完成',
-      value: `${completed}`,
-      tag: '已收口',
-      tone: 'green',
-      note: '完成态降噪展示，避免影响处理中订单识别。'
+      label: '纠纷中',
+      value: `${dispute}`,
+      tag: dispute > 0 ? '需仲裁' : '正常',
+      tone: dispute > 0 ? 'red' : 'green',
+      note: '纠纷单单独高亮，避免被其他单据淹没。'
     }
   ]
 })
 
-const getStatusClass = (status: string) => {
-  const classes: Record<string, string> = {
-    pending: 'yellow',
-    paid: 'cyan',
-    in_progress: 'magenta',
-    completed: 'green',
-    cancelled: 'slate',
-    refunded: 'red'
+const getStatusClass = (status: number) => {
+  const classes: Record<number, string> = {
+    1: 'yellow',
+    2: 'cyan',
+    3: 'magenta',
+    4: 'violet',
+    5: 'green',
+    6: 'slate',
+    7: 'red',
+    8: 'red'
   }
   return classes[status] || 'slate'
 }
 
-const getStatusText = (status: string) => {
-  const texts: Record<string, string> = {
-    pending: '待付款',
-    paid: '已付款',
-    in_progress: '进行中',
-    completed: '已完成',
-    cancelled: '已取消',
-    refunded: '已退款'
+const getActions = (order: Order) => {
+  if (order.status === 1) {
+    return [
+      { label: '设为已支付', status: 2, className: 'button-success', remark: '后台确认支付成功' },
+      { label: '取消', status: 6, className: 'button-danger', remark: '后台取消订单' }
+    ]
   }
-  return texts[status] || status
+  if (order.status === 2) {
+    return [{ label: '开始履约', status: 3, className: 'button-primary', remark: '已完成交付' }]
+  }
+  if (order.status === 3) {
+    return [{ label: '待验收', status: 4, className: 'button-secondary', remark: '等待归还验收' }]
+  }
+  if (order.status === 4) {
+    return [{ label: '完成', status: 5, className: 'button-success', remark: '订单已验收完成' }]
+  }
+  if (order.status === 7) {
+    return [{ label: '转退款中', status: 8, className: 'button-danger', remark: '进入退款流程' }]
+  }
+  return []
 }
 
-const getStatusBannerClass = (status: string) => {
-  const classes: Record<string, string> = {
-    pending: 'yellow',
-    paid: 'cyan',
-    in_progress: 'cyan',
-    completed: 'green',
-    cancelled: 'slate',
-    refunded: 'red'
-  }
-  return classes[status] || 'slate'
+const formatDate = (value?: string) => {
+  if (!value) return '-'
+  return value.replace('T', ' ').slice(0, 16)
 }
 
-const handleSearch = () => {
-  // 当前示例数据采用本地筛选，保留入口以便后续接入 API。
+const loadOrders = async () => {
+  loading.value = true
+  try {
+    const res = await orderApi.getList({
+      page: 1,
+      size: 20,
+      adminView: true,
+      keyword: searchKeyword.value || undefined,
+      type: searchType.value !== '' ? searchType.value : undefined,
+      status: searchStatus.value !== '' ? searchStatus.value : undefined
+    })
+    orders.value = res.records || []
+  } catch (error) {
+    console.error('加载订单失败:', error)
+    ElMessage.error('加载订单失败')
+  } finally {
+    loading.value = false
+  }
 }
 
 const resetFilters = () => {
   searchKeyword.value = ''
   searchType.value = ''
   searchStatus.value = ''
+  loadOrders()
 }
 
-const viewOrder = (order: Order) => {
-  currentOrder.value = order
+const viewOrder = async (order: Order) => {
+  currentOrder.value = await orderApi.getDetail(order.id)
   showDetail.value = true
 }
 
-const cancelOrder = (order: Order) => {
-  if (window.confirm('确定要取消这个订单吗？')) {
-    order.status = 'cancelled'
+const updateStatus = async (order: Order, status: number, remark: string) => {
+  try {
+    await ElMessageBox.confirm(`确定要将订单更新为“${status}”对应流程吗？`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    await orderApi.updateStatus(order.id, status, remark)
+    ElMessage.success('订单状态已更新')
+    if (currentOrder.value?.id === order.id) {
+      currentOrder.value = await orderApi.getDetail(order.id)
+    }
+    loadOrders()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('更新状态失败:', error)
+      ElMessage.error('更新状态失败')
+    }
   }
 }
+
+onMounted(() => {
+  loadOrders()
+})
 </script>

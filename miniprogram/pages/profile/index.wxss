@@ -145,6 +145,10 @@
   margin-top: 8rpx;
 }
 
+.profile-stats + .profile-stats {
+  margin-top: -6rpx;
+}
+
 @media (max-width: 360px) {
   .profile-head,
   .profile-credit {

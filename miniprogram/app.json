@@ -2,12 +2,17 @@
   "pages": [
     "pages/index/index",
     "pages/login/login",
+    "pages/verify/index",
     "pages/item/detail",
     "pages/item/publish",
+    "pages/order/create",
     "pages/order/list",
+    "pages/order/review",
     "pages/order/detail",
     "pages/message/index",
-    "pages/profile/index"
+    "pages/profile/index",
+    "pages/profile/items",
+    "pages/profile/wallet"
   ],
   "window": {
     "backgroundTextStyle": "light",

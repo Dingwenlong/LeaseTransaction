@@ -1,5 +1,5 @@
+const api = require('../../utils/api.js')
 const { showToast, showLoading, hideLoading } = require('../../utils/util.js')
-const { uploadFile } = require('../../utils/request.js')
 
 Page({
   data: {
@@ -15,6 +15,11 @@ Page({
       campus: '',
       description: ''
     }
+  },
+
+  onLoad() {
+    this.loadConfig()
+    this.loadDraft()
   },
 
   onInput(e) {
@@ -64,7 +69,7 @@ Page({
     const newImages = [...this.data.form.images]
 
     filePaths.forEach((filePath) => {
-      uploadFile(filePath)
+      api.item.uploadImage(filePath)
         .then((res) => {
           newImages.push(res.url)
           uploadedCount++
@@ -94,8 +99,37 @@ Page({
     })
   },
 
-  handleSubmit() {
-    const { images, title, type, category, price, campus, description } = this.data.form
+  async loadConfig() {
+    try {
+      const config = await api.config.system()
+      this.setData({
+        categories: config.categories && config.categories.length ? config.categories : this.data.categories,
+        campuses: config.campuses && config.campuses.length ? config.campuses : this.data.campuses
+      })
+    } catch (error) {
+      console.error('加载配置失败:', error)
+    }
+  },
+
+  loadDraft() {
+    const draft = wx.getStorageSync('publishDraft')
+    if (draft) {
+      this.setData({
+        form: {
+          ...this.data.form,
+          ...draft
+        }
+      })
+    }
+  },
+
+  handleSaveDraft() {
+    wx.setStorageSync('publishDraft', this.data.form)
+    showToast('草稿已保存', 'success')
+  },
+
+  async handleSubmit() {
+    const { images, title, type, category, price, deposit, campus, description } = this.data.form
     
     if (images.length === 0) {
       showToast('请至少上传一张图片')
@@ -121,14 +155,34 @@ Page({
       showToast('请输入物品描述')
       return
     }
+    if (type === 'lease' && !deposit) {
+      showToast('请填写押金金额')
+      return
+    }
 
     showLoading('发布中...')
-    setTimeout(() => {
+    try {
+      await api.item.publish({
+        title,
+        description,
+        images: images.join(','),
+        category,
+        type: type === 'lease' ? 1 : 2,
+        price: Number(price),
+        deposit: type === 'lease' ? Number(deposit || 0) : 0,
+        campus
+      })
       hideLoading()
+      wx.removeStorageSync('publishDraft')
       showToast('发布成功', 'success')
       setTimeout(() => {
-        wx.navigateBack()
-      }, 1500)
-    }, 1000)
+        wx.redirectTo({
+          url: '/pages/profile/items'
+        })
+      }, 800)
+    } catch (error) {
+      hideLoading()
+      console.error('发布失败:', error)
+    }
   }
 })

@@ -1,11 +1,11 @@
-<view class="mp-page order-detail-page">
+<view class="mp-page order-detail-page" wx:if="{{order}}">
   <view class="mp-shell">
     <view class="mp-hero order-detail-hero">
-      <view class="order-detail-status-icon">✓</view>
-      <view class="mp-title order-detail-title">{{order.status}}</view>
+      <view class="order-detail-status-icon">{{order.status === 5 ? '✓' : order.status === 7 || order.status === 8 ? '!' : '⌁'}}</view>
+      <view class="mp-title order-detail-title">{{order.statusText}}</view>
       <view class="mp-subtitle order-detail-subtitle">{{order.statusDesc}}</view>
       <view class="mp-tag {{statusTagClass}}">
-        {{order.type}}
+        {{order.typeText}}
       </view>
     </view>
 
@@ -26,6 +26,10 @@
             <text class="order-detail-label">下单时间</text>
             <text class="order-detail-value">{{order.createTime}}</text>
           </view>
+          <view class="order-detail-row">
+            <text class="order-detail-label">交付方式</text>
+            <text class="order-detail-value">{{order.deliveryMethod}}</text>
+          </view>
         </view>
       </view>
     </view>
@@ -43,7 +47,7 @@
           <view class="order-detail-item-copy">
             <view class="order-detail-item-title">{{order.itemTitle}}</view>
             <view class="mp-tag {{order.typeClass === 'lease' ? 'mp-tag-cyan' : 'mp-tag-magenta'}}">
-              {{order.type}}
+              {{order.typeText}}
             </view>
           </view>
         </view>
@@ -63,9 +67,21 @@
             <text class="order-detail-label">{{priceLabel}}</text>
             <text class="order-detail-value">¥{{order.amount}}</text>
           </view>
-          <view class="order-detail-row" wx:if="{{order.deposit}}">
+          <view class="order-detail-row" wx:if="{{order.deposit !== '0.00'}}">
             <text class="order-detail-label">押金</text>
             <text class="order-detail-value">¥{{order.deposit}}</text>
+          </view>
+          <view class="order-detail-row" wx:if="{{order.rentalDays}}">
+            <text class="order-detail-label">租赁天数</text>
+            <text class="order-detail-value">{{order.rentalDays}} 天</text>
+          </view>
+          <view class="order-detail-row" wx:if="{{order.startDate !== '-'}}">
+            <text class="order-detail-label">开始时间</text>
+            <text class="order-detail-value">{{order.startDate}}</text>
+          </view>
+          <view class="order-detail-row" wx:if="{{order.endDate !== '-'}}">
+            <text class="order-detail-label">结束时间</text>
+            <text class="order-detail-value">{{order.endDate}}</text>
           </view>
           <view class="order-detail-total">
             <text class="order-detail-label">实付金额</text>
@@ -74,12 +90,50 @@
         </view>
       </view>
     </view>
+
+    <view class="mp-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">备注与申诉</view>
+            <view class="mp-section-desc">履约备注、归还验收说明和申诉原因统一收在这里。</view>
+          </view>
+        </view>
+        <view class="order-detail-remark">{{order.remark}}</view>
+      </view>
+    </view>
+
+    <view class="mp-panel" wx:if="{{reviews.length > 0}}">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">订单评价</view>
+            <view class="mp-section-desc">完成后的双方评价会展示在订单详情中。</view>
+          </view>
+        </view>
+        <view class="order-review-list">
+          <view wx:for="{{reviews}}" wx:key="id" class="order-review-item">
+            <view class="order-review-head">
+              <text class="order-review-name">{{item.reviewerName}}</text>
+              <text class="order-review-rating">{{item.rating}} 星</text>
+            </view>
+            <view class="order-review-content">{{item.content}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
   </view>
 
-  <view class="mp-fixed-spacer" wx:if="{{showActionBar}}"></view>
-  <view class="mp-fixed-bar" wx:if="{{showActionBar}}">
-    <view class="mp-secondary-btn" wx:if="{{canPay}}" bindtap="handleCancel">取消订单</view>
-    <view class="mp-primary-btn" wx:if="{{canPay}}" bindtap="handlePay">立即付款</view>
-    <view class="mp-primary-btn" wx:if="{{canContact}}" bindtap="handleContact">联系卖家</view>
+  <view class="mp-fixed-spacer" wx:if="{{actions.length > 0}}"></view>
+  <view class="mp-fixed-bar" wx:if="{{actions.length > 0}}">
+    <view
+      wx:for="{{actions}}"
+      wx:key="key"
+      class="{{item.primary ? 'mp-primary-btn' : 'mp-secondary-btn'}}"
+      bindtap="handleAction"
+      data-action="{{item.key}}"
+    >
+      {{item.label}}
+    </view>
   </view>
 </view>

@@ -1,53 +1,123 @@
+const api = require('../../utils/api.js')
+const { showLoading, hideLoading, showToast } = require('../../utils/util.js')
+
 Page({
   data: {
     activeTab: 0,
     tabs: [
-      { name: '全部', count: 0 },
-      { name: '订单', count: 2 },
-      { name: '系统', count: 1 }
+      { name: '全部', key: 'all', count: 0 },
+      { name: '未读', key: 'unread', count: 0 },
+      { name: '系统', key: 'system', count: 0 }
     ],
-    messages: [
-      {
-        id: 1,
-        icon: '📦',
-        title: '订单已创建',
-        desc: '您的iPhone 15 Pro Max租赁订单已创建，请及时付款',
-        time: '10:30',
-        read: false
-      },
-      {
-        id: 2,
-        icon: '💬',
-        title: '新消息提醒',
-        desc: '张三给您发送了一条消息',
-        time: '09:15',
-        read: false
-      },
-      {
-        id: 3,
-        icon: '🔔',
-        title: '系统通知',
-        desc: '欢迎使用校园租赁交易平台',
-        time: '昨天',
-        read: true
-      }
-    ]
+    messages: [],
+    displayMessages: []
   },
 
-  onLoad() {
-    const token = wx.getStorageSync('token')
-    if (!token) {
-      wx.navigateTo({
-        url: '/pages/login/login'
-      })
+  onShow() {
+    if (!this.ensureLogin()) {
+      return
     }
+    this.loadMessages()
+  },
+
+  onPullDownRefresh() {
+    this.loadMessages().finally(() => {
+      wx.stopPullDownRefresh()
+    })
   },
 
   onTabTap(e) {
-    this.setData({ activeTab: e.currentTarget.dataset.index })
+    this.setData({ activeTab: e.currentTarget.dataset.index }, () => {
+      this.applyFilter()
+    })
   },
 
-  onMessageTap(e) {
-    console.log('消息ID:', e.currentTarget.dataset.id)
+  async onMessageTap(e) {
+    const message = this.data.displayMessages.find((item) => item.id === e.currentTarget.dataset.id)
+    if (!message) {
+      return
+    }
+
+    const userInfo = wx.getStorageSync('userInfo') || {}
+    if (!message.read && message.receiverId === userInfo.id) {
+      try {
+        await api.message.read(message.id)
+        const messages = this.data.messages.map((item) => item.id === message.id ? { ...item, read: true } : item)
+        this.setData({ messages })
+        this.syncTabs(messages)
+        this.applyFilter()
+      } catch (error) {
+        console.error('标记已读失败:', error)
+      }
+    }
+
+    wx.showModal({
+      title: message.title,
+      content: message.content || message.desc,
+      showCancel: false
+    })
+  },
+
+  async loadMessages() {
+    showLoading()
+    try {
+      const res = await api.message.list({
+        page: 1,
+        size: 50
+      })
+      const messages = (res.records || []).map((item) => ({
+        ...item,
+        time: this.formatDate(item.time)
+      }))
+      this.setData({ messages })
+      this.syncTabs(messages)
+      this.applyFilter()
+    } catch (error) {
+      console.error('加载消息失败:', error)
+      showToast('消息加载失败')
+    } finally {
+      hideLoading()
+    }
+  },
+
+  applyFilter() {
+    const key = this.data.tabs[this.data.activeTab].key
+    const displayMessages = this.data.messages.filter((item) => {
+      if (key === 'all') {
+        return true
+      }
+      if (key === 'unread') {
+        return !item.read
+      }
+      if (key === 'system') {
+        return item.type === 3
+      }
+      return true
+    })
+    this.setData({ displayMessages })
+  },
+
+  syncTabs(messages) {
+    const tabs = this.data.tabs.map((tab) => ({ ...tab }))
+    tabs[0].count = messages.length
+    tabs[1].count = messages.filter((item) => !item.read).length
+    tabs[2].count = messages.filter((item) => item.type === 3).length
+    this.setData({ tabs })
+  },
+
+  ensureLogin() {
+    const token = wx.getStorageSync('token')
+    if (token) {
+      return true
+    }
+    wx.navigateTo({
+      url: '/pages/login/login'
+    })
+    return false
+  },
+
+  formatDate(value) {
+    if (!value) return ''
+    return value.replace('T', ' ').slice(5, 16)
   }
 })

@@ -25,8 +25,6 @@ public class Item {
 
     private String category;
 
-    private String condition;
-
     private String campus;
 
     private Integer status;
@@ -114,14 +112,6 @@ public class Item {
 
     public void setCategory(String category) {
         this.category = category;
-    }
-
-    public String getCondition() {
-        return condition;
-    }
-
-    public void setCondition(String condition) {
-        this.condition = condition;
     }
 
     public String getCampus() {

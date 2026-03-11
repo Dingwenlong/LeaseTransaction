@@ -1,0 +1,63 @@
+.review-page {
+  padding-bottom: 0;
+}
+
+.review-order-remark,
+.review-existing-content {
+  margin-top: 24rpx;
+  color: #cbd5e1;
+  font-size: 26rpx;
+  line-height: 1.8;
+}
+
+.review-existing-rating {
+  color: #fde047;
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.review-rating-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.review-rating-chip {
+  min-width: 140rpx;
+  padding: 18rpx 24rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.72);
+  color: #cbd5e1;
+  font-size: 24rpx;
+  text-align: center;
+}
+
+.review-rating-chip.active {
+  border-color: rgba(34, 211, 238, 0.34);
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(236, 72, 153, 0.14));
+  color: #ffffff;
+}
+
+.review-textarea {
+  width: 100%;
+  min-height: 260rpx;
+  margin-top: 24rpx;
+  padding: 24rpx;
+  border-radius: 24rpx;
+  border: 1rpx solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.76);
+  color: #ffffff;
+  font-size: 28rpx;
+  line-height: 1.7;
+}
+
+.review-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  margin-top: 20rpx;
+  color: #cbd5e1;
+  font-size: 24rpx;
+}

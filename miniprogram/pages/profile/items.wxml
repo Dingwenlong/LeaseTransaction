@@ -1,0 +1,57 @@
+<view class="mp-page">
+  <view class="mp-shell">
+    <view class="mp-hero">
+      <view class="mp-eyebrow">My Items</view>
+      <view class="mp-title">我的发布</view>
+      <view class="mp-subtitle">查看待审、上架、下架和履约中的物品状态。</view>
+    </view>
+
+    <view class="mp-section-head">
+      <view>
+        <view class="mp-section-title">发布列表</view>
+        <view class="mp-section-desc">支持在这里继续查看详情，或对已上架物品做上下架操作。</view>
+      </view>
+      <view class="mp-meta-pill">共 {{total}} 件</view>
+    </view>
+
+    <view class="order-list">
+      <view wx:for="{{items}}" wx:key="id" class="mp-panel order-card">
+        <view class="mp-panel-body order-card-body">
+          <view class="order-card-main" bindtap="handleItemTap" data-id="{{item.id}}">
+            <image class="order-card-image" src="{{item.image}}" mode="aspectFill" />
+            <view class="order-card-info">
+              <view class="order-card-title">{{item.title}}</view>
+              <view class="mp-meta-row">
+                <view class="mp-tag {{item.typeClass === 'lease' ? 'mp-tag-cyan' : 'mp-tag-magenta'}}">{{item.typeText}}</view>
+                <view class="mp-meta-pill">{{item.campus}}</view>
+              </view>
+              <view class="profile-item-hint">{{item.reviewHint}}</view>
+            </view>
+          </view>
+
+          <view class="order-card-foot">
+            <view>
+              <view class="order-card-time">{{item.statusText}}</view>
+              <view class="order-card-amount">¥{{item.price}}</view>
+            </view>
+            <view
+              wx:if="{{item.nextAction}}"
+              class="mp-secondary-btn profile-inline-btn"
+              bindtap="handleToggleStatus"
+              data-id="{{item.id}}"
+              data-status="{{item.nextAction.status}}"
+            >
+              {{item.nextAction.label}}
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="mp-empty" wx:if="{{items.length === 0}}">
+        <text class="mp-empty-icon">📦</text>
+        <text class="mp-empty-title">还没有发布记录</text>
+        <text class="mp-empty-text">发布并通过审核后，会在这里展示。</text>
+      </view>
+    </view>
+  </view>
+</view>

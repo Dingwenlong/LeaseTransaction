@@ -1,0 +1,99 @@
+<view class="mp-page create-order-page">
+  <view class="mp-shell">
+    <view class="mp-hero">
+      <view class="mp-eyebrow">Create Order</view>
+      <view class="mp-title">{{item.title || '创建订单'}}</view>
+      <view class="mp-subtitle">租赁支持选择开始日期和租期，出售支持直接提交交易订单。</view>
+    </view>
+
+    <view class="mp-panel" wx:if="{{item.id}}">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">物品信息</view>
+            <view class="mp-section-desc">下单前请确认价格、押金和交接校区。</view>
+          </view>
+        </view>
+
+        <view class="create-order-item">
+          <image class="create-order-image" src="{{item.coverImage}}" mode="aspectFill" />
+          <view class="create-order-copy">
+            <view class="create-order-title">{{item.title}}</view>
+            <view class="mp-meta-row">
+              <view class="mp-tag {{item.type === 1 ? 'mp-tag-cyan' : 'mp-tag-magenta'}}">{{item.typeText}}</view>
+              <view class="mp-meta-pill">📍 {{item.campus || '校内面交'}}</view>
+            </view>
+            <view class="create-order-price">¥{{item.price}}{{item.type === 1 ? '/天' : ''}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="mp-panel" wx:if="{{item.id}}">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">订单设置</view>
+            <view class="mp-section-desc">根据租赁或出售模式填写必要信息。</view>
+          </view>
+        </view>
+
+        <view class="create-order-form">
+          <view class="create-order-field" wx:if="{{item.type === 1}}">
+            <view class="create-order-label">租赁开始日期</view>
+            <picker mode="date" value="{{form.startDate}}" bindchange="onDateChange">
+              <view class="create-order-input">{{form.startDate}}</view>
+            </picker>
+          </view>
+
+          <view class="create-order-field" wx:if="{{item.type === 1}}">
+            <view class="create-order-label">租赁天数</view>
+            <input class="create-order-input" type="number" value="{{form.rentalDays}}" bindinput="onInput" data-field="rentalDays" />
+          </view>
+
+          <view class="create-order-field">
+            <view class="create-order-label">交付方式</view>
+            <input class="create-order-input" value="{{form.deliveryMethod}}" bindinput="onInput" data-field="deliveryMethod" />
+          </view>
+
+          <view class="create-order-field">
+            <view class="create-order-label">备注</view>
+            <textarea class="create-order-textarea" value="{{form.remark}}" bindinput="onInput" data-field="remark" placeholder="补充约定时间、地点或特殊说明"></textarea>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="mp-panel" wx:if="{{item.id}}">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">费用预览</view>
+            <view class="mp-section-desc">租赁费用自动按天计算，总额包含押金。</view>
+          </view>
+        </view>
+
+        <view class="order-detail-list">
+          <view class="order-detail-row">
+            <text class="order-detail-label">{{item.type === 1 ? '租金' : '商品价格'}}</text>
+            <text class="order-detail-value">¥{{rentalAmount}}</text>
+          </view>
+          <view class="order-detail-row" wx:if="{{item.deposit}}">
+            <text class="order-detail-label">押金</text>
+            <text class="order-detail-value">¥{{item.deposit}}</text>
+          </view>
+          <view class="order-detail-total">
+            <text class="order-detail-label">预计支付</text>
+            <text class="order-detail-total-value">¥{{totalAmount}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="mp-fixed-spacer"></view>
+  <view class="mp-fixed-bar" wx:if="{{item.id}}">
+    <view class="mp-secondary-btn" bindtap="handleBack">返回详情</view>
+    <view class="mp-primary-btn" bindtap="handleSubmit">提交订单</view>
+  </view>
+</view>

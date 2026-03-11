@@ -3,11 +3,14 @@ package com.campus.lease.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campus.lease.common.result.Result;
 import com.campus.lease.dto.CreateOrderRequest;
-import com.campus.lease.entity.Order;
+import com.campus.lease.dto.OrderStatusUpdateRequest;
 import com.campus.lease.service.OrderService;
+import com.campus.lease.support.AuthContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -16,38 +19,40 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
+    private final AuthContext authContext;
 
     @PostMapping("/create")
-    public Result<Order> createOrder(@RequestBody CreateOrderRequest request) {
+    public Result<Map<String, Object>> createOrder(@RequestBody CreateOrderRequest request) {
         log.info("订单创建请求，itemId: {}", request.getItemId());
-        Long userId = 1L;
-        Order order = orderService.createOrder(userId, request);
-        return Result.success(order);
+        Long userId = authContext.getCurrentUserIdOrDefault(2L);
+        return Result.success(orderService.createOrder(userId, request));
     }
 
     @GetMapping("/list")
-    public Result<Page<Order>> getOrderList(
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize,
-            @RequestParam(required = false) Integer status
+    public Result<Page<Map<String, Object>>> getOrderList(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) Integer type,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "false") Boolean adminView
     ) {
-        Long userId = 1L;
-        Page<Order> page = orderService.getOrderList(userId, pageNum, pageSize, status);
-        return Result.success(page);
+        Long userId = authContext.getCurrentUserIdOrDefault(2L);
+        return Result.success(orderService.getOrderList(userId, page, size, status, type, keyword, adminView));
     }
 
     @GetMapping("/detail/{id}")
-    public Result<Order> getOrderDetail(@PathVariable Long id) {
-        Order order = orderService.getOrderDetail(id);
-        return Result.success(order);
+    public Result<Map<String, Object>> getOrderDetail(@PathVariable Long id) {
+        return Result.success(orderService.getOrderDetail(id));
     }
 
     @PostMapping("/status/{id}")
     public Result<Void> updateOrderStatus(
             @PathVariable Long id,
-            @RequestParam Integer status
+            @RequestBody OrderStatusUpdateRequest request
     ) {
-        orderService.updateOrderStatus(id, status);
+        Long userId = authContext.getCurrentUserIdOrDefault(2L);
+        orderService.updateOrderStatus(userId, id, request);
         return Result.success();
     }
 }

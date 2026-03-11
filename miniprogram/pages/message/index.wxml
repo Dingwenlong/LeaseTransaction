@@ -20,7 +20,7 @@
 
     <view class="message-list">
       <view
-        wx:for="{{messages}}"
+        wx:for="{{displayMessages}}"
         wx:key="id"
         class="mp-panel message-card"
         bindtap="onMessageTap"
@@ -39,7 +39,7 @@
         </view>
       </view>
 
-      <view class="mp-empty" wx:if="{{messages.length === 0}}">
+      <view class="mp-empty" wx:if="{{displayMessages.length === 0}}">
         <text class="mp-empty-icon">📭</text>
         <text class="mp-empty-title">暂无消息</text>
         <text class="mp-empty-text">新的订单和系统提醒会在这里显示。</text>

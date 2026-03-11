@@ -2,6 +2,19 @@
   flex: 1 1 0;
 }
 
+.message-tab-badge {
+  min-width: 32rpx;
+  height: 32rpx;
+  padding: 0 8rpx;
+  border-radius: 999rpx;
+  background: rgba(244, 63, 94, 0.9);
+  color: #ffffff;
+  font-size: 20rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .order-list {
   display: flex;
   flex-direction: column;

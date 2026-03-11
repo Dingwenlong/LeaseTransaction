@@ -1,0 +1,53 @@
+<view class="mp-page">
+  <view class="mp-shell">
+    <view class="mp-hero">
+      <view class="mp-eyebrow">Wallet</view>
+      <view class="mp-title">钱包流水</view>
+      <view class="mp-subtitle">查看累计支付、押金冻结、退款处理中和已退款金额。</view>
+    </view>
+
+    <view class="profile-stats">
+      <view class="mp-panel profile-stat-card">
+        <view class="profile-stat-value">¥{{summary.paidAmount}}</view>
+        <view class="profile-stat-label">累计支付</view>
+      </view>
+      <view class="mp-panel profile-stat-card">
+        <view class="profile-stat-value">¥{{summary.depositFrozen}}</view>
+        <view class="profile-stat-label">押金冻结</view>
+      </view>
+      <view class="mp-panel profile-stat-card">
+        <view class="profile-stat-value">¥{{summary.refundingAmount}}</view>
+        <view class="profile-stat-label">退款处理中</view>
+      </view>
+    </view>
+
+    <view class="mp-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">最近流水</view>
+            <view class="mp-section-desc">支付、押金冻结和退款会统一记录在这里。</view>
+          </view>
+        </view>
+        <view class="wallet-record-list">
+          <view wx:for="{{records}}" wx:key="id" class="wallet-record-item">
+            <view>
+              <view class="wallet-record-title">{{item.typeText}}</view>
+              <view class="wallet-record-meta">订单 {{item.orderId}} · {{item.createdAt}}</view>
+            </view>
+            <view class="wallet-record-side">
+              <view class="wallet-record-amount">¥{{item.amount}}</view>
+              <view class="wallet-record-status">{{item.statusText}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="mp-empty" wx:if="{{records.length === 0}}">
+      <text class="mp-empty-icon">💳</text>
+      <text class="mp-empty-title">暂无流水</text>
+      <text class="mp-empty-text">完成支付或退款后会在这里显示。</text>
+    </view>
+  </view>
+</view>

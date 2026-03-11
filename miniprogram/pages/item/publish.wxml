@@ -131,7 +131,7 @@
 
   <view class="mp-fixed-spacer"></view>
   <view class="mp-fixed-bar">
-    <view class="mp-secondary-btn">暂存草稿</view>
+    <view class="mp-secondary-btn" bindtap="handleSaveDraft">暂存草稿</view>
     <view class="mp-primary-btn" bindtap="handleSubmit">发布物品</view>
   </view>
 </view>

@@ -108,6 +108,22 @@ const menuItems: MenuItem[] = [
     icon: '📋',
     hint: '流程、金额与异常',
     description: '聚焦订单状态、交易金额和详情弹窗，提升处理效率。'
+  },
+  {
+    path: '/stats',
+    name: '数据统计',
+    short: '统计',
+    icon: '📈',
+    hint: '趋势、分布与财务',
+    description: '查看用户活跃、类目热度、订单结构和财务概览，支持运营决策。'
+  },
+  {
+    path: '/config',
+    name: '系统配置',
+    short: '配置',
+    icon: '🛠',
+    hint: '公告、分类与风控',
+    description: '统一管理首页内容、分类字典、校区信息和风控规则。'
   }
 ]
 

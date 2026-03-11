@@ -1,0 +1,79 @@
+<view class="mp-page review-page" wx:if="{{order}}">
+  <view class="mp-shell">
+    <view class="mp-hero">
+      <view class="mp-eyebrow">{{mode === 'review' ? 'Review' : 'Dispute'}}</view>
+      <view class="mp-title">{{mode === 'review' ? '提交订单评价' : '发起订单申诉'}}</view>
+      <view class="mp-subtitle">{{order.itemTitle}} · {{order.orderNo}}</view>
+    </view>
+
+    <view class="mp-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">订单信息</view>
+            <view class="mp-section-desc">当前状态：{{order.statusText}}</view>
+          </view>
+        </view>
+        <view class="review-order-remark">{{order.remark || '暂无备注'}}</view>
+      </view>
+    </view>
+
+    <view class="mp-panel" wx:if="{{mode === 'review' && existingReview}}">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">已提交评价</view>
+            <view class="mp-section-desc">当前订单已存在你的评价记录。</view>
+          </view>
+        </view>
+        <view class="review-existing">
+          <view class="review-existing-rating">{{existingReview.rating}} 星</view>
+          <view class="review-existing-content">{{existingReview.content}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="mp-panel" wx:else>
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">{{mode === 'review' ? '评价内容' : '申诉说明'}}</view>
+            <view class="mp-section-desc">{{mode === 'review' ? '评分与评价会作为信用体系的一部分保留。' : '请尽量完整描述问题、时间和争议点。'}}</view>
+          </view>
+        </view>
+
+        <view wx:if="{{mode === 'review'}}" class="review-rating-row">
+          <view
+            wx:for="{{ratings}}"
+            wx:key="item"
+            class="review-rating-chip {{form.rating === item ? 'active' : ''}}"
+            bindtap="onRatingTap"
+            data-rating="{{item}}"
+          >
+            {{item}} 星
+          </view>
+        </view>
+
+        <textarea
+          class="review-textarea"
+          maxlength="300"
+          placeholder="{{mode === 'review' ? '说说物品成色、交接体验和履约情况' : '描述申诉原因，例如归还损坏、金额争议、未按约交付等'}}"
+          value="{{form.content}}"
+          bindinput="onInput"
+        />
+
+        <checkbox-group wx:if="{{mode === 'review'}}" bindchange="onAnonymousChange">
+          <label class="review-checkbox">
+            <checkbox value="anonymous" checked="{{form.anonymous}}" color="#22d3ee" />
+            <text>匿名评价</text>
+          </label>
+        </checkbox-group>
+      </view>
+    </view>
+  </view>
+
+  <view class="mp-fixed-spacer" wx:if="{{!(mode === 'review' && existingReview)}}"></view>
+  <view class="mp-fixed-bar" wx:if="{{!(mode === 'review' && existingReview)}}">
+    <view class="mp-primary-btn" bindtap="handleSubmit">{{mode === 'review' ? '提交评价' : '提交申诉'}}</view>
+  </view>
+</view>

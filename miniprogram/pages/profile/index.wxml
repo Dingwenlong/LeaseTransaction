@@ -13,54 +13,75 @@
         </view>
       </view>
 
+      <view class="mp-meta-row">
+        <view class="mp-tag {{userInfo.isVerified === 1 ? 'mp-tag-green' : 'mp-tag-yellow'}}">{{userInfo.isVerified === 1 ? '校园已认证' : '待校园认证'}}</view>
+        <view class="mp-meta-pill">{{userInfo.campus || '未填写校区'}}</view>
+        <view class="mp-meta-pill">{{userInfo.department || '未填写院系'}}</view>
+      </view>
+
       <view class="profile-credit">
         <view>
           <view class="profile-credit-label">信用分</view>
           <view class="profile-credit-value">{{userInfo.creditScore}}</view>
         </view>
-        <view class="mp-tag mp-tag-green" wx:if="{{userInfo.creditScore >= 80}}">信用优秀</view>
-        <view class="mp-tag mp-tag-yellow" wx:elif="{{userInfo.creditScore >= 60}}">信用良好</view>
+        <view class="mp-tag mp-tag-green" wx:if="{{userInfo.creditScore >= 100}}">信用优秀</view>
+        <view class="mp-tag mp-tag-yellow" wx:elif="{{userInfo.creditScore >= 80}}">信用良好</view>
         <view class="mp-tag mp-tag-slate" wx:else>继续提升</view>
       </view>
     </view>
 
     <view class="profile-stats">
-      <view class="mp-panel profile-stat-card" bindtap="goToOrders" data-type="renting">
+      <view class="mp-panel profile-stat-card" bindtap="goToOrders">
         <view class="profile-stat-value">{{stats.renting}}</view>
-        <view class="profile-stat-label">租赁中</view>
+        <view class="profile-stat-label">进行中</view>
       </view>
-      <view class="mp-panel profile-stat-card" bindtap="goToOrders" data-type="selling">
-        <view class="profile-stat-value">{{stats.selling}}</view>
+      <view class="mp-panel profile-stat-card" bindtap="goToMyItems">
+        <view class="profile-stat-value">{{stats.publishing}}</view>
         <view class="profile-stat-label">发布中</view>
       </view>
-      <view class="mp-panel profile-stat-card" bindtap="goToOrders" data-type="completed">
+      <view class="mp-panel profile-stat-card" bindtap="goToOrders">
         <view class="profile-stat-value">{{stats.completed}}</view>
         <view class="profile-stat-label">已完成</view>
       </view>
     </view>
 
+    <view class="profile-stats">
+      <view class="mp-panel profile-stat-card" bindtap="goToWallet">
+        <view class="profile-stat-value">¥{{wallet.paidAmount}}</view>
+        <view class="profile-stat-label">累计支付</view>
+      </view>
+      <view class="mp-panel profile-stat-card" bindtap="goToWallet">
+        <view class="profile-stat-value">¥{{wallet.depositFrozen}}</view>
+        <view class="profile-stat-label">押金冻结</view>
+      </view>
+      <view class="mp-panel profile-stat-card" bindtap="goToWallet">
+        <view class="profile-stat-value">¥{{wallet.refundedAmount}}</view>
+        <view class="profile-stat-label">已退款</view>
+      </view>
+    </view>
+
     <view class="mp-panel">
       <view class="mp-panel-body">
         <view class="mp-section-head">
           <view>
-            <view class="mp-section-title">我的服务</view>
-            <view class="mp-section-desc">与交易直接相关的入口优先放在第一组。</view>
+            <view class="mp-section-title">交易服务</view>
+            <view class="mp-section-desc">先放与交易直接相关的入口，减少跳转成本。</view>
           </view>
         </view>
         <view class="profile-menu">
+          <view class="profile-menu-item" bindtap="goToVerify">
+            <view class="profile-menu-icon">🎓</view>
+            <view class="profile-menu-text">校园认证</view>
+            <view class="profile-menu-arrow">›</view>
+          </view>
           <view class="profile-menu-item" bindtap="goToMyItems">
             <view class="profile-menu-icon">📦</view>
             <view class="profile-menu-text">我的发布</view>
             <view class="profile-menu-arrow">›</view>
           </view>
-          <view class="profile-menu-item" bindtap="goToFavorites">
-            <view class="profile-menu-icon">❤️</view>
-            <view class="profile-menu-text">我的收藏</view>
-            <view class="profile-menu-arrow">›</view>
-          </view>
           <view class="profile-menu-item" bindtap="goToWallet">
             <view class="profile-menu-icon">💰</view>
-            <view class="profile-menu-text">我的钱包</view>
+            <view class="profile-menu-text">钱包流水</view>
             <view class="profile-menu-arrow">›</view>
           </view>
         </view>
@@ -71,14 +92,14 @@
       <view class="mp-panel-body">
         <view class="mp-section-head">
           <view>
-            <view class="mp-section-title">通用设置</view>
-            <view class="mp-section-desc">把非交易入口集中到第二组，减少误触。</view>
+            <view class="mp-section-title">帮助与支持</view>
+            <view class="mp-section-desc">保留消息、帮助和人工介入入口。</view>
           </view>
         </view>
         <view class="profile-menu">
-          <view class="profile-menu-item" bindtap="goToSettings">
-            <view class="profile-menu-icon">⚙️</view>
-            <view class="profile-menu-text">设置</view>
+          <view class="profile-menu-item" bindtap="goToMessages">
+            <view class="profile-menu-icon">💬</view>
+            <view class="profile-menu-text">消息中心</view>
             <view class="profile-menu-arrow">›</view>
           </view>
           <view class="profile-menu-item" bindtap="goToHelp">
@@ -86,9 +107,14 @@
             <view class="profile-menu-text">帮助中心</view>
             <view class="profile-menu-arrow">›</view>
           </view>
+          <view class="profile-menu-item" bindtap="goToService">
+            <view class="profile-menu-icon">🛟</view>
+            <view class="profile-menu-text">联系客服</view>
+            <view class="profile-menu-arrow">›</view>
+          </view>
           <view class="profile-menu-item" bindtap="goToAbout">
             <view class="profile-menu-icon">ℹ️</view>
-            <view class="profile-menu-text">关于我们</view>
+            <view class="profile-menu-text">关于平台</view>
             <view class="profile-menu-arrow">›</view>
           </view>
         </view>

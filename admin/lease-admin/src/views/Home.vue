@@ -1,20 +1,20 @@
 <template>
   <section class="page-header">
     <div class="page-header-main">
-      <p class="page-eyebrow">Overview</p>
-      <h1 class="page-title">让后台和客户端看起来像同一个产品。</h1>
+      <p class="page-eyebrow">Console Home</p>
+      <h1 class="page-title">校园租赁与交易统一后台。</h1>
       <p class="page-description">
-        以统一色板、卡片框架和信息密度重建主界面节奏。后台负责高效扫描，小程序负责轻量浏览，但两者的视觉语言保持一致。
+        首页直接呈现活跃用户、物品审核、订单履约和财务概况，并把校区、类目和状态分布收束到同一视图。
       </p>
     </div>
     <div class="page-actions">
-      <router-link to="/items" class="button button-primary">
-        <span>查看物品管理</span>
-        <span>→</span>
-      </router-link>
-      <router-link to="/orders" class="button button-secondary">
-        <span>处理订单流程</span>
+      <router-link to="/stats" class="button button-primary">
+        <span>查看统计大盘</span>
         <span>↗</span>
+      </router-link>
+      <router-link to="/config" class="button button-secondary">
+        <span>维护系统配置</span>
+        <span>⚙</span>
       </router-link>
     </div>
   </section>
@@ -22,41 +22,39 @@
   <section class="hero-panel">
     <div class="hero-grid">
       <div class="hero-copy">
-        <p class="page-eyebrow">Design Sync</p>
-        <h2 class="hero-title">Y2K 霓虹质感被保留，但排版先回到秩序。</h2>
-        <p class="hero-note">
-          页面头部、工具栏、表格和详情弹窗都采用同一套结构规则：先看状态，再看对象，再看动作。这样既能保住项目的未来感，也能让管理动作更快落点。
-        </p>
+        <p class="page-eyebrow">Y2K Control Deck</p>
+        <h2 class="hero-title">{{ dashboard.hero.title }}</h2>
+        <p class="hero-note">{{ dashboard.hero.subtitle }}</p>
         <div class="badge-group">
-          <span class="status-pill cyan">统一色板</span>
-          <span class="status-pill magenta">双端卡片</span>
-          <span class="status-pill green">安全区适配</span>
+          <span class="status-pill cyan">租赁与交易双模式</span>
+          <span class="status-pill magenta">订单与消息联动</span>
+          <span class="status-pill green">信用与押金闭环</span>
         </div>
       </div>
 
       <div class="hero-stack">
         <div class="info-card">
-          <p class="info-card-label">当前视觉状态</p>
-          <p class="info-card-value">主路径已统一</p>
-          <p class="info-card-text">后台仪表盘、表格视图和小程序主页面共享同一套圆角、边框、按钮和标签风格。</p>
+          <p class="info-card-label">最新同步时间</p>
+          <p class="info-card-value">{{ formatDateTime(dashboard.hero.updatedAt) }}</p>
+          <p class="info-card-text">数据概览、物品审核和订单状态按同一时间基准刷新。</p>
         </div>
         <div class="info-card">
-          <p class="info-card-label">最后刷新时间</p>
-          <p class="info-card-value">{{ currentTime }}</p>
-          <p class="info-card-text">用于确认数据概览区和运营视图在同一时间基线上更新。</p>
+          <p class="info-card-label">运营提示</p>
+          <p class="info-card-value">{{ primaryWatch.title }}</p>
+          <p class="info-card-text">{{ primaryWatch.text }}</p>
         </div>
       </div>
     </div>
   </section>
 
   <section class="metric-grid">
-    <article v-for="stat in stats" :key="stat.label" class="metric-card">
-      <p class="metric-label">{{ stat.label }}</p>
+    <article v-for="metric in dashboard.metrics" :key="metric.label" class="metric-card">
+      <p class="metric-label">{{ metric.label }}</p>
       <div class="metric-value-row">
-        <h3 class="metric-value">{{ stat.value }}</h3>
-        <span class="status-pill" :class="stat.tone">{{ stat.delta }}</span>
+        <h3 class="metric-value">{{ metric.value }}</h3>
+        <span class="status-pill" :class="metric.tone">{{ metric.delta }}</span>
       </div>
-      <p class="metric-foot">{{ stat.note }}</p>
+      <p class="metric-foot">后台直接锚定关键数字，减少进入二级页面前的信息损耗。</p>
     </article>
   </section>
 
@@ -64,18 +62,20 @@
     <article class="panel">
       <div class="panel-header">
         <div>
-          <h2 class="panel-title">本轮页面优化重点</h2>
-          <p class="panel-subtitle">先把常用页面的扫描效率拉齐，再细化二级流程。</p>
+          <h2 class="panel-title">校区活跃分布</h2>
+          <p class="panel-subtitle">用于校区附近推荐、物品投放和线下交接策略判断。</p>
         </div>
       </div>
       <div class="panel-body">
-        <div class="list-stack">
-          <div v-for="focus in focusList" :key="focus.title" class="list-item">
-            <div>
-              <p class="list-item-title">{{ focus.title }}</p>
-              <p class="list-item-text">{{ focus.description }}</p>
+        <div class="bar-list">
+          <div v-for="item in dashboard.campusDistribution" :key="item.name" class="bar-item">
+            <div class="bar-head">
+              <strong>{{ item.name }}</strong>
+              <span>{{ item.value }}</span>
             </div>
-            <span class="status-pill" :class="focus.tone">{{ focus.tag }}</span>
+            <div class="bar-track">
+              <div class="bar-fill cyan" :style="{ width: `${ratio(item.value, maxCampus)}%` }"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -84,18 +84,19 @@
     <article class="panel">
       <div class="panel-header">
         <div>
-          <h2 class="panel-title">同步记录</h2>
-          <p class="panel-subtitle">后台与小程序统一时最容易失真的位置。</p>
+          <h2 class="panel-title">热门类目</h2>
+          <p class="panel-subtitle">审核优先级、首页陈列和活动专题优先围绕高热度类目展开。</p>
         </div>
       </div>
       <div class="panel-body">
-        <div class="timeline">
-          <div v-for="item in timeline" :key="item.title" class="timeline-item">
-            <div class="timeline-marker">{{ item.icon }}</div>
-            <div>
-              <p class="timeline-title">{{ item.title }}</p>
-              <p class="timeline-meta">{{ item.meta }}</p>
-              <p class="timeline-text">{{ item.text }}</p>
+        <div class="bar-list">
+          <div v-for="item in dashboard.categoryRanking" :key="item.name" class="bar-item">
+            <div class="bar-head">
+              <strong>{{ item.name }}</strong>
+              <span>{{ item.value }}</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill magenta" :style="{ width: `${ratio(item.value, maxCategory)}%` }"></div>
             </div>
           </div>
         </div>
@@ -107,16 +108,16 @@
     <article class="panel">
       <div class="panel-header">
         <div>
-          <h2 class="panel-title">运营观察点</h2>
-          <p class="panel-subtitle">首页只保留最关键的监控内容，不堆积无效装饰。</p>
+          <h2 class="panel-title">订单状态结构</h2>
+          <p class="panel-subtitle">及时识别积压状态，把处理注意力给到最需要的流程节点。</p>
         </div>
       </div>
       <div class="panel-body">
         <div class="list-stack">
-          <div v-for="item in watchList" :key="item.title" class="list-item">
+          <div v-for="item in dashboard.orderStatusDistribution" :key="item.name" class="list-item">
             <div>
-              <p class="list-item-title">{{ item.title }}</p>
-              <p class="list-item-text">{{ item.text }}</p>
+              <p class="list-item-title">{{ item.name }}</p>
+              <p class="list-item-text">订单流程节点数量直接影响客服、仲裁和履约跟进负载。</p>
             </div>
             <span class="mini-chip">{{ item.value }}</span>
           </div>
@@ -124,114 +125,106 @@
       </div>
     </article>
 
-    <article class="panel">
-      <div class="panel-header">
-        <div>
-          <h2 class="panel-title">视觉约束</h2>
-          <p class="panel-subtitle">确保新页面继续沿着同一套系统扩展。</p>
-        </div>
-      </div>
+    <article class="panel quote-panel">
       <div class="panel-body">
-        <div class="list-stack">
-          <div v-for="rule in designRules" :key="rule.title" class="list-item">
-            <div>
-              <p class="list-item-title">{{ rule.title }}</p>
-              <p class="list-item-text">{{ rule.text }}</p>
-            </div>
-            <span class="status-pill slate">{{ rule.tag }}</span>
-          </div>
-        </div>
+        <p class="quote-kicker">Signal</p>
+        <p class="quote-copy">“后台先给出判断依据，再给操作入口。未来感是表层，效率才是底层。”</p>
+        <div class="quote-line"></div>
+        <p class="quote-meta">Y2K 风格 Hero、数据条和 CTA 已统一到管理端主视图。</p>
       </div>
     </article>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">运营观察点</h2>
+        <p class="panel-subtitle">重点看待审物品、履约中订单与校区覆盖度。</p>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="list-stack">
+        <div v-for="item in dashboard.watchList" :key="item.title" class="list-item">
+          <div>
+            <p class="list-item-title">{{ item.title }}</p>
+            <p class="list-item-text">{{ item.text }}</p>
+          </div>
+          <span class="status-pill cyan">{{ item.value }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel cta-panel">
+    <div class="panel-body cta-body">
+      <div>
+        <p class="page-eyebrow">Next Move</p>
+        <h2 class="panel-title">继续处理物品审核、订单监控和系统公告。</h2>
+        <p class="panel-subtitle">首页只做总览，真正的管理动作继续落到用户、物品、订单、统计和配置页。</p>
+      </div>
+      <div class="page-actions">
+        <router-link to="/items" class="button button-primary">进入物品审核</router-link>
+        <router-link to="/orders" class="button button-ghost">处理订单监控</router-link>
+      </div>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { statsApi, type DashboardData } from '../api'
 
-const currentTime = ref('')
-let timer: number | null = null
-
-const stats = [
-  { label: '活跃用户', value: '3,247', delta: '本周 +12%', tone: 'cyan', note: '状态和信用信息在同一张表里呈现，减少来回跳转。' },
-  { label: '上架物品', value: '1,089', delta: '待审 38', tone: 'yellow', note: '物品卡片统一价格区、状态标签和操作位，批量审核更直观。' },
-  { label: '进行中订单', value: '156', delta: '异常 4', tone: 'magenta', note: '订单表聚焦状态、金额和交易双方，异常单更容易被识别。' },
-  { label: '月度交易额', value: '¥125,678', delta: '环比 +18%', tone: 'green', note: '后台与小程序共享同一套金额强调方式，强化交易心智。' }
-]
-
-const focusList = [
-  {
-    title: '统一页面头部与工具栏',
-    description: '后台四个主视图全部采用一致的标题、说明、操作区和筛选结构，浏览路径不再跳跃。',
-    tag: '基础层',
-    tone: 'cyan'
+const fallbackDashboard: DashboardData = {
+  hero: {
+    title: 'Campus Lease Console',
+    subtitle: '租赁、交易、审核、消息与风控统一收束到一个后台视图。',
+    updatedAt: new Date().toISOString()
   },
-  {
-    title: '收束卡片和表格密度',
-    description: '减少重复描边和装饰，保留霓虹高光，但让正文、次要信息和动作按钮有稳定层级。',
-    tag: '信息层级',
-    tone: 'magenta'
-  },
-  {
-    title: '修正固定底栏与安全区',
-    description: '小程序的详情页、发布页和订单页补齐底部安全区与内容留白，避免操作区遮挡内容。',
-    tag: '客户端',
-    tone: 'green'
+  metrics: [
+    { label: '活跃用户', value: '0', delta: '等待同步', tone: 'slate' },
+    { label: '上架物品', value: '0', delta: '等待同步', tone: 'slate' },
+    { label: '进行中订单', value: '0', delta: '等待同步', tone: 'slate' },
+    { label: '累计交易额', value: '¥0.00', delta: '等待同步', tone: 'slate' }
+  ],
+  campusDistribution: [],
+  categoryRanking: [],
+  orderStatusDistribution: [],
+  watchList: []
+}
+
+const dashboard = ref<DashboardData>(fallbackDashboard)
+
+const primaryWatch = computed(() => {
+  return dashboard.value.watchList[0] || {
+    title: '等待数据',
+    text: '后端服务启动后会在这里显示当前最值得优先处理的运营事项。'
   }
-]
+})
 
-const timeline = [
-  {
-    icon: '01',
-    title: '后台主壳层重排',
-    meta: 'Sidebar / Topbar / Page Shell',
-    text: '把侧栏、顶部说明和页面主区域拆成统一容器，避免每个页面单独撑版。'
-  },
-  {
-    icon: '02',
-    title: '表格与详情视图统一',
-    meta: 'Users / Items / Orders',
-    text: '用户、物品、订单都采用同样的统计卡、筛选区、表格外壳和详情卡片。'
-  },
-  {
-    icon: '03',
-    title: '小程序主路径收束',
-    meta: 'Index / Detail / Order / Profile',
-    text: '首页、详情、发布、消息和我的统一卡片结构、标签体系和底部动作栏。'
-  }
-]
+const maxCampus = computed(() => {
+  return Math.max(1, ...dashboard.value.campusDistribution.map((item) => item.value))
+})
 
-const watchList = [
-  { title: '订单异常', text: '重点跟踪待付款超时、退款中和沟通异常场景。', value: '4 条待处理' },
-  { title: '审核积压', text: '物品审核区保持紧凑卡片布局，减少在列表里来回扫描。', value: '38 条待审' },
-  { title: '视觉一致性', text: '后台和小程序保持同一色板、同一标签语义和同一级别的主按钮。', value: '已同步' }
-]
+const maxCategory = computed(() => {
+  return Math.max(1, ...dashboard.value.categoryRanking.map((item) => item.value))
+})
 
-const designRules = [
-  { title: '主按钮只承担关键动作', text: '一个区域只保留一个高亮主动作，其他操作降级为次级按钮或标签。', tag: 'Action' },
-  { title: '辅助信息压低对比度', text: '时间、校区、备注这类辅助信息使用统一次级文本，不与金额和状态抢焦点。', tag: 'Hierarchy' },
-  { title: '弹窗保持双列详情卡片', text: '详情弹窗统一使用状态区 + 双列详情卡，扫描速度更稳定。', tag: 'Modal' }
-]
+const ratio = (value: number, max: number) => {
+  return Math.max(12, Math.round((value / max) * 100))
+}
 
-const updateTime = () => {
-  currentTime.value = new Intl.DateTimeFormat('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  }).format(new Date())
+const formatDateTime = (value: string) => {
+  if (!value) return '-'
+  return value.replace('T', ' ').slice(0, 16)
+}
+
+const loadDashboard = async () => {
+  dashboard.value = await statsApi.getDashboard()
 }
 
 onMounted(() => {
-  updateTime()
-  timer = window.setInterval(updateTime, 1000)
-})
-
-onUnmounted(() => {
-  if (timer !== null) {
-    clearInterval(timer)
-  }
+  loadDashboard().catch(() => {
+    dashboard.value = fallbackDashboard
+  })
 })
 </script>

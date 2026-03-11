@@ -788,6 +788,11 @@ button {
   box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.08);
 }
 
+.field-static {
+  display: flex;
+  align-items: center;
+}
+
 select.field-control {
   appearance: none;
   background-image:
@@ -892,6 +897,26 @@ select.field-control {
 .table-amount {
   font-weight: 800;
   color: var(--yellow);
+}
+
+.credit-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.credit-track {
+  flex: 1;
+  min-width: 72px;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.credit-fill {
+  height: 100%;
+  border-radius: 999px;
 }
 
 .credit-good {
@@ -1003,6 +1028,20 @@ select.field-control {
   color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.65;
+}
+
+.image-strip {
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.image-thumb {
+  width: 100%;
+  height: 180px;
+  display: block;
+  object-fit: cover;
 }
 
 .resource-price {
@@ -1153,6 +1192,159 @@ select.field-control {
   gap: 18px;
 }
 
+.bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-secondary);
+}
+
+.bar-head strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.bar-track {
+  overflow: hidden;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.bar-fill.cyan {
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.95), rgba(103, 232, 249, 0.72));
+}
+
+.bar-fill.magenta {
+  background: linear-gradient(90deg, rgba(236, 72, 153, 0.95), rgba(249, 168, 212, 0.72));
+}
+
+.bar-fill.violet {
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.95), rgba(196, 181, 253, 0.72));
+}
+
+.quote-panel {
+  min-height: 100%;
+}
+
+.quote-kicker {
+  margin: 0;
+  color: var(--cyan);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.quote-copy {
+  margin: 18px 0 0;
+  font-size: 28px;
+  line-height: 1.4;
+  font-weight: 900;
+}
+
+.quote-line {
+  width: 120px;
+  height: 4px;
+  margin-top: 22px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--cyan), var(--magenta));
+}
+
+.quote-meta {
+  margin: 18px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.cta-panel {
+  border-color: rgba(34, 211, 238, 0.22);
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.12), rgba(236, 72, 153, 0.1), rgba(7, 17, 31, 0.94));
+}
+
+.cta-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.config-grid,
+.form-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.config-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.config-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: rgba(148, 163, 184, 0.06);
+}
+
+.config-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 14px;
+  resize: vertical;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 14px;
+  color: var(--text-primary);
+  background: rgba(7, 17, 31, 0.76);
+  outline: none;
+}
+
+.config-textarea:focus {
+  border-color: rgba(34, 211, 238, 0.32);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.08);
+}
+
+.inline-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toggle-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
 .truncate {
   min-width: 0;
   overflow: hidden;
@@ -1172,6 +1364,11 @@ select.field-control {
   .metric-grid,
   .card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .config-grid,
+  .form-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1223,6 +1420,11 @@ select.field-control {
   .card-grid,
   .card-grid.two {
     grid-template-columns: 1fr;
+  }
+
+  .cta-body {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .page-actions,

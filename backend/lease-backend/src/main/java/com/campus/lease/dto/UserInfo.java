@@ -9,11 +9,12 @@ public class UserInfo {
     private String campus;
     private Integer creditScore;
     private Integer isVerified;
+    private Integer status;
 
     public UserInfo() {
     }
 
-    public UserInfo(Long id, String nickname, String avatar, String studentId, String department, String campus, Integer creditScore, Integer isVerified) {
+    public UserInfo(Long id, String nickname, String avatar, String studentId, String department, String campus, Integer creditScore, Integer isVerified, Integer status) {
         this.id = id;
         this.nickname = nickname;
         this.avatar = avatar;
@@ -22,6 +23,7 @@ public class UserInfo {
         this.campus = campus;
         this.creditScore = creditScore;
         this.isVerified = isVerified;
+        this.status = status;
     }
 
     public Long getId() {
@@ -86,5 +88,13 @@ public class UserInfo {
 
     public void setIsVerified(Integer isVerified) {
         this.isVerified = isVerified;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 }
