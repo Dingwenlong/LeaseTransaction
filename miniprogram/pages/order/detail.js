@@ -15,13 +15,30 @@ Page({
       status: '进行中',
       statusDesc: '租赁中，请按时归还物品',
       createTime: '2024-12-01 10:30:00'
-    }
+    },
+    statusTagClass: 'mp-tag-cyan',
+    priceLabel: '租金',
+    showActionBar: true,
+    canPay: false,
+    canContact: true
   },
 
   onLoad(options) {
     if (options.id) {
       console.log('订单ID:', options.id)
     }
+    this.syncViewState()
+  },
+
+  syncViewState() {
+    const status = this.data.order.status
+    this.setData({
+      statusTagClass: status === '待付款' ? 'mp-tag-yellow' : status === '进行中' ? 'mp-tag-cyan' : 'mp-tag-green',
+      priceLabel: this.data.order.type === '租赁' ? '租金' : '商品价格',
+      showActionBar: status === '待付款' || status === '进行中',
+      canPay: status === '待付款',
+      canContact: status === '进行中'
+    })
   },
 
   handleCancel() {

@@ -1,79 +1,105 @@
-<view class="container">
-  <view class="header">
-    <view class="avatar-section">
-      <image class="avatar" src="{{userInfo.avatar || '/static/default-avatar.png'}}" mode="aspectFill" />
-      <view class="user-info">
-        <view class="username">{{userInfo.nickname || '微信用户'}}</view>
-        <view class="user-id">ID: {{userInfo.id || '未登录'}}</view>
+<view class="mp-page profile-page">
+  <view class="mp-shell">
+    <view class="mp-hero profile-hero">
+      <view class="profile-head">
+        <view class="profile-avatar-wrap">
+          <image wx:if="{{userInfo.avatar}}" class="profile-avatar" src="{{userInfo.avatar}}" mode="aspectFill" />
+          <view wx:else class="profile-avatar profile-avatar-placeholder">👤</view>
+        </view>
+        <view class="profile-copy">
+          <view class="mp-eyebrow">Profile</view>
+          <view class="profile-name">{{userInfo.nickname}}</view>
+          <view class="profile-id">ID：{{userInfo.id}}</view>
+        </view>
+      </view>
+
+      <view class="profile-credit">
+        <view>
+          <view class="profile-credit-label">信用分</view>
+          <view class="profile-credit-value">{{userInfo.creditScore}}</view>
+        </view>
+        <view class="mp-tag mp-tag-green" wx:if="{{userInfo.creditScore >= 80}}">信用优秀</view>
+        <view class="mp-tag mp-tag-yellow" wx:elif="{{userInfo.creditScore >= 60}}">信用良好</view>
+        <view class="mp-tag mp-tag-slate" wx:else>继续提升</view>
       </view>
     </view>
-    <view class="credit-section">
-      <view class="credit-score">
-        <text class="credit-label">信用分</text>
-        <text class="credit-value">{{userInfo.creditScore || 100}}</text>
+
+    <view class="profile-stats">
+      <view class="mp-panel profile-stat-card" bindtap="goToOrders" data-type="renting">
+        <view class="profile-stat-value">{{stats.renting}}</view>
+        <view class="profile-stat-label">租赁中</view>
       </view>
-      <view class="credit-badge">良好</view>
+      <view class="mp-panel profile-stat-card" bindtap="goToOrders" data-type="selling">
+        <view class="profile-stat-value">{{stats.selling}}</view>
+        <view class="profile-stat-label">发布中</view>
+      </view>
+      <view class="mp-panel profile-stat-card" bindtap="goToOrders" data-type="completed">
+        <view class="profile-stat-value">{{stats.completed}}</view>
+        <view class="profile-stat-label">已完成</view>
+      </view>
     </view>
-  </view>
 
-  <view class="stats-section">
-    <view class="stat-item" bindtap="goToOrders" data-type="renting">
-      <text class="stat-value">{{stats.renting}}</text>
-      <text class="stat-label">租赁中</text>
+    <view class="mp-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">我的服务</view>
+            <view class="mp-section-desc">与交易直接相关的入口优先放在第一组。</view>
+          </view>
+        </view>
+        <view class="profile-menu">
+          <view class="profile-menu-item" bindtap="goToMyItems">
+            <view class="profile-menu-icon">📦</view>
+            <view class="profile-menu-text">我的发布</view>
+            <view class="profile-menu-arrow">›</view>
+          </view>
+          <view class="profile-menu-item" bindtap="goToFavorites">
+            <view class="profile-menu-icon">❤️</view>
+            <view class="profile-menu-text">我的收藏</view>
+            <view class="profile-menu-arrow">›</view>
+          </view>
+          <view class="profile-menu-item" bindtap="goToWallet">
+            <view class="profile-menu-icon">💰</view>
+            <view class="profile-menu-text">我的钱包</view>
+            <view class="profile-menu-arrow">›</view>
+          </view>
+        </view>
+      </view>
     </view>
-    <view class="stat-divider"></view>
-    <view class="stat-item" bindtap="goToOrders" data-type="selling">
-      <text class="stat-value">{{stats.selling}}</text>
-      <text class="stat-label">发布中</text>
-    </view>
-    <view class="stat-divider"></view>
-    <view class="stat-item" bindtap="goToOrders" data-type="completed">
-      <text class="stat-value">{{stats.completed}}</text>
-      <text class="stat-label">已完成</text>
-    </view>
-  </view>
 
-  <view class="menu-section">
-    <view class="menu-item" bindtap="goToMyItems">
-      <view class="menu-icon">📦</view>
-      <text class="menu-text">我的发布</text>
-      <text class="menu-arrow">›</text>
+    <view class="mp-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">通用设置</view>
+            <view class="mp-section-desc">把非交易入口集中到第二组，减少误触。</view>
+          </view>
+        </view>
+        <view class="profile-menu">
+          <view class="profile-menu-item" bindtap="goToSettings">
+            <view class="profile-menu-icon">⚙️</view>
+            <view class="profile-menu-text">设置</view>
+            <view class="profile-menu-arrow">›</view>
+          </view>
+          <view class="profile-menu-item" bindtap="goToHelp">
+            <view class="profile-menu-icon">❓</view>
+            <view class="profile-menu-text">帮助中心</view>
+            <view class="profile-menu-arrow">›</view>
+          </view>
+          <view class="profile-menu-item" bindtap="goToAbout">
+            <view class="profile-menu-icon">ℹ️</view>
+            <view class="profile-menu-text">关于我们</view>
+            <view class="profile-menu-arrow">›</view>
+          </view>
+        </view>
+      </view>
     </view>
-    <view class="menu-item" bindtap="goToFavorites">
-      <view class="menu-icon">❤️</view>
-      <text class="menu-text">我的收藏</text>
-      <text class="menu-arrow">›</text>
-    </view>
-    <view class="menu-item" bindtap="goToWallet">
-      <view class="menu-icon">💰</view>
-      <text class="menu-text">我的钱包</text>
-      <text class="menu-arrow">›</text>
-    </view>
-  </view>
 
-  <view class="menu-section">
-    <view class="menu-item" bindtap="goToSettings">
-      <view class="menu-icon">⚙️</view>
-      <text class="menu-text">设置</text>
-      <text class="menu-arrow">›</text>
+    <view wx:if="{{isLoggedIn}}" class="mp-secondary-btn profile-action" bindtap="handleLogout">
+      退出登录
     </view>
-    <view class="menu-item" bindtap="goToHelp">
-      <view class="menu-icon">❓</view>
-      <text class="menu-text">帮助中心</text>
-      <text class="menu-arrow">›</text>
+    <view wx:else class="mp-primary-btn profile-action" bindtap="goToLogin">
+      立即登录
     </view>
-    <view class="menu-item" bindtap="goToAbout">
-      <view class="menu-icon">ℹ️</view>
-      <text class="menu-text">关于我们</text>
-      <text class="menu-arrow">›</text>
-    </view>
-  </view>
-
-  <view class="logout-btn" wx:if="{{isLoggedIn}}" bindtap="handleLogout">
-    <text class="logout-text">退出登录</text>
-  </view>
-
-  <view class="login-btn" wx:if="{{!isLoggedIn}}" bindtap="goToLogin">
-    <text class="login-text">立即登录</text>
   </view>
 </view>

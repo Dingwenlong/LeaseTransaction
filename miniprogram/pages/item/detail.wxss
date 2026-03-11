@@ -1,158 +1,95 @@
-.container {
-  min-height: 100vh;
-  background: #0f172a;
-  padding-bottom: 140rpx;
+.detail-page {
+  padding-bottom: 0;
 }
 
-.image-section {
+.detail-cover {
   width: 100%;
   height: 600rpx;
-  background: #1e293b;
+  background: #13233d;
 }
 
-.main-image {
-  width: 100%;
-  height: 100%;
+.detail-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 22rpx;
 }
 
-.info-section {
-  padding: 40rpx 30rpx;
-  background: rgba(30, 41, 59, 0.8);
-  border-bottom: 2rpx solid #334155;
-}
-
-.title-row {
+.detail-heading {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20rpx;
+  gap: 18rpx;
+  min-width: 0;
 }
 
-.title {
+.detail-heading-copy {
   flex: 1;
-  color: #fff;
-  font-size: 36rpx;
-  font-weight: bold;
-  margin-right: 20rpx;
+  min-width: 0;
 }
 
-.type-badge {
-  padding: 12rpx 24rpx;
-  border-radius: 8rpx;
+.detail-title {
+  color: #ffffff;
+  font-size: 40rpx;
+  line-height: 1.3;
+  font-weight: 800;
+  word-break: break-word;
+}
+
+.detail-subtitle {
+  margin-top: 12rpx;
+  color: #94a3b8;
   font-size: 24rpx;
-  font-weight: bold;
 }
 
-.type-badge.lease {
-  background: rgba(34, 211, 238, 0.2);
-  color: #22d3ee;
-  border: 2rpx solid #22d3ee;
+.detail-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16rpx;
+  min-width: 0;
 }
 
-.type-badge.sale {
-  background: rgba(236, 72, 153, 0.2);
-  color: #ec4899;
-  border: 2rpx solid #ec4899;
-}
-
-.price-row {
+.detail-price-block {
   display: flex;
   align-items: baseline;
-  margin-bottom: 20rpx;
+  min-width: 0;
 }
 
-.price-symbol {
-  color: #fbbf24;
+.detail-price-symbol {
+  color: #fde047;
   font-size: 28rpx;
-  font-weight: bold;
+  font-weight: 700;
 }
 
-.price-value {
-  color: #fbbf24;
-  font-size: 48rpx;
-  font-weight: bold;
-  margin-right: 10rpx;
+.detail-price-value {
+  color: #fde047;
+  font-size: 58rpx;
+  font-weight: 800;
+  line-height: 1;
 }
 
-.price-unit {
+.detail-price-unit {
+  margin-left: 8rpx;
   color: #94a3b8;
   font-size: 24rpx;
 }
 
-.meta-row {
-  display: flex;
-  gap: 30rpx;
-}
-
-.meta {
-  color: #94a3b8;
-  font-size: 26rpx;
-}
-
-.description-section {
-  padding: 40rpx 30rpx;
-}
-
-.section-title {
-  color: #22d3ee;
-  font-size: 28rpx;
-  font-weight: bold;
-  margin-bottom: 20rpx;
-}
-
-.description {
+.detail-description {
+  margin-top: 22rpx;
   color: #cbd5e1;
   font-size: 28rpx;
-  line-height: 1.8;
+  line-height: 1.9;
+  word-break: break-word;
 }
 
-.bottom-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  padding: 20rpx 30rpx;
-  background: #0f172a;
-  border-top: 2rpx solid #334155;
-  gap: 20rpx;
-}
+@media (max-width: 360px) {
+  .detail-heading,
+  .detail-price-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-.contact-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10rpx;
-  height: 100rpx;
-  background: rgba(30, 41, 59, 0.9);
-  border: 2rpx solid #22d3ee;
-  border-radius: 12rpx;
-}
-
-.btn-icon {
-  font-size: 32rpx;
-}
-
-.btn-text {
-  color: #22d3ee;
-  font-size: 28rpx;
-  font-weight: bold;
-}
-
-.action-btn {
-  flex: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100rpx;
-  background: linear-gradient(90deg, #ec4899, #a855f7);
-  border: 2rpx solid #fff;
-  border-radius: 12rpx;
-  box-shadow: 4rpx 4rpx 0px #fff;
-}
-
-.action-btn .btn-text {
-  color: #fff;
-  font-size: 32rpx;
+  .detail-cover {
+    height: 500rpx;
+  }
 }

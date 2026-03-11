@@ -1,32 +1,71 @@
-<view class="container">
-  <view class="tabs">
-    <view class="tab {{activeTab === 0 ? 'active' : ''}}" wx:for="{{tabs}}" wx:key="index" bindtap="onTabTap" data-index="{{index}}">
-      {{item}}
-    </view>
-  </view>
-
-  <view class="order-list">
-    <view class="order-card" wx:for="{{orders}}" wx:key="id" bindtap="onOrderTap" data-id="{{item.id}}">
-      <view class="order-header">
-        <view class="order-no">订单号: {{item.orderNo}}</view>
-        <view class="order-status {{item.statusClass}}">{{item.status}}</view>
-      </view>
-      <view class="order-content">
-        <image class="item-image" src="{{item.itemImage}}" mode="aspectFill" />
-        <view class="item-info">
-          <view class="item-title">{{item.itemTitle}}</view>
-          <view class="item-type {{item.typeClass}}">{{item.type}}</view>
+<view class="mp-page order-page">
+  <view class="mp-shell">
+    <view class="mp-hero">
+      <view class="mp-eyebrow">Orders</view>
+      <view class="mp-title">我的订单</view>
+      <view class="mp-subtitle">订单卡片与后台订单表采用相同的状态语义，前后台认知保持一致。</view>
+      <view class="mp-chip-row order-tabs">
+        <view
+          wx:for="{{tabs}}"
+          wx:key="index"
+          class="mp-chip {{activeTab === index ? 'mp-chip-active' : ''}}"
+          bindtap="onTabTap"
+          data-index="{{index}}"
+        >
+          {{item}}
         </view>
       </view>
-      <view class="order-footer">
-        <view class="order-time">{{item.createTime}}</view>
-        <view class="order-amount">¥{{item.amount}}</view>
-      </view>
     </view>
 
-    <view class="empty" wx:if="{{orders.length === 0}}">
-      <text class="empty-icon">📦</text>
-      <text class="empty-text">暂无订单</text>
+    <view class="mp-section-head">
+      <view>
+        <view class="mp-section-title">订单列表</view>
+        <view class="mp-section-desc">订单号可换行，状态标签和金额固定位置，移动端查看更稳定。</view>
+      </view>
+      <view class="mp-meta-pill">共 {{orders.length}} 单</view>
+    </view>
+
+    <view class="order-list">
+      <view
+        wx:for="{{orders}}"
+        wx:key="id"
+        class="mp-panel order-card"
+        bindtap="onOrderTap"
+        data-id="{{item.id}}"
+      >
+        <view class="mp-panel-body order-card-body">
+          <view class="order-card-head">
+            <view class="order-card-no mp-break-all">订单号：{{item.orderNo}}</view>
+            <view class="mp-tag {{item.statusClass === 'pending' ? 'mp-tag-yellow' : item.statusClass === 'completed' ? 'mp-tag-green' : item.statusClass === 'cancelled' ? 'mp-tag-slate' : 'mp-tag-cyan'}}">
+              {{item.status}}
+            </view>
+          </view>
+
+          <view class="order-card-main">
+            <image class="order-card-image" src="{{item.itemImage}}" mode="aspectFill" />
+            <view class="order-card-info">
+              <view class="order-card-title">{{item.itemTitle}}</view>
+              <view class="mp-meta-row">
+                <view class="mp-tag {{item.typeClass === 'lease' ? 'mp-tag-cyan' : 'mp-tag-magenta'}}">
+                  {{item.type}}
+                </view>
+                <view class="mp-meta-pill">{{item.createTime}}</view>
+              </view>
+            </view>
+          </view>
+
+          <view class="order-card-foot">
+            <view class="order-card-time">创建时间 {{item.createTime}}</view>
+            <view class="order-card-amount">¥{{item.amount}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="mp-empty" wx:if="{{orders.length === 0}}">
+        <text class="mp-empty-icon">📦</text>
+        <text class="mp-empty-title">暂无订单</text>
+        <text class="mp-empty-text">完成交易后会在这里显示。</text>
+      </view>
     </view>
   </view>
 </view>

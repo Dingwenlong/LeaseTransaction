@@ -4,8 +4,8 @@ Page({
   data: {
     isLoggedIn: false,
     userInfo: {
-      id: '',
-      nickname: '',
+      id: '未登录',
+      nickname: '微信用户',
       avatar: '',
       creditScore: 100
     },
@@ -13,6 +13,15 @@ Page({
       renting: 3,
       selling: 5,
       completed: 12
+    }
+  },
+
+  getDefaultUserInfo() {
+    return {
+      id: '未登录',
+      nickname: '微信用户',
+      avatar: '',
+      creditScore: 100
     }
   },
 
@@ -31,11 +40,15 @@ Page({
     if (token && userInfo) {
       this.setData({
         isLoggedIn: true,
-        userInfo: userInfo
+        userInfo: {
+          ...this.getDefaultUserInfo(),
+          ...userInfo
+        }
       })
     } else {
       this.setData({
-        isLoggedIn: false
+        isLoggedIn: false,
+        userInfo: this.getDefaultUserInfo()
       })
     }
   },
@@ -107,12 +120,7 @@ Page({
           
           this.setData({
             isLoggedIn: false,
-            userInfo: {
-              id: '',
-              nickname: '',
-              avatar: '',
-              creditScore: 100
-            }
+            userInfo: this.getDefaultUserInfo()
           })
           
           showToast('已退出登录')

@@ -48,7 +48,7 @@
     "disableSWC": true
   },
   "compileType": "miniprogram",
-  "libVersion": "2.19.4",
+  "libVersion": "3.14.3",
   "appid": "wx1bdf45f8766c2423",
   "projectname": "campus-lease-miniprogram",
   "isGameTourist": false,

@@ -1,36 +1,56 @@
-<view class="container">
-  <view class="image-section">
-    <image class="main-image" src="{{item.image}}" mode="aspectFill" />
+<view class="mp-page detail-page">
+  <view class="mp-shell">
+    <view class="mp-panel">
+      <image class="detail-cover" src="{{item.image}}" mode="aspectFill" />
+    </view>
+
+    <view class="mp-panel">
+      <view class="mp-panel-body detail-summary">
+        <view class="detail-heading">
+          <view class="detail-heading-copy">
+            <view class="detail-title">{{item.title}}</view>
+            <view class="detail-subtitle">发布者 {{item.ownerName}} · {{item.location}}</view>
+          </view>
+          <view class="mp-tag {{item.typeClass === 'lease' ? 'mp-tag-cyan' : 'mp-tag-magenta'}}">
+            {{item.type}}
+          </view>
+        </view>
+
+        <view class="detail-price-row">
+          <view class="detail-price-block">
+            <text class="detail-price-symbol">¥</text>
+            <text class="detail-price-value">{{item.price}}</text>
+            <text class="detail-price-unit" wx:if="{{item.type === '租赁'}}">/天</text>
+          </view>
+          <view class="mp-meta-pill">校园当面交接</view>
+        </view>
+
+        <view class="mp-meta-row">
+          <view class="mp-meta-pill">📍 {{item.location}}</view>
+          <view class="mp-meta-pill">👤 {{item.ownerName}}</view>
+          <view class="mp-meta-pill">{{item.type === '租赁' ? '可预约' : '可下单'}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="mp-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">物品描述</view>
+            <view class="mp-section-desc">描述区保持完整换行，避免长文本挤压布局。</view>
+          </view>
+        </view>
+        <view class="detail-description">{{item.description}}</view>
+      </view>
+    </view>
   </view>
 
-  <view class="info-section">
-    <view class="title-row">
-      <text class="title">{{item.title}}</text>
-      <view class="type-badge {{item.typeClass}}">{{item.type}}</view>
-    </view>
-    <view class="price-row">
-      <text class="price-symbol">¥</text>
-      <text class="price-value">{{item.price}}</text>
-      <text class="price-unit" wx:if="{{item.type === '租赁'}}">/天</text>
-    </view>
-    <view class="meta-row">
-      <text class="meta">📍 {{item.location}}</text>
-      <text class="meta">👤 {{item.ownerName}}</text>
-    </view>
-  </view>
-
-  <view class="description-section">
-    <view class="section-title">◆ 物品描述 ◆</view>
-    <view class="description">{{item.description}}</view>
-  </view>
-
-  <view class="bottom-bar">
-    <view class="contact-btn" bindtap="handleContact">
-      <text class="btn-icon">💬</text>
-      <text class="btn-text">联系卖家</text>
-    </view>
-    <view class="action-btn" bindtap="handleRent">
-      <text class="btn-text">{{item.type === '租赁' ? '立即租赁' : '立即购买'}}</text>
+  <view class="mp-fixed-spacer"></view>
+  <view class="mp-fixed-bar">
+    <view class="mp-secondary-btn" bindtap="handleContact">联系卖家</view>
+    <view class="mp-primary-btn" bindtap="handleRent">
+      {{item.type === '租赁' ? '立即租赁' : '立即购买'}}
     </view>
   </view>
 </view>

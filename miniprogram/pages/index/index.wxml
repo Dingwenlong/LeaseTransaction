@@ -1,35 +1,79 @@
-<view class="container">
-  <view class="header">
-    <view class="search-bar">
-      <input class="search-input" placeholder="搜索物品..." value="{{searchKeyword}}" bindinput="onSearchInput" confirm-type="search" bindconfirm="onSearch" />
-      <text class="search-btn" bindtap="onSearch">🔍</text>
-    </view>
-    <view class="filter-tabs">
-      <text class="tab {{activeTab === index ? 'active' : ''}}" wx:for="{{tabs}}" wx:key="index" bindtap="onTabTap" data-index="{{index}}">
-        {{item}}
-      </text>
-    </view>
-  </view>
+<view class="mp-page home-page">
+  <view class="mp-shell">
+    <view class="mp-hero home-hero">
+      <view class="home-hero-top">
+        <view class="home-hero-copy">
+          <view class="mp-eyebrow">Campus Lease</view>
+          <view class="mp-title">校园租赁交易</view>
+          <view class="mp-subtitle">把租赁与交易整合进一套清晰、统一、易浏览的首页视图。</view>
+        </view>
+        <view class="home-hero-tag">Y2K</view>
+      </view>
 
-  <view class="item-list">
-    <view class="item-card" wx:for="{{items}}" wx:key="id" bindtap="onItemTap" data-id="{{item.id}}">
-      <image class="item-image" src="{{item.image}}" mode="aspectFill" />
-      <view class="item-info">
-        <view class="item-title">{{item.title}}</view>
-        <view class="item-location">📍 {{item.location}}</view>
-        <view class="item-bottom">
-          <view class="item-price">
-            <text class="price-symbol">¥</text>
-            <text class="price-value">{{item.price}}</text>
+      <view class="mp-search home-search">
+        <input
+          class="mp-search-input"
+          placeholder="搜索物品、分类或校区"
+          value="{{searchKeyword}}"
+          bindinput="onSearchInput"
+          confirm-type="search"
+          bindconfirm="onSearch"
+        />
+        <view class="home-search-action" bindtap="onSearch">搜索</view>
+      </view>
+
+      <view class="mp-chip-row home-tabs">
+        <view
+          wx:for="{{tabs}}"
+          wx:key="index"
+          class="mp-chip {{activeTab === index ? 'mp-chip-active' : ''}}"
+          bindtap="onTabTap"
+          data-index="{{index}}"
+        >
+          {{item}}
+        </view>
+      </view>
+    </view>
+
+    <view class="mp-section-head">
+      <view>
+        <view class="mp-section-title">精选物品</view>
+        <view class="mp-section-desc">卡片信息按“标题、位置、价格、类型”顺序展示，浏览更稳定。</view>
+      </view>
+      <view class="mp-meta-pill">共 {{items.length}} 件</view>
+    </view>
+
+    <view class="home-grid">
+      <view
+        wx:for="{{items}}"
+        wx:key="id"
+        class="mp-panel home-card"
+        bindtap="onItemTap"
+        data-id="{{item.id}}"
+      >
+        <image class="home-card-image" src="{{item.image}}" mode="aspectFill" />
+        <view class="mp-panel-body home-card-body">
+          <view class="home-card-head">
+            <view class="home-card-title mp-ellipsis">{{item.title}}</view>
+            <view class="mp-tag {{item.typeClass === 'lease' ? 'mp-tag-cyan' : 'mp-tag-magenta'}}">
+              {{item.type}}
+            </view>
           </view>
-          <view class="item-type {{item.typeClass}}">{{item.type}}</view>
+          <view class="home-card-location mp-ellipsis">📍 {{item.location}}</view>
+          <view class="home-card-footer">
+            <view class="home-card-price">
+              <text class="home-card-price-symbol">¥</text>
+              <text class="home-card-price-value">{{item.price}}</text>
+            </view>
+            <view class="mp-meta-pill">立即查看</view>
+          </view>
         </view>
       </view>
     </view>
   </view>
 
-  <view class="publish-btn" bindtap="onPublishTap">
-    <text class="publish-icon">+</text>
-    <text class="publish-text">发布</text>
+  <view class="home-publish" bindtap="onPublishTap">
+    <text class="home-publish-icon">＋</text>
+    <text class="home-publish-text">发布物品</text>
   </view>
 </view>

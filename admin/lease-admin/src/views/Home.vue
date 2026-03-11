@@ -1,351 +1,227 @@
 <template>
-  <div class="relative min-h-screen scanlines noise">
-    <div class="relative z-10">
-      <!-- Hero Section -->
-      <section class="relative overflow-hidden py-16 lg:py-24">
-        <!-- Background Effects -->
-        <div class="absolute inset-0 bg-gradient-to-br from-navy-deep via-slate-900 to-navy-deep"></div>
-        <div class="absolute inset-0 bg-gradient-to-br from-cyan-neon/10 via-fuchsia-500/10 to-violet-neon/10 animate-pulse-glow"></div>
-        <div class="absolute top-0 left-1/4 w-96 h-96 bg-cyan-neon/20 rounded-full blur-[120px] animate-glow-pulse"></div>
-        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-fuchsia-500/20 rounded-full blur-[120px] animate-glow-pulse" style="animation-delay: 1s;"></div>
-        
-        <div class="max-w-6xl mx-auto px-6 lg:px-8 relative">
-          <div class="relative z-10 text-center">
-            <!-- Badge -->
-            <div class="inline-flex items-center gap-2 mb-6 px-5 py-2.5 rounded-full border border-cyan-neon/50 bg-cyan-neon/10 backdrop-blur-sm shadow-neon-cyan">
-              <span class="w-2 h-2 rounded-full bg-cyan-neon animate-pulse"></span>
-              <span class="text-cyan-neon text-sm font-bold tracking-widest uppercase">Y2K Admin Panel</span>
-            </div>
-            
-            <!-- Title -->
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight">
-              <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-neon via-fuchsia-500 to-violet-neon">
-                校园租赁
-              </span>
-              <br />
-              <span class="relative inline-block">
-                <span class="text-white">交易管理</span>
-                <span class="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-cyan-neon to-fuchsia-500 rounded-full"></span>
-              </span>
-              <span class="text-cyan-neon animate-float inline-block ml-2">系统</span>
-            </h1>
-            
-            <!-- Description -->
-            <p class="text-lg text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-              复古未来感的校园个人物品租赁与交易管理平台，让校园资源共享更便捷
-            </p>
-            
-            <!-- CTA Buttons -->
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <button class="btn-primary btn-lg">
-                <span>开始管理</span>
-                <span>→</span>
-              </button>
-              <button class="btn-secondary btn-lg">
-                <span>查看文档</span>
-                <span>📖</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Features Section -->
-      <section class="py-16 lg:py-20">
-        <div class="max-w-6xl mx-auto px-6 lg:px-8">
-          <!-- Section Header -->
-          <div class="text-center mb-12">
-            <div class="inline-flex items-center gap-2 mb-4">
-              <div class="w-8 h-0.5 bg-gradient-to-r from-transparent to-cyan-neon"></div>
-              <span class="text-cyan-neon text-sm font-bold tracking-widest uppercase">Core Features</span>
-              <div class="w-8 h-0.5 bg-gradient-to-l from-transparent to-cyan-neon"></div>
-            </div>
-            <h2 class="text-3xl font-black text-white mb-4">核心功能</h2>
-            <div class="w-32 h-1 bg-gradient-to-r from-cyan-neon via-fuchsia-500 to-violet-neon mx-auto rounded-full"></div>
-          </div>
-          
-          <!-- Feature Cards Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <FeatureCard
-              icon="👥"
-              title="用户管理"
-              description="校园身份认证、信用管理、权限控制，确保平台用户真实可信"
-              tag="核心模块"
-              color="cyan"
-            />
-            <FeatureCard
-              icon="📦"
-              title="物品管理"
-              description="物品审核、分类管理、上下架控制，维护平台物品质量"
-              tag="核心模块"
-              color="fuchsia"
-            />
-            <FeatureCard
-              icon="📋"
-              title="订单监控"
-              description="租赁/交易订单、状态跟踪、纠纷处理，保障交易安全"
-              tag="核心模块"
-              color="violet"
-            />
-            <FeatureCard
-              icon="💰"
-              title="资金管理"
-              description="押金管理、租金结算、支付记录，财务数据一目了然"
-              tag="核心模块"
-              color="cyan"
-            />
-            <FeatureCard
-              icon="📊"
-              title="数据统计"
-              description="用户活跃度、物品流转、财务分析，数据驱动决策"
-              tag="数据模块"
-              color="fuchsia"
-            />
-            <FeatureCard
-              icon="⚙️"
-              title="系统配置"
-              description="轮播图、公告、分类字典，灵活配置平台参数"
-              tag="配置模块"
-              color="violet"
-            />
-          </div>
-        </div>
-      </section>
-
-      <!-- Data Overview Section -->
-      <section class="py-16 lg:py-20 bg-slate-900/50">
-        <div class="max-w-6xl mx-auto px-6 lg:px-8">
-          <!-- Section Header -->
-          <div class="text-center mb-10">
-            <div class="inline-flex items-center gap-2 mb-4">
-              <div class="w-8 h-0.5 bg-gradient-to-r from-transparent to-acid-green"></div>
-              <span class="text-acid-green text-sm font-bold tracking-widest uppercase">Live Data</span>
-              <div class="w-8 h-0.5 bg-gradient-to-l from-transparent to-acid-green"></div>
-            </div>
-            <h2 class="text-2xl font-black text-white mb-4">实时数据概览</h2>
-            <div class="w-24 h-1 bg-gradient-to-r from-acid-green to-cyan-neon mx-auto rounded-full"></div>
-          </div>
-          
-          <!-- Data Table Card -->
-          <div class="table-container">
-            <!-- Table Header -->
-            <div class="table-header">
-              <div class="flex items-center justify-between">
-                <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                  <span class="w-2 h-2 rounded-full bg-acid-green animate-pulse"></span>
-                  平台运营数据
-                </h3>
-                <span class="text-xs text-slate-400 font-mono">更新时间: {{ currentTime }}</span>
-              </div>
-            </div>
-            
-            <!-- Table -->
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead>
-                  <tr class="border-b border-white/10">
-                    <th class="table-head">
-                      <div class="flex items-center gap-2">
-                        <span>📊</span>
-                        <span>指标</span>
-                      </div>
-                    </th>
-                    <th class="table-head">
-                      <div class="flex items-center gap-2">
-                        <span>📅</span>
-                        <span>今日</span>
-                      </div>
-                    </th>
-                    <th class="table-head">
-                      <div class="flex items-center gap-2">
-                        <span>📆</span>
-                        <span>本周</span>
-                      </div>
-                    </th>
-                    <th class="table-head">
-                      <div class="flex items-center gap-2">
-                        <span>🗓️</span>
-                        <span>本月</span>
-                      </div>
-                    </th>
-                    <th class="table-head text-right">
-                      <div class="flex items-center justify-end gap-2">
-                        <span>📈</span>
-                        <span>状态</span>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-white/5">
-                  <tr class="table-row">
-                    <td class="table-cell">
-                      <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-cyan-neon/10 flex items-center justify-center">
-                          <span class="text-lg">👤</span>
-                        </div>
-                        <span class="text-slate-300 font-medium">用户数</span>
-                      </div>
-                    </td>
-                    <td class="table-cell text-white font-bold text-lg">128</td>
-                    <td class="table-cell text-white font-bold text-lg">856</td>
-                    <td class="table-cell text-white font-bold text-lg">3,247</td>
-                    <td class="table-cell text-right">
-                      <span class="tag-base tag-green">
-                        ↑ 上升
-                      </span>
-                    </td>
-                  </tr>
-                  <tr class="table-row bg-white/[0.02]">
-                    <td class="table-cell">
-                      <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-fuchsia-500/10 flex items-center justify-center">
-                          <span class="text-lg">📦</span>
-                        </div>
-                        <span class="text-slate-300 font-medium">物品数</span>
-                      </div>
-                    </td>
-                    <td class="table-cell text-white font-bold text-lg">45</td>
-                    <td class="table-cell text-white font-bold text-lg">234</td>
-                    <td class="table-cell text-white font-bold text-lg">1,089</td>
-                    <td class="table-cell text-right">
-                      <span class="tag-base tag-cyan">
-                        ● 活跃
-                      </span>
-                    </td>
-                  </tr>
-                  <tr class="table-row">
-                    <td class="table-cell">
-                      <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-violet-neon/10 flex items-center justify-center">
-                          <span class="text-lg">📋</span>
-                        </div>
-                        <span class="text-slate-300 font-medium">订单数</span>
-                      </div>
-                    </td>
-                    <td class="table-cell text-white font-bold text-lg">23</td>
-                    <td class="table-cell text-white font-bold text-lg">156</td>
-                    <td class="table-cell text-white font-bold text-lg">678</td>
-                    <td class="table-cell text-right">
-                      <span class="tag-base tag-cyan">
-                        ● 正常
-                      </span>
-                    </td>
-                  </tr>
-                  <tr class="table-row bg-white/[0.02]">
-                    <td class="table-cell">
-                      <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-acid-green/10 flex items-center justify-center">
-                          <span class="text-lg">💰</span>
-                        </div>
-                        <span class="text-slate-300 font-medium">交易额</span>
-                      </div>
-                    </td>
-                    <td class="table-cell text-white font-bold text-lg">¥3,456</td>
-                    <td class="table-cell text-white font-bold text-lg">¥28,901</td>
-                    <td class="table-cell text-white font-bold text-lg">¥125,678</td>
-                    <td class="table-cell text-right">
-                      <span class="tag-base tag-fuchsia">
-                        ↑ 增长
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Quote Section -->
-      <section class="py-16 lg:py-20 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-r from-cyan-neon/5 via-fuchsia-500/5 to-violet-neon/5"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-cyan-neon/10 to-transparent rounded-full blur-3xl"></div>
-        
-        <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center relative z-10">
-          <div class="py-10">
-            <div class="text-6xl mb-6 animate-float">⚡</div>
-            <blockquote class="text-2xl md:text-3xl font-black mb-6">
-              <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-neon via-fuchsia-500 to-violet-neon">
-                打造校园最酷的租赁交易平台
-              </span>
-            </blockquote>
-            <div class="flex items-center justify-center gap-4 mb-6">
-              <div class="w-16 h-0.5 bg-gradient-to-r from-transparent to-cyan-neon/50"></div>
-              <p class="text-slate-400 text-base tracking-widest uppercase">Retro Future · Efficient · Trusted</p>
-              <div class="w-16 h-0.5 bg-gradient-to-l from-transparent to-fuchsia-500/50"></div>
-            </div>
-            <p class="text-slate-500">
-              复古未来 · 便捷高效 · 安全可信
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- CTA Section -->
-      <section class="py-16 lg:py-20">
-        <div class="max-w-5xl mx-auto px-6 lg:px-8">
-          <div class="relative rounded-3xl overflow-hidden">
-            <!-- Background -->
-            <div class="absolute inset-0 bg-gradient-to-r from-cyan-neon via-fuchsia-500 to-violet-neon"></div>
-            <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
-            
-            <!-- Content -->
-            <div class="relative bg-navy-deep/95 backdrop-blur-xl m-1 rounded-[22px] p-10 lg:p-14 text-center">
-              <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-acid-green/10 border border-acid-green/30 mb-6">
-                <span class="w-2 h-2 rounded-full bg-acid-green animate-pulse"></span>
-                <span class="text-acid-green text-sm font-bold">🚀 BETA 版本</span>
-              </div>
-              
-              <h2 class="text-3xl font-black text-white mb-4">准备好开始了吗？</h2>
-              <p class="text-slate-400 text-lg mb-8 max-w-2xl mx-auto">
-                让我们一起打造最酷的校园租赁交易管理平台，为校园生活带来更多便利
-              </p>
-              
-              <button class="btn-primary btn-lg">
-                <span>立即体验</span>
-                <span>→</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Footer -->
-      <footer class="py-6 border-t border-white/10">
-        <div class="max-w-6xl mx-auto px-6 lg:px-8">
-          <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-2">
-              <span class="text-slate-500 text-sm">© 2024 Campus Lease Trading System</span>
-            </div>
-            <div class="flex items-center gap-6">
-              <a href="#" class="text-slate-500 hover:text-cyan-neon transition-colors text-sm">关于我们</a>
-              <a href="#" class="text-slate-500 hover:text-cyan-neon transition-colors text-sm">帮助中心</a>
-              <a href="#" class="text-slate-500 hover:text-cyan-neon transition-colors text-sm">隐私政策</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+  <section class="page-header">
+    <div class="page-header-main">
+      <p class="page-eyebrow">Overview</p>
+      <h1 class="page-title">让后台和客户端看起来像同一个产品。</h1>
+      <p class="page-description">
+        以统一色板、卡片框架和信息密度重建主界面节奏。后台负责高效扫描，小程序负责轻量浏览，但两者的视觉语言保持一致。
+      </p>
     </div>
-  </div>
+    <div class="page-actions">
+      <router-link to="/items" class="button button-primary">
+        <span>查看物品管理</span>
+        <span>→</span>
+      </router-link>
+      <router-link to="/orders" class="button button-secondary">
+        <span>处理订单流程</span>
+        <span>↗</span>
+      </router-link>
+    </div>
+  </section>
+
+  <section class="hero-panel">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <p class="page-eyebrow">Design Sync</p>
+        <h2 class="hero-title">Y2K 霓虹质感被保留，但排版先回到秩序。</h2>
+        <p class="hero-note">
+          页面头部、工具栏、表格和详情弹窗都采用同一套结构规则：先看状态，再看对象，再看动作。这样既能保住项目的未来感，也能让管理动作更快落点。
+        </p>
+        <div class="badge-group">
+          <span class="status-pill cyan">统一色板</span>
+          <span class="status-pill magenta">双端卡片</span>
+          <span class="status-pill green">安全区适配</span>
+        </div>
+      </div>
+
+      <div class="hero-stack">
+        <div class="info-card">
+          <p class="info-card-label">当前视觉状态</p>
+          <p class="info-card-value">主路径已统一</p>
+          <p class="info-card-text">后台仪表盘、表格视图和小程序主页面共享同一套圆角、边框、按钮和标签风格。</p>
+        </div>
+        <div class="info-card">
+          <p class="info-card-label">最后刷新时间</p>
+          <p class="info-card-value">{{ currentTime }}</p>
+          <p class="info-card-text">用于确认数据概览区和运营视图在同一时间基线上更新。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="metric-grid">
+    <article v-for="stat in stats" :key="stat.label" class="metric-card">
+      <p class="metric-label">{{ stat.label }}</p>
+      <div class="metric-value-row">
+        <h3 class="metric-value">{{ stat.value }}</h3>
+        <span class="status-pill" :class="stat.tone">{{ stat.delta }}</span>
+      </div>
+      <p class="metric-foot">{{ stat.note }}</p>
+    </article>
+  </section>
+
+  <section class="split-grid">
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">本轮页面优化重点</h2>
+          <p class="panel-subtitle">先把常用页面的扫描效率拉齐，再细化二级流程。</p>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="list-stack">
+          <div v-for="focus in focusList" :key="focus.title" class="list-item">
+            <div>
+              <p class="list-item-title">{{ focus.title }}</p>
+              <p class="list-item-text">{{ focus.description }}</p>
+            </div>
+            <span class="status-pill" :class="focus.tone">{{ focus.tag }}</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">同步记录</h2>
+          <p class="panel-subtitle">后台与小程序统一时最容易失真的位置。</p>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="timeline">
+          <div v-for="item in timeline" :key="item.title" class="timeline-item">
+            <div class="timeline-marker">{{ item.icon }}</div>
+            <div>
+              <p class="timeline-title">{{ item.title }}</p>
+              <p class="timeline-meta">{{ item.meta }}</p>
+              <p class="timeline-text">{{ item.text }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="card-grid two">
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">运营观察点</h2>
+          <p class="panel-subtitle">首页只保留最关键的监控内容，不堆积无效装饰。</p>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="list-stack">
+          <div v-for="item in watchList" :key="item.title" class="list-item">
+            <div>
+              <p class="list-item-title">{{ item.title }}</p>
+              <p class="list-item-text">{{ item.text }}</p>
+            </div>
+            <span class="mini-chip">{{ item.value }}</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">视觉约束</h2>
+          <p class="panel-subtitle">确保新页面继续沿着同一套系统扩展。</p>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="list-stack">
+          <div v-for="rule in designRules" :key="rule.title" class="list-item">
+            <div>
+              <p class="list-item-title">{{ rule.title }}</p>
+              <p class="list-item-text">{{ rule.text }}</p>
+            </div>
+            <span class="status-pill slate">{{ rule.tag }}</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import FeatureCard from '../components/FeatureCard.vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 const currentTime = ref('')
 let timer: number | null = null
 
+const stats = [
+  { label: '活跃用户', value: '3,247', delta: '本周 +12%', tone: 'cyan', note: '状态和信用信息在同一张表里呈现，减少来回跳转。' },
+  { label: '上架物品', value: '1,089', delta: '待审 38', tone: 'yellow', note: '物品卡片统一价格区、状态标签和操作位，批量审核更直观。' },
+  { label: '进行中订单', value: '156', delta: '异常 4', tone: 'magenta', note: '订单表聚焦状态、金额和交易双方，异常单更容易被识别。' },
+  { label: '月度交易额', value: '¥125,678', delta: '环比 +18%', tone: 'green', note: '后台与小程序共享同一套金额强调方式，强化交易心智。' }
+]
+
+const focusList = [
+  {
+    title: '统一页面头部与工具栏',
+    description: '后台四个主视图全部采用一致的标题、说明、操作区和筛选结构，浏览路径不再跳跃。',
+    tag: '基础层',
+    tone: 'cyan'
+  },
+  {
+    title: '收束卡片和表格密度',
+    description: '减少重复描边和装饰，保留霓虹高光，但让正文、次要信息和动作按钮有稳定层级。',
+    tag: '信息层级',
+    tone: 'magenta'
+  },
+  {
+    title: '修正固定底栏与安全区',
+    description: '小程序的详情页、发布页和订单页补齐底部安全区与内容留白，避免操作区遮挡内容。',
+    tag: '客户端',
+    tone: 'green'
+  }
+]
+
+const timeline = [
+  {
+    icon: '01',
+    title: '后台主壳层重排',
+    meta: 'Sidebar / Topbar / Page Shell',
+    text: '把侧栏、顶部说明和页面主区域拆成统一容器，避免每个页面单独撑版。'
+  },
+  {
+    icon: '02',
+    title: '表格与详情视图统一',
+    meta: 'Users / Items / Orders',
+    text: '用户、物品、订单都采用同样的统计卡、筛选区、表格外壳和详情卡片。'
+  },
+  {
+    icon: '03',
+    title: '小程序主路径收束',
+    meta: 'Index / Detail / Order / Profile',
+    text: '首页、详情、发布、消息和我的统一卡片结构、标签体系和底部动作栏。'
+  }
+]
+
+const watchList = [
+  { title: '订单异常', text: '重点跟踪待付款超时、退款中和沟通异常场景。', value: '4 条待处理' },
+  { title: '审核积压', text: '物品审核区保持紧凑卡片布局，减少在列表里来回扫描。', value: '38 条待审' },
+  { title: '视觉一致性', text: '后台和小程序保持同一色板、同一标签语义和同一级别的主按钮。', value: '已同步' }
+]
+
+const designRules = [
+  { title: '主按钮只承担关键动作', text: '一个区域只保留一个高亮主动作，其他操作降级为次级按钮或标签。', tag: 'Action' },
+  { title: '辅助信息压低对比度', text: '时间、校区、备注这类辅助信息使用统一次级文本，不与金额和状态抢焦点。', tag: 'Hierarchy' },
+  { title: '弹窗保持双列详情卡片', text: '详情弹窗统一使用状态区 + 双列详情卡，扫描速度更稳定。', tag: 'Modal' }
+]
+
 const updateTime = () => {
-  const now = new Date()
-  currentTime.value = now.toLocaleString('zh-CN', {
+  currentTime.value = new Intl.DateTimeFormat('zh-CN', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit'
-  })
+  }).format(new Date())
 }
 
 onMounted(() => {
@@ -354,7 +230,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (timer) {
+  if (timer !== null) {
     clearInterval(timer)
   }
 })

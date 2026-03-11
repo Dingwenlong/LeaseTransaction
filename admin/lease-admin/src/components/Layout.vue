@@ -1,70 +1,123 @@
 <template>
-  <div class="flex min-h-screen bg-navy-deep">
-    <!-- Sidebar - 使用 flex 布局在左侧 -->
-    <aside class="w-64 flex-shrink-0 bg-gradient-to-b from-slate-900 to-navy-deep border-r border-white/10 flex flex-col sticky top-0 h-screen">
-      <!-- Logo Area -->
-      <div class="h-20 flex items-center px-6 border-b border-white/10 flex-shrink-0">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-neon to-fuchsia-500 flex items-center justify-center shadow-neon-cyan animate-pulse-glow">
-            <span class="text-white font-bold text-2xl">⚡</span>
-          </div>
-          <div class="flex flex-col gap-1">
-            <span class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-neon to-fuchsia-500">
-              租赁管理
-            </span>
-            <span class="text-xs text-slate-500 font-medium">Admin Panel</span>
-          </div>
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <div class="brand-mark">⚡</div>
+        <div class="brand-copy">
+          <p class="brand-kicker">Campus Lease</p>
+          <h1 class="brand-title">租赁交易后台</h1>
+          <p class="brand-subtitle">统一后台与客户端视觉秩序</p>
         </div>
       </div>
 
-      <!-- Navigation - 可滚动区域 -->
-      <nav style="padding: 20px;" class="flex-1 overflow-y-auto flex flex-col gap-3">
+      <div class="sidebar-card">
+        <p class="sidebar-card-title">本轮设计基线</p>
+        <p class="sidebar-card-value">Y2K / Neon</p>
+        <p class="sidebar-card-meta">
+          统一卡片圆角、信息层级、按钮反馈和霓虹边框密度，让管理端与小程序共享一套视觉语言。
+        </p>
+      </div>
+
+      <nav class="admin-nav">
         <router-link
           v-for="item in menuItems"
           :key="item.path"
           :to="item.path"
-          class="flex items-center gap-5 px-5 py-4 rounded-xl transition-all duration-200 group relative overflow-hidden"
-          :class="$route.path === item.path 
-            ? 'bg-gradient-to-r from-cyan-neon/20 to-fuchsia-500/20 border border-cyan-neon/50 text-cyan-neon shadow-neon-cyan' 
-            : 'text-slate-400 hover:bg-white/5 hover:text-white border border-transparent'"
+          class="admin-nav-link"
+          :class="{ 'is-active': route.path === item.path }"
         >
-          <!-- Active Indicator -->
-          <div 
-            v-if="$route.path === item.path"
-            class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-cyan-neon to-fuchsia-500 rounded-r-full"
-          ></div>
-          
-          <span 
-            class="text-xl transition-transform duration-200 group-hover:scale-110"
-            :class="$route.path === item.path ? 'animate-float' : ''"
-          >
-            {{ item.icon }}
-          </span>
-          <span class="font-semibold text-sm">{{ item.name }}</span>
+          <div class="admin-nav-icon">{{ item.icon }}</div>
+          <div class="admin-nav-copy">
+            <strong>{{ item.name }}</strong>
+            <span>{{ item.hint }}</span>
+          </div>
         </router-link>
       </nav>
+
+      <div class="sidebar-card">
+        <p class="sidebar-card-title">当前焦点</p>
+        <p class="sidebar-card-value">{{ currentPage.short }}</p>
+        <p class="sidebar-card-meta">{{ currentPage.description }}</p>
+      </div>
     </aside>
 
-    <!-- Main Content - 在侧边栏右侧 -->
-    <main class="flex-1 min-h-screen overflow-auto relative">
-      <!-- Background Gradient -->
-      <div class="absolute inset-0 bg-gradient-to-br from-navy-deep via-slate-900/50 to-navy-deep pointer-events-none"></div>
-      
-      <!-- Content -->
-      <div class="relative z-10 p-6 lg:p-8">
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <div>
+          <p class="topbar-kicker">Campus Lease Console</p>
+          <h2 class="topbar-title">{{ currentPage.name }}</h2>
+          <p class="topbar-text">{{ currentPage.description }}</p>
+        </div>
+        <div class="topbar-meta">
+          <div class="meta-pill">统一后台 / 小程序</div>
+          <div class="meta-pill accent">{{ todayLabel }}</div>
+        </div>
+      </header>
+
+      <main class="admin-page">
         <slot />
-      </div>
-    </main>
+      </main>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 
-const menuItems = ref([
-  { path: '/', name: '首页', icon: '🏠' },
-  { path: '/users', name: '用户管理', icon: '👥' },
-  { path: '/items', name: '物品管理', icon: '📦' },
-  { path: '/orders', name: '订单管理', icon: '📋' }
-])
+const route = useRoute()
+
+interface MenuItem {
+  path: string
+  name: string
+  short: string
+  icon: string
+  hint: string
+  description: string
+}
+
+const menuItems: MenuItem[] = [
+  {
+    path: '/',
+    name: '运营总览',
+    short: '总览',
+    icon: '🏠',
+    hint: '平台概况与节奏',
+    description: '查看系统关键指标、近期动作和模块联动状态。'
+  },
+  {
+    path: '/users',
+    name: '用户管理',
+    short: '用户',
+    icon: '👥',
+    hint: '账号、信用与活跃度',
+    description: '统一用户信息、信用分与状态管理，让数据更容易横向比较。'
+  },
+  {
+    path: '/items',
+    name: '物品管理',
+    short: '物品',
+    icon: '📦',
+    hint: '发布、审核与陈列',
+    description: '梳理物品卡片、价格区和状态信息，让审核与巡检更清晰。'
+  },
+  {
+    path: '/orders',
+    name: '订单管理',
+    short: '订单',
+    icon: '📋',
+    hint: '流程、金额与异常',
+    description: '聚焦订单状态、交易金额和详情弹窗，提升处理效率。'
+  }
+]
+
+const currentPage = computed(() => {
+  return menuItems.find((item) => item.path === route.path) || menuItems[0]!
+})
+
+const todayLabel = new Intl.DateTimeFormat('zh-CN', {
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long'
+}).format(new Date())
 </script>

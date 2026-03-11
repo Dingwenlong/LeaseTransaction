@@ -1,306 +1,254 @@
 <template>
-  <div class="animate-fade-in">
-    <!-- Page Header -->
-    <div class="page-header">
-      <div class="page-header-title">
-        <div class="page-header-icon bg-cyan-neon/10">
-          <span>👥</span>
-        </div>
-        <h1 class="page-header-text text-transparent bg-clip-text bg-gradient-to-r from-cyan-neon to-cyan-400">
-          用户管理
-        </h1>
-      </div>
-      <p class="page-header-desc">管理和审核平台用户，维护校园交易环境</p>
+  <section class="page-header">
+    <div class="page-header-main">
+      <p class="page-eyebrow">Users</p>
+      <h1 class="page-title">用户信息、信用状态和操作入口放回同一视线。</h1>
+      <p class="page-description">
+        保留后台的未来感配色，但把列表视图改成更适合日常巡检的结构，先看用户状态，再看信用，再决定动作。
+      </p>
     </div>
+    <div class="page-actions">
+      <button class="button button-ghost" @click="resetFilters">
+        <span>重置筛选</span>
+      </button>
+      <button class="button button-primary" @click="handleSearch">
+        <span>刷新列表</span>
+        <span>→</span>
+      </button>
+    </div>
+  </section>
 
-    <!-- Search Filter Card -->
-    <div class="filter-card">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div class="filter-item">
-          <label class="filter-label text-cyan-neon">
-            <span>🔍</span>
-            <span>关键词搜索</span>
-          </label>
+  <section class="metric-grid">
+    <article v-for="metric in userMetrics" :key="metric.label" class="metric-card">
+      <p class="metric-label">{{ metric.label }}</p>
+      <div class="metric-value-row">
+        <h3 class="metric-value">{{ metric.value }}</h3>
+        <span class="status-pill" :class="metric.tone">{{ metric.tag }}</span>
+      </div>
+      <p class="metric-foot">{{ metric.note }}</p>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">筛选工具栏</h2>
+        <p class="panel-subtitle">字段顺序与表格列顺序一致，减少筛选时的上下文切换。</p>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="toolbar-grid">
+        <label class="field">
+          <span class="field-label">关键词</span>
           <input
             v-model="searchKeyword"
+            class="field-control"
             type="text"
-            placeholder="输入用户名/昵称查询..."
-            class="input-base"
+            placeholder="用户名 / 昵称"
             @keyup.enter="handleSearch"
           />
-        </div>
-        <div class="filter-item">
-          <label class="filter-label text-cyan-neon">
-            <span>📊</span>
-            <span>用户状态</span>
-          </label>
-          <select
-            v-model="searchStatus"
-            class="input-base appearance-none cursor-pointer"
-          >
-            <option value="" class="bg-slate-900">全部状态</option>
-            <option :value="1" class="bg-slate-900">正常</option>
-            <option :value="0" class="bg-slate-900">禁用</option>
+        </label>
+        <label class="field">
+          <span class="field-label">用户状态</span>
+          <select v-model="searchStatus" class="field-control">
+            <option value="">全部状态</option>
+            <option :value="1">正常</option>
+            <option :value="0">禁用</option>
           </select>
-        </div>
-        <div class="filter-item">
-          <label class="filter-label text-cyan-neon">
-            <span>⭐</span>
-            <span>信用分筛选</span>
-          </label>
-          <select
-            v-model="searchCredit"
-            class="input-base appearance-none cursor-pointer"
-          >
-            <option value="" class="bg-slate-900">全部信用</option>
-            <option value="high" class="bg-slate-900">优秀(≥80)</option>
-            <option value="medium" class="bg-slate-900">良好(60-79)</option>
-            <option value="low" class="bg-slate-900">较差(&lt;60)</option>
+        </label>
+        <label class="field">
+          <span class="field-label">信用分段</span>
+          <select v-model="searchCredit" class="field-control">
+            <option value="">全部信用</option>
+            <option value="high">优秀 (≥80)</option>
+            <option value="medium">良好 (60-79)</option>
+            <option value="low">较差 (&lt;60)</option>
           </select>
-        </div>
-        <div class="flex items-end">
-          <button
-            @click="handleSearch"
-            class="btn-primary w-full"
-          >
-            <span>搜索</span>
-            <span>→</span>
-          </button>
+        </label>
+        <div class="field">
+          <span class="field-label">当前页反馈</span>
+          <div class="field-control" style="display: flex; align-items: center;">
+            已展示 {{ visibleUsers.length }} 位用户
+          </div>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- Data Table Card -->
-    <div class="table-container">
-      <!-- Table Header -->
-      <div class="table-header">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-white flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-cyan-neon animate-pulse"></span>
-            用户列表
-          </h3>
-          <span class="text-sm text-slate-400">共 {{ total }} 位用户</span>
-        </div>
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">用户列表</h2>
+        <p class="panel-subtitle">列表信息按“身份 - 信用 - 状态 - 操作”排列，更适合批量巡检。</p>
       </div>
-
-      <!-- Table -->
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead>
-            <tr class="border-b border-white/10">
-              <th class="table-head">用户ID</th>
-              <th class="table-head">用户名</th>
-              <th class="table-head">昵称</th>
-              <th class="table-head">校区</th>
-              <th class="table-head">信用分</th>
-              <th class="table-head">状态</th>
-              <th class="table-head text-right">操作</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5">
-            <tr v-for="user in users" :key="user.id" class="table-row">
-              <td class="table-cell">
-                <span class="text-white font-mono bg-white/5 px-3 py-1.5 rounded-lg text-sm">{{ user.id }}</span>
-              </td>
-              <td class="table-cell">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-neon/20 to-fuchsia-500/20 flex items-center justify-center">
-                    <span class="text-sm">👤</span>
-                  </div>
-                  <span class="text-white font-medium">{{ user.username }}</span>
-                </div>
-              </td>
-              <td class="table-cell text-slate-300">{{ user.nickname || '-' }}</td>
-              <td class="table-cell">
-                <span class="flex items-center gap-1 text-slate-300">
-                  <span>📍</span>
-                  <span>{{ user.campus || '-' }}</span>
-                </span>
-              </td>
-              <td class="table-cell">
-                <div class="flex items-center gap-3">
-                  <div class="w-16 h-2 rounded-full bg-white/10 overflow-hidden">
-                    <div 
-                      class="h-full rounded-full transition-all duration-500"
-                      :class="getCreditBarClass(user.creditScore)"
-                      :style="{ width: user.creditScore + '%' }"
-                    ></div>
-                  </div>
-                  <span :class="getCreditClass(user.creditScore)" class="font-bold text-sm min-w-[2rem]">
-                    {{ user.creditScore }}
-                  </span>
-                </div>
-              </td>
-              <td class="table-cell">
-                <span :class="getStatusClass(user.status)" class="tag-base">
-                  <span class="flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full" :class="user.status === 1 ? 'bg-acid-green' : 'bg-red-400'"></span>
-                    {{ user.status === 1 ? '正常' : '禁用' }}
-                  </span>
-                </span>
-              </td>
-              <td class="table-cell text-right">
-                <div class="flex items-center justify-end gap-2">
-                  <button
-                    @click="viewUser(user)"
-                    class="btn-ghost btn-sm"
-                  >
-                    <span>👁</span>
-                    <span>查看</span>
-                  </button>
-                  <button
-                    @click="toggleStatus(user)"
-                    :class="user.status === 1 ? 'btn-danger btn-sm' : 'btn-success btn-sm'"
-                  >
-                    <span>{{ user.status === 1 ? '🚫' : '✓' }}</span>
-                    <span>{{ user.status === 1 ? '禁用' : '启用' }}</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr v-if="loading">
-              <td colspan="7" class="p-12 text-center">
-                <div class="flex flex-col items-center gap-4">
-                  <div class="w-12 h-12 rounded-full border-4 border-cyan-neon/20 border-t-cyan-neon animate-spin"></div>
-                  <p class="text-cyan-neon">加载中...</p>
-                </div>
-              </td>
-            </tr>
-            <tr v-if="!loading && users.length === 0">
-              <td colspan="7" class="p-12 text-center">
-                <div class="flex flex-col items-center gap-4">
-                  <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center">
-                    <span class="text-4xl">👥</span>
-                  </div>
-                  <p class="text-slate-400">暂无用户数据</p>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      <div class="pagination-container">
-        <div class="pagination-info">
-          显示 {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, total) }} 条，共 {{ total }} 条
-        </div>
-        <div class="pagination-controls">
-          <button
-            @click="prevPage"
-            :disabled="currentPage === 1"
-            class="pagination-btn"
-            :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
-          >
-            <span>←</span>
-            <span>上一页</span>
-          </button>
-          <div class="flex items-center gap-1">
-            <button
-              v-for="page in displayedPages"
-              :key="page"
-              @click="goToPage(page)"
-              class="pagination-page"
-              :class="{ 'active': currentPage === page }"
-            >
-              {{ page }}
-            </button>
-          </div>
-          <button
-            @click="nextPage"
-            :disabled="currentPage === totalPages"
-            class="pagination-btn"
-            :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
-          >
-            <span>下一页</span>
-            <span>→</span>
-          </button>
-        </div>
-      </div>
+      <span class="mini-chip">总计 {{ total }} 位</span>
     </div>
 
-    <!-- User Detail Modal -->
-    <div v-if="showDetail" class="modal-overlay" @click.self="showDetail = false">
-      <div class="modal-container">
-        <!-- Modal Header -->
-        <div class="modal-header">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-cyan-neon/20 flex items-center justify-center">
-              <span class="text-xl">👤</span>
-            </div>
-            <h2 class="text-xl font-bold text-white">用户详情</h2>
-          </div>
-          <button 
-            @click="showDetail = false" 
-            class="modal-close"
-          >
-            <span>✕</span>
-          </button>
-        </div>
-        
-        <!-- Modal Content -->
-        <div class="modal-body" v-if="currentUser">
-          <!-- User Avatar & Basic Info -->
-          <div class="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
-            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-neon to-fuchsia-500 flex items-center justify-center text-4xl">
-              👤
-            </div>
-            <div>
-              <h3 class="text-2xl font-bold text-white mb-1">{{ currentUser.username }}</h3>
-              <p class="text-slate-400">{{ currentUser.nickname || '暂无昵称' }}</p>
-              <div class="flex items-center gap-2 mt-2">
-                <span :class="getStatusClass(currentUser.status)" class="tag-base">
-                  {{ currentUser.status === 1 ? '正常' : '禁用' }}
-                </span>
-                <span :class="getCreditTagClass(currentUser.creditScore)" class="tag-base">
-                  信用 {{ currentUser.creditScore }}
-                </span>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>用户ID</th>
+            <th>用户信息</th>
+            <th>校区</th>
+            <th>信用分</th>
+            <th>状态</th>
+            <th>注册时间</th>
+            <th style="text-align: right;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="user in visibleUsers" :key="user.id">
+            <td>
+              <span class="table-id">#{{ user.id }}</span>
+            </td>
+            <td>
+              <div class="avatar-line">
+                <div class="avatar-badge">👤</div>
+                <div class="truncate">
+                  <p class="table-primary truncate">{{ user.username }}</p>
+                  <p class="table-secondary truncate">{{ user.nickname || '未设置昵称' }}</p>
+                </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Detail Grid -->
-          <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">用户ID</label>
-              <p class="text-white font-mono">{{ currentUser.id }}</p>
-            </div>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">手机号</label>
-              <p class="text-white">{{ currentUser.phone || '-' }}</p>
-            </div>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">邮箱</label>
-              <p class="text-white">{{ currentUser.email || '-' }}</p>
-            </div>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">校区</label>
-              <p class="text-white flex items-center gap-1">
-                <span>📍</span>
-                <span>{{ currentUser.campus || '-' }}</span>
-              </p>
-            </div>
-            <div class="col-span-2 p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">注册时间</label>
-              <p class="text-white">{{ currentUser.createdAt }}</p>
-            </div>
-          </div>
-
-          <!-- Credit Score Bar -->
-          <div class="p-4 rounded-xl bg-white/5 border border-white/10 mb-6">
-            <label class="text-slate-400 text-sm mb-3 block">信用评分</label>
-            <div class="flex items-center gap-4">
-              <div class="flex-1 h-3 rounded-full bg-white/10 overflow-hidden">
-                <div 
-                  class="h-full rounded-full transition-all duration-500"
-                  :class="getCreditBarClass(currentUser.creditScore)"
-                  :style="{ width: currentUser.creditScore + '%' }"
-                ></div>
+            </td>
+            <td>
+              <p class="table-primary">{{ user.campus || '-' }}</p>
+            </td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="flex: 1; min-width: 72px; height: 10px; border-radius: 999px; background: rgba(148, 163, 184, 0.12); overflow: hidden;">
+                  <div
+                    :class="getCreditBarClass(user.creditScore)"
+                    :style="{ width: `${Math.max(0, Math.min(100, user.creditScore))}%`, height: '100%', borderRadius: '999px' }"
+                  ></div>
+                </div>
+                <strong :class="getCreditClass(user.creditScore)">{{ user.creditScore }}</strong>
               </div>
-              <span :class="getCreditClass(currentUser.creditScore)" class="font-bold text-xl">
-                {{ currentUser.creditScore }}
+            </td>
+            <td>
+              <span class="status-pill" :class="user.status === 1 ? 'green' : 'red'">
+                {{ user.status === 1 ? '正常' : '禁用' }}
               </span>
-            </div>
+            </td>
+            <td>
+              <p class="table-primary">{{ formatDate(user.createdAt) }}</p>
+              <p class="table-secondary">最近更新 {{ formatDate(user.updatedAt) }}</p>
+            </td>
+            <td>
+              <div class="table-actions" style="justify-content: flex-end;">
+                <button class="button button-ghost button-sm" @click="viewUser(user)">
+                  查看
+                </button>
+                <button
+                  class="button button-sm"
+                  :class="user.status === 1 ? 'button-danger' : 'button-success'"
+                  @click="toggleStatus(user)"
+                >
+                  {{ user.status === 1 ? '禁用' : '启用' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr v-if="loading">
+            <td colspan="7">
+              <div class="empty-state">
+                <strong>正在加载用户数据</strong>
+                <span>后台正在同步当前页用户信息。</span>
+              </div>
+            </td>
+          </tr>
+          <tr v-else-if="visibleUsers.length === 0">
+            <td colspan="7">
+              <div class="empty-state">
+                <strong>当前条件下没有用户</strong>
+                <span>可以重置筛选条件后重新加载。</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+      <div class="pagination-info">
+        当前页 {{ currentPage }}，显示 {{ visibleUsers.length }} 条，后台总记录 {{ total }} 条
+      </div>
+      <div class="pagination-controls">
+        <button
+          class="button button-ghost button-sm"
+          :disabled="currentPage === 1"
+          @click="prevPage"
+        >
+          上一页
+        </button>
+        <button
+          v-for="page in displayedPages"
+          :key="page"
+          class="pagination-page"
+          :class="{ active: currentPage === page }"
+          @click="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+        <button
+          class="button button-ghost button-sm"
+          :disabled="currentPage === totalPages || totalPages === 0"
+          @click="nextPage"
+        >
+          下一页
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <div v-if="showDetail && currentUser" class="modal-overlay" @click.self="showDetail = false">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">{{ currentUser.username }}</h2>
+          <p class="modal-description">用户详情与信用概况</p>
+        </div>
+        <button class="modal-close" @click="showDetail = false">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="status-banner" :class="currentUser.status === 1 ? 'green' : 'red'">
+          <p class="detail-label">账号状态</p>
+          <p class="detail-value">{{ currentUser.status === 1 ? '用户状态正常，可参与交易。' : '该用户已被限制使用，需要人工复核。' }}</p>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-card">
+            <p class="detail-label">用户 ID</p>
+            <p class="detail-value">{{ currentUser.id }}</p>
+          </div>
+          <div class="detail-card">
+            <p class="detail-label">昵称</p>
+            <p class="detail-value">{{ currentUser.nickname || '未设置昵称' }}</p>
+          </div>
+          <div class="detail-card">
+            <p class="detail-label">手机号</p>
+            <p class="detail-value">{{ currentUser.phone || '-' }}</p>
+          </div>
+          <div class="detail-card">
+            <p class="detail-label">邮箱</p>
+            <p class="detail-value">{{ currentUser.email || '-' }}</p>
+          </div>
+          <div class="detail-card">
+            <p class="detail-label">校区</p>
+            <p class="detail-value">{{ currentUser.campus || '-' }}</p>
+          </div>
+          <div class="detail-card">
+            <p class="detail-label">信用分</p>
+            <p class="detail-value">{{ currentUser.creditScore }}</p>
+          </div>
+          <div class="detail-card">
+            <p class="detail-label">注册时间</p>
+            <p class="detail-value">{{ formatDate(currentUser.createdAt) }}</p>
+          </div>
+          <div class="detail-card">
+            <p class="detail-label">更新时间</p>
+            <p class="detail-value">{{ formatDate(currentUser.updatedAt) }}</p>
           </div>
         </div>
       </div>
@@ -309,7 +257,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { userApi, type User } from '../api'
 
@@ -326,43 +274,87 @@ const users = ref<User[]>([])
 const total = ref(0)
 const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
 
-// Display page numbers
 const displayedPages = computed(() => {
   const pages: number[] = []
   const maxDisplay = 5
   let start = Math.max(1, currentPage.value - Math.floor(maxDisplay / 2))
   let end = Math.min(totalPages.value, start + maxDisplay - 1)
-  
+
   if (end - start + 1 < maxDisplay) {
     start = Math.max(1, end - maxDisplay + 1)
   }
-  
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
+
+  for (let index = start; index <= end; index += 1) {
+    pages.push(index)
   }
+
   return pages
 })
 
-const getCreditClass = (score: number) => {
-  if (score >= 80) return 'text-acid-green'
-  if (score >= 60) return 'text-yellow-400'
-  return 'text-red-400'
-}
+const visibleUsers = computed(() => {
+  return users.value.filter((user) => {
+    if (searchCredit.value === 'high') return user.creditScore >= 80
+    if (searchCredit.value === 'medium') return user.creditScore >= 60 && user.creditScore < 80
+    if (searchCredit.value === 'low') return user.creditScore < 60
+    return true
+  })
+})
 
-const getCreditTagClass = (score: number) => {
-  if (score >= 80) return 'tag-green'
-  if (score >= 60) return 'tag-yellow'
-  return 'tag-red'
+const userMetrics = computed(() => {
+  const list = visibleUsers.value
+  const activeCount = list.filter((user) => user.status === 1).length
+  const excellentCount = list.filter((user) => user.creditScore >= 80).length
+  const averageCredit = list.length
+    ? Math.round(list.reduce((sum, user) => sum + user.creditScore, 0) / list.length)
+    : 0
+
+  return [
+    {
+      label: '当前页用户',
+      value: `${list.length}`,
+      tag: '可巡检',
+      tone: 'cyan',
+      note: '当前页数据保持结构统一，支持快速横向比较。'
+    },
+    {
+      label: '正常状态',
+      value: `${activeCount}`,
+      tag: activeCount === list.length && list.length > 0 ? '稳定' : '需关注',
+      tone: activeCount === list.length && list.length > 0 ? 'green' : 'yellow',
+      note: '用户状态标签与操作按钮颜色保持一致，避免误判。'
+    },
+    {
+      label: '高信用用户',
+      value: `${excellentCount}`,
+      tag: '≥ 80',
+      tone: 'magenta',
+      note: '优秀信用用户单独聚焦，便于运营做激励和回访。'
+    },
+    {
+      label: '平均信用分',
+      value: `${averageCredit}`,
+      tag: averageCredit >= 80 ? '优秀' : averageCredit >= 60 ? '良好' : '偏低',
+      tone: averageCredit >= 80 ? 'green' : averageCredit >= 60 ? 'yellow' : 'red',
+      note: '把信用柱和数值放在同一格，识别更直接。'
+    }
+  ]
+})
+
+const getCreditClass = (score: number) => {
+  if (score >= 80) return 'credit-good'
+  if (score >= 60) return 'credit-warn'
+  return 'credit-danger'
 }
 
 const getCreditBarClass = (score: number) => {
-  if (score >= 80) return 'bg-gradient-to-r from-acid-green to-green-400'
-  if (score >= 60) return 'bg-gradient-to-r from-yellow-400 to-yellow-500'
-  return 'bg-gradient-to-r from-red-400 to-red-500'
+  if (score >= 80) return 'credit-bar-good'
+  if (score >= 60) return 'credit-bar-warn'
+  return 'credit-bar-danger'
 }
 
-const getStatusClass = (status: number) => {
-  return status === 1 ? 'tag-green' : 'tag-red'
+const formatDate = (value?: string) => {
+  if (!value) return '-'
+  return value.replace('T', ' ').slice(0, 16)
 }
 
 const loadUsers = async () => {
@@ -379,12 +371,21 @@ const loadUsers = async () => {
     total.value = res.total || 0
   } catch (error) {
     console.error('加载用户列表失败:', error)
+    ElMessage.error('加载用户列表失败')
   } finally {
     loading.value = false
   }
 }
 
 const handleSearch = () => {
+  currentPage.value = 1
+  loadUsers()
+}
+
+const resetFilters = () => {
+  searchKeyword.value = ''
+  searchStatus.value = ''
+  searchCredit.value = ''
   currentPage.value = 1
   loadUsers()
 }
@@ -405,12 +406,14 @@ const toggleStatus = async (user: User) => {
         type: 'warning'
       }
     )
+
     await userApi.updateStatus(user.id, user.status === 1 ? 0 : 1)
     ElMessage.success('操作成功')
     loadUsers()
   } catch (error) {
     if (error !== 'cancel') {
       console.error('操作失败:', error)
+      ElMessage.error('操作失败')
     }
   }
 }
@@ -422,14 +425,14 @@ const goToPage = (page: number) => {
 
 const prevPage = () => {
   if (currentPage.value > 1) {
-    currentPage.value--
+    currentPage.value -= 1
     loadUsers()
   }
 }
 
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
-    currentPage.value++
+    currentPage.value += 1
     loadUsers()
   }
 }

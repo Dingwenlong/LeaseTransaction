@@ -1,25 +1,39 @@
-<view class="container">
-  <view class="header">
-    <view class="logo">
-      <text class="logo-text">◆ 校园租赁 ◆</text>
+<view class="mp-page login-page">
+  <view class="login-shell">
+    <view class="mp-hero login-hero">
+      <view class="mp-eyebrow">Sign In</view>
+      <view class="mp-title">欢迎回到校园租赁</view>
+      <view class="mp-subtitle">登录后可以同步订单、消息和个人信用分，后台与客户端会使用同一套账号状态。</view>
     </view>
-    <view class="subtitle">个人物品租赁与交易平台</view>
-  </view>
 
-  <view class="form">
-    <view class="form-item">
-      <input class="input" placeholder="请输入学号/手机号" v-model="username" bindinput="onUsernameInput" />
-    </view>
-    <view class="form-item">
-      <input class="input" placeholder="请输入密码" password bindinput="onPasswordInput" />
-    </view>
-    <button class="login-btn" bindtap="handleLogin">登录</button>
-  </view>
+    <view class="mp-panel login-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">账号登录</view>
+            <view class="mp-section-desc">支持学号或手机号登录，输入框和主按钮采用统一视觉样式。</view>
+          </view>
+        </view>
 
-  <view class="footer">
-    <text class="footer-text">登录即表示同意</text>
-    <text class="link">用户协议</text>
-    <text class="footer-text">和</text>
-    <text class="link">隐私政策</text>
+        <view class="login-form">
+          <view class="login-field">
+            <view class="login-label">学号 / 手机号</view>
+            <input class="login-input" placeholder="请输入学号或手机号" bindinput="onUsernameInput" />
+          </view>
+          <view class="login-field">
+            <view class="login-label">密码</view>
+            <input class="login-input" placeholder="请输入密码" password bindinput="onPasswordInput" />
+          </view>
+          <button class="mp-primary-btn login-submit" bindtap="handleLogin">立即登录</button>
+        </view>
+      </view>
+    </view>
+
+    <view class="login-footer">
+      <text class="login-footer-text">登录即表示同意</text>
+      <text class="login-footer-link">用户协议</text>
+      <text class="login-footer-text">和</text>
+      <text class="login-footer-link">隐私政策</text>
+    </view>
   </view>
 </view>

@@ -1,77 +1,137 @@
-<view class="container">
-  <view class="form-section">
-    <view class="section-title">◆ 基本信息 ◆</view>
-    
-    <view class="form-item">
-      <view class="label">物品图片</view>
-      <view class="image-upload">
-        <view class="image-list">
-          <view class="image-item" wx:for="{{form.images}}" wx:key="index">
-            <image class="image" src="{{item}}" mode="aspectFill" />
-            <view class="image-delete" bindtap="deleteImage" data-index="{{index}}">×</view>
-          </view>
-          <view class="image-add" wx:if="{{form.images.length < 9}}" bindtap="chooseImage">
-            <text class="add-icon">+</text>
-            <text class="add-text">添加图片</text>
-          </view>
-        </view>
-        <view class="image-tip">最多上传9张图片</view>
+<view class="mp-page publish-page">
+  <view class="mp-shell">
+    <view class="mp-hero">
+      <view class="mp-eyebrow">Publish</view>
+      <view class="mp-title">发布你的物品</view>
+      <view class="mp-subtitle">表单字段顺序与物品详情卡一致，减少填写时的心智切换。</view>
+      <view class="mp-meta-row publish-tips">
+        <view class="mp-meta-pill">图片最多 9 张</view>
+        <view class="mp-meta-pill">支持租赁 / 出售</view>
+        <view class="mp-meta-pill">底部操作栏已避让安全区</view>
       </view>
     </view>
 
-    <view class="form-item">
-      <view class="label">物品名称</view>
-      <input class="input" placeholder="请输入物品名称" value="{{form.title}}" bindinput="onInput" data-field="title" />
-    </view>
-
-    <view class="form-item">
-      <view class="label">物品类型</view>
-      <view class="type-selector">
-        <view class="type-option {{form.type === 'lease' ? 'active' : ''}}" bindtap="selectType" data-type="lease">
-          <text class="type-icon">📦</text>
-          <text class="type-text">租赁</text>
+    <view class="mp-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">基本信息</view>
+            <view class="mp-section-desc">先上传图片，再填写标题、类型、价格和校区。</view>
+          </view>
         </view>
-        <view class="type-option {{form.type === 'sale' ? 'active' : ''}}" bindtap="selectType" data-type="sale">
-          <text class="type-icon">💰</text>
-          <text class="type-text">出售</text>
+
+        <view class="publish-form">
+          <view class="publish-field">
+            <view class="publish-label">物品图片</view>
+            <view class="publish-image-grid">
+              <view class="publish-image-item" wx:for="{{form.images}}" wx:key="index">
+                <image class="publish-image" src="{{item}}" mode="aspectFill" />
+                <view class="publish-image-delete" bindtap="deleteImage" data-index="{{index}}">×</view>
+              </view>
+              <view class="publish-image-add" wx:if="{{form.images.length < 9}}" bindtap="chooseImage">
+                <text class="publish-image-add-icon">＋</text>
+                <text class="publish-image-add-text">添加图片</text>
+              </view>
+            </view>
+            <view class="publish-tip">建议首图使用正面清晰照，审核会更快。</view>
+          </view>
+
+          <view class="publish-field">
+            <view class="publish-label">物品名称</view>
+            <input
+              class="publish-input"
+              placeholder="请输入物品名称"
+              value="{{form.title}}"
+              bindinput="onInput"
+              data-field="title"
+            />
+          </view>
+
+          <view class="publish-field">
+            <view class="publish-label">物品类型</view>
+            <view class="publish-type-grid">
+              <view class="publish-type-item {{form.type === 'lease' ? 'is-active' : ''}}" bindtap="selectType" data-type="lease">
+                <text class="publish-type-icon">📦</text>
+                <text class="publish-type-text">租赁</text>
+                <text class="publish-type-subtext">按天计费</text>
+              </view>
+              <view class="publish-type-item {{form.type === 'sale' ? 'is-active' : ''}}" bindtap="selectType" data-type="sale">
+                <text class="publish-type-icon">💰</text>
+                <text class="publish-type-text">出售</text>
+                <text class="publish-type-subtext">一次成交</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="publish-field">
+            <view class="publish-label">物品分类</view>
+            <picker class="publish-picker" mode="selector" range="{{categories}}" bindchange="onCategoryChange">
+              <view class="publish-picker-text">{{form.category || '请选择分类'}}</view>
+            </picker>
+          </view>
+
+          <view class="publish-inline-grid">
+            <view class="publish-field">
+              <view class="publish-label">价格（元）</view>
+              <input
+                class="publish-input"
+                type="digit"
+                placeholder="{{form.type === 'lease' ? '请输入每日租金' : '请输入售价'}}"
+                value="{{form.price}}"
+                bindinput="onInput"
+                data-field="price"
+              />
+            </view>
+
+            <view class="publish-field" wx:if="{{form.type === 'lease'}}">
+              <view class="publish-label">押金（元）</view>
+              <input
+                class="publish-input"
+                type="digit"
+                placeholder="请输入押金金额"
+                value="{{form.deposit}}"
+                bindinput="onInput"
+                data-field="deposit"
+              />
+            </view>
+          </view>
+
+          <view class="publish-field">
+            <view class="publish-label">所在校区</view>
+            <picker class="publish-picker" mode="selector" range="{{campuses}}" bindchange="onCampusChange">
+              <view class="publish-picker-text">{{form.campus || '请选择校区'}}</view>
+            </picker>
+          </view>
         </view>
       </view>
     </view>
 
-    <view class="form-item">
-      <view class="label">物品分类</view>
-      <picker class="picker" mode="selector" range="{{categories}}" bindchange="onCategoryChange">
-        <view class="picker-text">{{form.category || '请选择分类'}}</view>
-      </picker>
-    </view>
-
-    <view class="form-item">
-      <view class="label">价格（元）</view>
-      <input class="input" type="digit" placeholder="{{form.type === 'lease' ? '请输入每日租金' : '请输入售价'}}" value="{{form.price}}" bindinput="onInput" data-field="price" />
-    </view>
-
-    <view class="form-item" wx:if="{{form.type === 'lease'}}">
-      <view class="label">押金（元）</view>
-      <input class="input" type="digit" placeholder="请输入押金金额" value="{{form.deposit}}" bindinput="onInput" data-field="deposit" />
-    </view>
-
-    <view class="form-item">
-      <view class="label">所在校区</view>
-      <picker class="picker" mode="selector" range="{{campuses}}" bindchange="onCampusChange">
-        <view class="picker-text">{{form.campus || '请选择校区'}}</view>
-      </picker>
+    <view class="mp-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">物品描述</view>
+            <view class="mp-section-desc">补充成色、配件和交接方式，长文本自动换行。</view>
+          </view>
+        </view>
+        <view class="publish-field">
+          <textarea
+            class="publish-textarea"
+            placeholder="请详细描述物品的成色、使用情况、交接方式等..."
+            value="{{form.description}}"
+            bindinput="onInput"
+            data-field="description"
+            maxlength="500"
+          />
+          <view class="publish-count">{{form.description.length}} / 500</view>
+        </view>
+      </view>
     </view>
   </view>
 
-  <view class="form-section">
-    <view class="section-title">◆ 物品描述 ◆</view>
-    <view class="form-item">
-      <textarea class="textarea" placeholder="请详细描述物品的成色、使用情况等..." value="{{form.description}}" bindinput="onInput" data-field="description" maxlength="500" />
-      <view class="char-count">{{form.description.length}}/500</view>
-    </view>
-  </view>
-
-  <view class="submit-btn" bindtap="handleSubmit">
-    <text class="btn-text">发布物品</text>
+  <view class="mp-fixed-spacer"></view>
+  <view class="mp-fixed-bar">
+    <view class="mp-secondary-btn">暂存草稿</view>
+    <view class="mp-primary-btn" bindtap="handleSubmit">发布物品</view>
   </view>
 </view>

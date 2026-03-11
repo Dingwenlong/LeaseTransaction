@@ -1,52 +1,85 @@
-<view class="container">
-  <view class="status-section">
-    <view class="status-icon">✓</view>
-    <view class="status-text">{{order.status}}</view>
-    <view class="status-desc">{{order.statusDesc}}</view>
-  </view>
-
-  <view class="info-section">
-    <view class="section-title">◆ 订单信息 ◆</view>
-    <view class="info-row">
-      <text class="label">订单号</text>
-      <text class="value">{{order.orderNo}}</text>
+<view class="mp-page order-detail-page">
+  <view class="mp-shell">
+    <view class="mp-hero order-detail-hero">
+      <view class="order-detail-status-icon">✓</view>
+      <view class="mp-title order-detail-title">{{order.status}}</view>
+      <view class="mp-subtitle order-detail-subtitle">{{order.statusDesc}}</view>
+      <view class="mp-tag {{statusTagClass}}">
+        {{order.type}}
+      </view>
     </view>
-    <view class="info-row">
-      <text class="label">下单时间</text>
-      <text class="value">{{order.createTime}}</text>
-    </view>
-  </view>
 
-  <view class="item-section">
-    <view class="section-title">◆ 物品信息 ◆</view>
-    <view class="item-card">
-      <image class="item-image" src="{{order.itemImage}}" mode="aspectFill" />
-      <view class="item-info">
-        <view class="item-title">{{order.itemTitle}}</view>
-        <view class="item-type {{order.typeClass}}">{{order.type}}</view>
+    <view class="mp-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">订单信息</view>
+            <view class="mp-section-desc">订单号支持断行，长内容不会挤破版面。</view>
+          </view>
+        </view>
+        <view class="order-detail-list">
+          <view class="order-detail-row">
+            <text class="order-detail-label">订单号</text>
+            <text class="order-detail-value mp-break-all">{{order.orderNo}}</text>
+          </view>
+          <view class="order-detail-row">
+            <text class="order-detail-label">下单时间</text>
+            <text class="order-detail-value">{{order.createTime}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="mp-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">物品信息</view>
+            <view class="mp-section-desc">物品卡片与首页保持相同的信息结构。</view>
+          </view>
+        </view>
+        <view class="order-detail-item">
+          <image class="order-detail-image" src="{{order.itemImage}}" mode="aspectFill" />
+          <view class="order-detail-item-copy">
+            <view class="order-detail-item-title">{{order.itemTitle}}</view>
+            <view class="mp-tag {{order.typeClass === 'lease' ? 'mp-tag-cyan' : 'mp-tag-magenta'}}">
+              {{order.type}}
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="mp-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">费用明细</view>
+            <view class="mp-section-desc">金额信息统一使用高亮色，和后台保持一致。</view>
+          </view>
+        </view>
+        <view class="order-detail-list">
+          <view class="order-detail-row">
+            <text class="order-detail-label">{{priceLabel}}</text>
+            <text class="order-detail-value">¥{{order.amount}}</text>
+          </view>
+          <view class="order-detail-row" wx:if="{{order.deposit}}">
+            <text class="order-detail-label">押金</text>
+            <text class="order-detail-value">¥{{order.deposit}}</text>
+          </view>
+          <view class="order-detail-total">
+            <text class="order-detail-label">实付金额</text>
+            <text class="order-detail-total-value">¥{{order.totalAmount}}</text>
+          </view>
+        </view>
       </view>
     </view>
   </view>
 
-  <view class="price-section">
-    <view class="section-title">◆ 费用明细 ◆</view>
-    <view class="price-row">
-      <text class="label">{{order.type === '租赁' ? '租金' : '商品价格'}}</text>
-      <text class="value">¥{{order.amount}}</text>
-    </view>
-    <view class="price-row" wx:if="{{order.deposit}}">
-      <text class="label">押金</text>
-      <text class="value">¥{{order.deposit}}</text>
-    </view>
-    <view class="total-row">
-      <text class="label">实付金额</text>
-      <text class="total">¥{{order.totalAmount}}</text>
-    </view>
-  </view>
-
-  <view class="action-bar">
-    <view class="btn secondary" wx:if="{{order.status === '待付款'}}" bindtap="handleCancel">取消订单</view>
-    <view class="btn primary" wx:if="{{order.status === '待付款'}}" bindtap="handlePay">立即付款</view>
-    <view class="btn primary" wx:if="{{order.status === '进行中'}}" bindtap="handleContact">联系卖家</view>
+  <view class="mp-fixed-spacer" wx:if="{{showActionBar}}"></view>
+  <view class="mp-fixed-bar" wx:if="{{showActionBar}}">
+    <view class="mp-secondary-btn" wx:if="{{canPay}}" bindtap="handleCancel">取消订单</view>
+    <view class="mp-primary-btn" wx:if="{{canPay}}" bindtap="handlePay">立即付款</view>
+    <view class="mp-primary-btn" wx:if="{{canContact}}" bindtap="handleContact">联系卖家</view>
   </view>
 </view>

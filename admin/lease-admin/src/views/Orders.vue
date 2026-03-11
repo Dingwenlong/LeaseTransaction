@@ -1,324 +1,220 @@
 <template>
-  <div class="animate-fade-in">
-    <!-- Page Header -->
-    <div class="page-header">
-      <div class="page-header-title">
-        <div class="page-header-icon bg-violet-neon/10">
-          <span>📋</span>
-        </div>
-        <h1 class="page-header-text text-transparent bg-clip-text bg-gradient-to-r from-violet-neon to-violet-400">
-          订单管理
-        </h1>
-      </div>
-      <p class="page-header-desc">管理所有租赁与交易订单，跟踪订单状态</p>
+  <section class="page-header">
+    <div class="page-header-main">
+      <p class="page-eyebrow">Orders</p>
+      <h1 class="page-title">订单页只保留与决策直接相关的信息。</h1>
+      <p class="page-description">
+        订单管理改成强状态导向的表格：先看状态与金额，再看物品与交易双方，详情弹窗也保持同样的阅读顺序。
+      </p>
     </div>
+    <div class="page-actions">
+      <button class="button button-ghost" @click="resetFilters">重置条件</button>
+      <button class="button button-primary" @click="handleSearch">
+        <span>应用筛选</span>
+        <span>→</span>
+      </button>
+    </div>
+  </section>
 
-    <!-- Search Filter Card -->
-    <div class="filter-card">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div class="filter-item">
-          <label class="filter-label text-violet-neon">
-            <span>🔍</span>
-            <span>订单号/关键词</span>
-          </label>
+  <section class="metric-grid">
+    <article v-for="metric in orderMetrics" :key="metric.label" class="metric-card">
+      <p class="metric-label">{{ metric.label }}</p>
+      <div class="metric-value-row">
+        <h3 class="metric-value">{{ metric.value }}</h3>
+        <span class="status-pill" :class="metric.tone">{{ metric.tag }}</span>
+      </div>
+      <p class="metric-foot">{{ metric.note }}</p>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">订单筛选</h2>
+        <p class="panel-subtitle">维持后台与客户端同样的状态语义，避免前后台文案错位。</p>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="toolbar-grid">
+        <label class="field">
+          <span class="field-label">订单号 / 关键词</span>
           <input
             v-model="searchKeyword"
+            class="field-control"
             type="text"
-            placeholder="输入订单号查询..."
-            class="input-base"
+            placeholder="输入订单号、物品名或用户"
+            @keyup.enter="handleSearch"
           />
-        </div>
-        <div class="filter-item">
-          <label class="filter-label text-violet-neon">
-            <span>📋</span>
-            <span>订单类型</span>
-          </label>
-          <select
-            v-model="searchType"
-            class="input-base appearance-none cursor-pointer"
-          >
-            <option value="" class="bg-slate-900">全部类型</option>
-            <option value="lease" class="bg-slate-900">租赁订单</option>
-            <option value="sale" class="bg-slate-900">交易订单</option>
+        </label>
+        <label class="field">
+          <span class="field-label">订单类型</span>
+          <select v-model="searchType" class="field-control">
+            <option value="">全部类型</option>
+            <option value="lease">租赁订单</option>
+            <option value="sale">交易订单</option>
           </select>
-        </div>
-        <div class="filter-item">
-          <label class="filter-label text-violet-neon">
-            <span>📊</span>
-            <span>订单状态</span>
-          </label>
-          <select
-            v-model="searchStatus"
-            class="input-base appearance-none cursor-pointer"
-          >
-            <option value="" class="bg-slate-900">全部状态</option>
-            <option value="pending" class="bg-slate-900">待付款</option>
-            <option value="paid" class="bg-slate-900">已付款</option>
-            <option value="in_progress" class="bg-slate-900">进行中</option>
-            <option value="completed" class="bg-slate-900">已完成</option>
-            <option value="cancelled" class="bg-slate-900">已取消</option>
-            <option value="refunded" class="bg-slate-900">已退款</option>
+        </label>
+        <label class="field">
+          <span class="field-label">订单状态</span>
+          <select v-model="searchStatus" class="field-control">
+            <option value="">全部状态</option>
+            <option value="pending">待付款</option>
+            <option value="paid">已付款</option>
+            <option value="in_progress">进行中</option>
+            <option value="completed">已完成</option>
+            <option value="cancelled">已取消</option>
+            <option value="refunded">已退款</option>
           </select>
-        </div>
-        <div class="flex items-end">
-          <button
-            @click="handleSearch"
-            class="btn-primary w-full"
-          >
-            <span>搜索</span>
-            <span>→</span>
-          </button>
+        </label>
+        <div class="field">
+          <span class="field-label">当前结果</span>
+          <div class="field-control" style="display: flex; align-items: center;">
+            当前展示 {{ filteredOrders.length }} 条订单
+          </div>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- Data Table Card -->
-    <div class="table-container">
-      <!-- Table Header -->
-      <div class="table-header">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-white flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-violet-neon animate-pulse"></span>
-            订单列表
-          </h3>
-          <span class="text-sm text-slate-400">共 {{ total }} 条订单</span>
-        </div>
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">订单列表</h2>
+        <p class="panel-subtitle">把订单号、物品名和交易双方拆成稳定列，避免一行信息过载。</p>
       </div>
-
-      <!-- Table -->
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead>
-            <tr class="border-b border-white/10">
-              <th class="table-head">订单号</th>
-              <th class="table-head">物品</th>
-              <th class="table-head">买家/承租人</th>
-              <th class="table-head">卖家/出租人</th>
-              <th class="table-head">类型</th>
-              <th class="table-head">金额</th>
-              <th class="table-head">状态</th>
-              <th class="table-head">创建时间</th>
-              <th class="table-head text-right">操作</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5">
-            <tr v-for="order in orders" :key="order.id" class="table-row">
-              <td class="table-cell">
-                <span class="text-white font-mono bg-white/5 px-3 py-1.5 rounded-lg text-sm">{{ order.orderNo }}</span>
-              </td>
-              <td class="table-cell">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-neon/20 to-fuchsia-500/20 flex items-center justify-center">
-                    <span class="text-sm">📦</span>
-                  </div>
-                  <span class="text-white font-medium line-clamp-1 max-w-[150px]">{{ order.itemName }}</span>
-                </div>
-              </td>
-              <td class="table-cell">
-                <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-full bg-cyan-neon/20 flex items-center justify-center">
-                    <span class="text-xs">👤</span>
-                  </div>
-                  <span class="text-slate-300">{{ order.buyerName }}</span>
-                </div>
-              </td>
-              <td class="table-cell">
-                <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-full bg-fuchsia-500/20 flex items-center justify-center">
-                    <span class="text-xs">👤</span>
-                  </div>
-                  <span class="text-slate-300">{{ order.sellerName }}</span>
-                </div>
-              </td>
-              <td class="table-cell">
-                <span :class="order.type === 'lease' ? 'tag-cyan' : 'tag-fuchsia'" class="tag-base">
-                  {{ order.type === 'lease' ? '租赁' : '交易' }}
-                </span>
-              </td>
-              <td class="table-cell">
-                <span class="text-fuchsia-400 font-bold">¥{{ order.amount.toFixed(2) }}</span>
-              </td>
-              <td class="table-cell">
-                <span :class="getStatusClass(order.status)" class="tag-base">
-                  <span class="flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full" :class="getStatusDotClass(order.status)"></span>
-                    {{ getStatusText(order.status) }}
-                  </span>
-                </span>
-              </td>
-              <td class="table-cell text-slate-400 text-sm">{{ order.createdAt }}</td>
-              <td class="table-cell text-right">
-                <div class="flex items-center justify-end gap-2">
-                  <button
-                    @click="viewOrder(order)"
-                    class="btn-ghost btn-sm"
-                  >
-                    <span>👁</span>
-                    <span>查看</span>
-                  </button>
-                  <button
-                    v-if="order.status === 'pending'"
-                    @click="cancelOrder(order)"
-                    class="btn-danger btn-sm"
-                  >
-                    <span>✕</span>
-                    <span>取消</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr v-if="orders.length === 0">
-              <td colspan="9" class="p-12 text-center">
-                <div class="flex flex-col items-center gap-4">
-                  <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center">
-                    <span class="text-4xl">📦</span>
-                  </div>
-                  <p class="text-slate-400">暂无订单数据</p>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      <div class="pagination-container">
-        <div class="pagination-info">
-          共 {{ total }} 条记录
-        </div>
-        <div class="pagination-controls">
-          <button
-            @click="prevPage"
-            :disabled="currentPage === 1"
-            class="pagination-btn"
-            :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
-          >
-            <span>←</span>
-            <span>上一页</span>
-          </button>
-          <div class="flex items-center gap-1">
-            <button
-              v-for="page in displayedPages"
-              :key="page"
-              @click="goToPage(page)"
-              class="pagination-page"
-              :class="{ 'active': currentPage === page }"
-            >
-              {{ page }}
-            </button>
-          </div>
-          <button
-            @click="nextPage"
-            :disabled="currentPage === totalPages"
-            class="pagination-btn"
-            :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
-          >
-            <span>下一页</span>
-            <span>→</span>
-          </button>
-        </div>
-      </div>
+      <span class="mini-chip">总额 ¥{{ totalAmount }}</span>
     </div>
 
-    <!-- Order Detail Modal -->
-    <div v-if="showDetail" class="modal-overlay" @click.self="showDetail = false">
-      <div class="modal-container">
-        <!-- Modal Header -->
-        <div class="modal-header">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-violet-neon/20 flex items-center justify-center">
-              <span class="text-xl">📋</span>
-            </div>
-            <div>
-              <h2 class="text-xl font-bold text-white">订单详情</h2>
-              <p class="text-slate-400 text-sm">{{ currentOrder?.orderNo }}</p>
-            </div>
-          </div>
-          <button 
-            @click="showDetail = false" 
-            class="modal-close"
-          >
-            <span>✕</span>
-          </button>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>订单号</th>
+            <th>物品信息</th>
+            <th>交易双方</th>
+            <th>类型</th>
+            <th>金额</th>
+            <th>状态</th>
+            <th>时间</th>
+            <th style="text-align: right;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="order in filteredOrders" :key="order.id">
+            <td>
+              <span class="table-id wrap-break">{{ order.orderNo }}</span>
+            </td>
+            <td>
+              <div class="avatar-line">
+                <div class="avatar-badge">📦</div>
+                <div class="truncate">
+                  <p class="table-primary truncate">{{ order.itemName }}</p>
+                  <p class="table-secondary">物品 ID {{ order.itemId }}</p>
+                </div>
+              </div>
+            </td>
+            <td>
+              <p class="table-primary">{{ order.buyerName }}</p>
+              <p class="table-secondary">卖家 / 出租人 {{ order.sellerName }}</p>
+            </td>
+            <td>
+              <span class="status-pill" :class="order.type === 'lease' ? 'cyan' : 'magenta'">
+                {{ order.type === 'lease' ? '租赁' : '交易' }}
+              </span>
+            </td>
+            <td>
+              <p class="table-primary table-amount">¥{{ order.amount.toFixed(2) }}</p>
+              <p class="table-secondary">{{ order.remark || '无额外备注' }}</p>
+            </td>
+            <td>
+              <span class="status-pill" :class="getStatusClass(order.status)">
+                {{ getStatusText(order.status) }}
+              </span>
+            </td>
+            <td>
+              <p class="table-primary">{{ order.createdAt }}</p>
+              <p class="table-secondary">更新于 {{ order.updatedAt }}</p>
+            </td>
+            <td>
+              <div class="table-actions" style="justify-content: flex-end;">
+                <button class="button button-ghost button-sm" @click="viewOrder(order)">查看</button>
+                <button
+                  v-if="order.status === 'pending'"
+                  class="button button-danger button-sm"
+                  @click="cancelOrder(order)"
+                >
+                  取消
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr v-if="filteredOrders.length === 0">
+            <td colspan="8">
+              <div class="empty-state">
+                <strong>暂无订单数据</strong>
+                <span>当前筛选条件下没有订单。</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div v-if="showDetail && currentOrder" class="modal-overlay" @click.self="showDetail = false">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">订单详情</h2>
+          <p class="modal-description">{{ currentOrder.orderNo }}</p>
         </div>
-        
-        <!-- Modal Content -->
-        <div class="modal-body" v-if="currentOrder">
-          <!-- Status Banner -->
-          <div class="mb-6 p-4 rounded-xl border" :class="getStatusBannerClass(currentOrder.status)">
-            <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-xl flex items-center justify-center" :class="getStatusIconBgClass(currentOrder.status)">
-                <span class="text-2xl">{{ getStatusIcon(currentOrder.status) }}</span>
-              </div>
-              <div>
-                <p class="text-sm opacity-80">订单状态</p>
-                <p class="text-lg font-bold">{{ getStatusText(currentOrder.status) }}</p>
-              </div>
-            </div>
-          </div>
+        <button class="modal-close" @click="showDetail = false">✕</button>
+      </div>
 
-          <!-- Order Info Grid -->
-          <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">订单类型</label>
-              <p class="text-white flex items-center gap-2">
-                <span :class="currentOrder.type === 'lease' ? 'text-cyan-neon' : 'text-fuchsia-500'">
-                  {{ currentOrder.type === 'lease' ? '🔁' : '💱' }}
-                </span>
-                <span>{{ currentOrder.type === 'lease' ? '租赁订单' : '交易订单' }}</span>
-              </p>
-            </div>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">订单金额</label>
-              <p class="text-fuchsia-400 font-bold text-xl">¥{{ currentOrder.amount.toFixed(2) }}</p>
-            </div>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">物品名称</label>
-              <p class="text-white">{{ currentOrder.itemName }}</p>
-            </div>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">物品ID</label>
-              <p class="text-white font-mono">{{ currentOrder.itemId }}</p>
-            </div>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">买家/承租人</label>
-              <p class="text-white flex items-center gap-2">
-                <span class="w-6 h-6 rounded-full bg-cyan-neon/20 flex items-center justify-center text-xs">👤</span>
-                <span>{{ currentOrder.buyerName }}</span>
-              </p>
-            </div>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">卖家/出租人</label>
-              <p class="text-white flex items-center gap-2">
-                <span class="w-6 h-6 rounded-full bg-fuchsia-500/20 flex items-center justify-center text-xs">👤</span>
-                <span>{{ currentOrder.sellerName }}</span>
-              </p>
-            </div>
-            <template v-if="currentOrder.type === 'lease'">
-              <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                <label class="text-slate-400 text-sm mb-1 block">租赁开始</label>
-                <p class="text-white">{{ currentOrder.leaseStart }}</p>
-              </div>
-              <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                <label class="text-slate-400 text-sm mb-1 block">租赁结束</label>
-                <p class="text-white">{{ currentOrder.leaseEnd }}</p>
-              </div>
-            </template>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">创建时间</label>
-              <p class="text-white">{{ currentOrder.createdAt }}</p>
-            </div>
-            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-              <label class="text-slate-400 text-sm mb-1 block">更新时间</label>
-              <p class="text-white">{{ currentOrder.updatedAt }}</p>
-            </div>
-          </div>
+      <div class="modal-body">
+        <div class="status-banner" :class="getStatusBannerClass(currentOrder.status)">
+          <p class="detail-label">订单状态</p>
+          <p class="detail-value">{{ getStatusText(currentOrder.status) }} · {{ currentOrder.type === 'lease' ? '租赁流程' : '交易流程' }}</p>
+        </div>
 
-          <!-- Remark -->
-          <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-            <label class="text-slate-400 text-sm mb-2 block">备注信息</label>
-            <p class="text-white">{{ currentOrder.remark || '暂无备注' }}</p>
+        <div class="detail-grid">
+          <div class="detail-card">
+            <p class="detail-label">物品名称</p>
+            <p class="detail-value">{{ currentOrder.itemName }}</p>
           </div>
+          <div class="detail-card">
+            <p class="detail-label">订单金额</p>
+            <p class="detail-value">¥{{ currentOrder.amount.toFixed(2) }}</p>
+          </div>
+          <div class="detail-card">
+            <p class="detail-label">买家 / 承租人</p>
+            <p class="detail-value">{{ currentOrder.buyerName }}</p>
+          </div>
+          <div class="detail-card">
+            <p class="detail-label">卖家 / 出租人</p>
+            <p class="detail-value">{{ currentOrder.sellerName }}</p>
+          </div>
+          <div class="detail-card">
+            <p class="detail-label">创建时间</p>
+            <p class="detail-value">{{ currentOrder.createdAt }}</p>
+          </div>
+          <div class="detail-card">
+            <p class="detail-label">更新时间</p>
+            <p class="detail-value">{{ currentOrder.updatedAt }}</p>
+          </div>
+          <div v-if="currentOrder.leaseStart" class="detail-card">
+            <p class="detail-label">租赁开始</p>
+            <p class="detail-value">{{ currentOrder.leaseStart }}</p>
+          </div>
+          <div v-if="currentOrder.leaseEnd" class="detail-card">
+            <p class="detail-label">租赁结束</p>
+            <p class="detail-value">{{ currentOrder.leaseEnd }}</p>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <p class="detail-label">备注信息</p>
+          <p class="detail-value">{{ currentOrder.remark || '暂无备注' }}</p>
         </div>
       </div>
     </div>
@@ -326,7 +222,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, ref } from 'vue'
 
 interface Order {
   id: number
@@ -350,8 +246,6 @@ interface Order {
 const searchKeyword = ref('')
 const searchType = ref('')
 const searchStatus = ref('')
-const currentPage = ref(1)
-const pageSize = ref(10)
 const showDetail = ref(false)
 const currentOrder = ref<Order | null>(null)
 
@@ -366,11 +260,11 @@ const orders = ref<Order[]>([
     sellerId: 1,
     sellerName: '张三同学',
     type: 'lease',
-    amount: 150.00,
+    amount: 150,
     status: 'in_progress',
     leaseStart: '2024-12-01',
     leaseEnd: '2024-12-07',
-    remark: '租期一周，押金5000元',
+    remark: '租期一周，押金 5000 元',
     createdAt: '2024-12-01 10:30:00',
     updatedAt: '2024-12-01 10:35:00'
   },
@@ -384,7 +278,7 @@ const orders = ref<Order[]>([
     sellerId: 1,
     sellerName: '张三同学',
     type: 'sale',
-    amount: 25.00,
+    amount: 25,
     status: 'completed',
     remark: '当面交易',
     createdAt: '2024-12-01 11:20:00',
@@ -400,57 +294,101 @@ const orders = ref<Order[]>([
     sellerId: 4,
     sellerName: '赵六同学',
     type: 'lease',
-    amount: 30.00,
+    amount: 30,
     status: 'pending',
     leaseStart: '2024-12-03',
     leaseEnd: '2024-12-05',
+    remark: '等待买家付款',
     createdAt: '2024-12-01 14:45:00',
     updatedAt: '2024-12-01 14:45:00'
+  },
+  {
+    id: 4,
+    orderNo: 'ORD202412010004',
+    itemId: 104,
+    itemName: '露营帐篷',
+    buyerId: 5,
+    buyerName: '陈七同学',
+    sellerId: 6,
+    sellerName: '刘八同学',
+    type: 'lease',
+    amount: 80,
+    status: 'refunded',
+    remark: '因天气取消行程，已退款',
+    createdAt: '2024-12-02 08:12:00',
+    updatedAt: '2024-12-02 10:18:00'
   }
 ])
 
-const total = ref(orders.value.length)
-const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
+const filteredOrders = computed(() => {
+  const keyword = searchKeyword.value.trim().toLowerCase()
+  return orders.value.filter((order) => {
+    const matchesKeyword =
+      keyword.length === 0 ||
+      order.orderNo.toLowerCase().includes(keyword) ||
+      order.itemName.toLowerCase().includes(keyword) ||
+      order.buyerName.toLowerCase().includes(keyword) ||
+      order.sellerName.toLowerCase().includes(keyword)
 
-// Display page numbers
-const displayedPages = computed(() => {
-  const pages: number[] = []
-  const maxDisplay = 5
-  let start = Math.max(1, currentPage.value - Math.floor(maxDisplay / 2))
-  let end = Math.min(totalPages.value, start + maxDisplay - 1)
-  
-  if (end - start + 1 < maxDisplay) {
-    start = Math.max(1, end - maxDisplay + 1)
-  }
-  
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
-  }
-  return pages
+    const matchesType = searchType.value === '' || order.type === searchType.value
+    const matchesStatus = searchStatus.value === '' || order.status === searchStatus.value
+
+    return matchesKeyword && matchesType && matchesStatus
+  })
+})
+
+const totalAmount = computed(() => {
+  return filteredOrders.value.reduce((sum, order) => sum + order.amount, 0).toFixed(2)
+})
+
+const orderMetrics = computed(() => {
+  const list = filteredOrders.value
+  const pending = list.filter((order) => order.status === 'pending').length
+  const active = list.filter((order) => order.status === 'in_progress').length
+  const completed = list.filter((order) => order.status === 'completed').length
+
+  return [
+    {
+      label: '订单总数',
+      value: `${list.length}`,
+      tag: '当前筛选',
+      tone: 'cyan',
+      note: '状态、金额和双方信息在一行内完成主扫描。'
+    },
+    {
+      label: '待付款',
+      value: `${pending}`,
+      tag: pending > 0 ? '待跟进' : '正常',
+      tone: pending > 0 ? 'yellow' : 'green',
+      note: '待付款单提供快速取消入口，缩短处理路径。'
+    },
+    {
+      label: '进行中',
+      value: `${active}`,
+      tag: '履约中',
+      tone: 'magenta',
+      note: '进行中订单在弹窗内突出时间区间与备注。'
+    },
+    {
+      label: '已完成',
+      value: `${completed}`,
+      tag: '已收口',
+      tone: 'green',
+      note: '完成态降噪展示，避免影响处理中订单识别。'
+    }
+  ]
 })
 
 const getStatusClass = (status: string) => {
   const classes: Record<string, string> = {
-    pending: 'tag-yellow',
-    paid: 'tag-cyan',
-    in_progress: 'tag-cyan',
-    completed: 'tag-green',
-    cancelled: 'tag-slate',
-    refunded: 'tag-red'
+    pending: 'yellow',
+    paid: 'cyan',
+    in_progress: 'magenta',
+    completed: 'green',
+    cancelled: 'slate',
+    refunded: 'red'
   }
-  return classes[status] || 'tag-slate'
-}
-
-const getStatusDotClass = (status: string) => {
-  const classes: Record<string, string> = {
-    pending: 'bg-yellow-400',
-    paid: 'bg-blue-400',
-    in_progress: 'bg-cyan-neon',
-    completed: 'bg-acid-green',
-    cancelled: 'bg-slate-400',
-    refunded: 'bg-red-400'
-  }
-  return classes[status] || 'bg-slate-400'
+  return classes[status] || 'slate'
 }
 
 const getStatusText = (status: string) => {
@@ -467,42 +405,24 @@ const getStatusText = (status: string) => {
 
 const getStatusBannerClass = (status: string) => {
   const classes: Record<string, string> = {
-    pending: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400',
-    paid: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
-    in_progress: 'bg-cyan-neon/10 border-cyan-neon/30 text-cyan-neon',
-    completed: 'bg-acid-green/10 border-acid-green/30 text-acid-green',
-    cancelled: 'bg-slate-500/10 border-slate-500/30 text-slate-400',
-    refunded: 'bg-red-500/10 border-red-500/30 text-red-400'
+    pending: 'yellow',
+    paid: 'cyan',
+    in_progress: 'cyan',
+    completed: 'green',
+    cancelled: 'slate',
+    refunded: 'red'
   }
-  return classes[status] || 'bg-white/10 border-white/20 text-slate-400'
-}
-
-const getStatusIconBgClass = (status: string) => {
-  const classes: Record<string, string> = {
-    pending: 'bg-yellow-500/20',
-    paid: 'bg-blue-500/20',
-    in_progress: 'bg-cyan-neon/20',
-    completed: 'bg-acid-green/20',
-    cancelled: 'bg-slate-500/20',
-    refunded: 'bg-red-500/20'
-  }
-  return classes[status] || 'bg-white/10'
-}
-
-const getStatusIcon = (status: string) => {
-  const icons: Record<string, string> = {
-    pending: '⏳',
-    paid: '💳',
-    in_progress: '📦',
-    completed: '✓',
-    cancelled: '✕',
-    refunded: '↩'
-  }
-  return icons[status] || '❓'
+  return classes[status] || 'slate'
 }
 
 const handleSearch = () => {
-  console.log('搜索订单:', { keyword: searchKeyword.value, type: searchType.value, status: searchStatus.value })
+  // 当前示例数据采用本地筛选，保留入口以便后续接入 API。
+}
+
+const resetFilters = () => {
+  searchKeyword.value = ''
+  searchType.value = ''
+  searchStatus.value = ''
 }
 
 const viewOrder = (order: Order) => {
@@ -511,28 +431,8 @@ const viewOrder = (order: Order) => {
 }
 
 const cancelOrder = (order: Order) => {
-  if (confirm('确定要取消这个订单吗？')) {
-    console.log('取消订单:', order.id)
+  if (window.confirm('确定要取消这个订单吗？')) {
+    order.status = 'cancelled'
   }
 }
-
-const goToPage = (page: number) => {
-  currentPage.value = page
-}
-
-const prevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-  }
-}
-
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-  }
-}
-
-onMounted(() => {
-  console.log('订单管理页面已加载')
-})
 </script>
