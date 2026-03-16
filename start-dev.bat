@@ -3,9 +3,10 @@ setlocal EnableExtensions EnableDelayedExpansion
 
 set "ROOT_DIR=%~dp0"
 if "%ROOT_DIR:~-1%"=="\" set "ROOT_DIR=%ROOT_DIR:~0,-1%"
-set "USE_DOCKER=0"
+set "USE_DOCKER=1"
 
 if /I "%~1"=="--docker" set "USE_DOCKER=1"
+if /I "%~1"=="--local" set "USE_DOCKER=0"
 
 if /I "%~1"=="-h" goto :help
 if /I "%~1"=="--help" goto :help
@@ -23,10 +24,16 @@ if errorlevel 1 exit /b 1
 call :require_command npm "npm"
 if errorlevel 1 exit /b 1
 if "%USE_DOCKER%"=="1" (
+  echo [1/6] Checking docker port availability...
+  call :ensure_port_free 3306 "MySQL"
+  if errorlevel 1 exit /b 1
+  call :ensure_port_free 6379 "Redis"
+  if errorlevel 1 exit /b 1
+
   call :resolve_docker_compose
   if errorlevel 1 exit /b 1
 
-  echo [1/5] Starting MySQL and Redis with Docker...
+  echo [2/6] Starting MySQL and Redis with Docker...
   pushd "%ROOT_DIR%"
   %DOCKER_COMPOSE_CMD% up -d
   if errorlevel 1 (
@@ -36,11 +43,11 @@ if "%USE_DOCKER%"=="1" (
   )
   popd
 
-  echo [2/5] Waiting for MySQL on 127.0.0.1:3306...
+  echo [3/6] Waiting for MySQL on 127.0.0.1:3306...
   call :wait_for_port 3306 60 "MySQL" "mysql"
   if errorlevel 1 exit /b 1
 
-  echo [3/5] Waiting for Redis on 127.0.0.1:6379...
+  echo [4/6] Waiting for Redis on 127.0.0.1:6379...
   call :wait_for_port 6379 60 "Redis" "redis"
   if errorlevel 1 exit /b 1
 
@@ -54,19 +61,19 @@ if "%USE_DOCKER%"=="1" (
   if not defined LEASE_DB_PASSWORD set "LEASE_DB_PASSWORD=123456"
   if not defined LEASE_REDIS_PORT set "LEASE_REDIS_PORT=6379"
 
-  echo [1/5] Using local MySQL and Redis...
+  echo [1/6] Using local MySQL and Redis...
   call :ensure_local_mysql
   if errorlevel 1 exit /b 1
 
-  echo [2/5] Waiting for local MySQL on 127.0.0.1:%LEASE_DB_PORT%...
+  echo [2/6] Waiting for local MySQL on 127.0.0.1:%LEASE_DB_PORT%...
   call :wait_for_port %LEASE_DB_PORT% 20 "MySQL"
   if errorlevel 1 exit /b 1
 
-  echo [3/5] Initializing local schema if needed...
+  echo [3/6] Initializing local schema if needed...
   call :init_local_mysql
   if errorlevel 1 exit /b 1
 
-  echo [4/5] Waiting for local Redis on 127.0.0.1:%LEASE_REDIS_PORT%...
+  echo [4/6] Waiting for local Redis on 127.0.0.1:%LEASE_REDIS_PORT%...
   call :wait_for_port %LEASE_REDIS_PORT% 10 "Redis"
   if errorlevel 1 (
     echo [ERROR] Redis is not listening on port %LEASE_REDIS_PORT%.
@@ -75,10 +82,10 @@ if "%USE_DOCKER%"=="1" (
   )
 )
 
-echo [4/5] Starting backend service...
+echo [5/6] Starting backend service...
 start "Lease Backend" /D "%ROOT_DIR%\backend\lease-backend" cmd /k "set \"LEASE_DB_URL=jdbc:mysql://127.0.0.1:%LEASE_DB_PORT%/lease_db?useUnicode=true^&characterEncoding=utf-8^&serverTimezone=Asia/Shanghai^&useSSL=false^&allowPublicKeyRetrieval=true\" && set \"LEASE_DB_USERNAME=%LEASE_DB_USERNAME%\" && set \"LEASE_DB_PASSWORD=%LEASE_DB_PASSWORD%\" && set \"LEASE_REDIS_HOST=127.0.0.1\" && set \"LEASE_REDIS_PORT=%LEASE_REDIS_PORT%\" && mvn spring-boot:run"
 
-echo [5/5] Starting admin console...
+echo [6/6] Starting admin console...
 if not exist "%ROOT_DIR%\admin\lease-admin\node_modules" (
   echo [lease-admin] Installing npm dependencies...
   pushd "%ROOT_DIR%\admin\lease-admin"
@@ -90,7 +97,7 @@ if not exist "%ROOT_DIR%\admin\lease-admin\node_modules" (
   )
   popd
 )
-start "Lease Admin" /D "%ROOT_DIR%\admin\lease-admin" cmd /k "npm run dev"
+start "Lease Admin" /D "%ROOT_DIR%\admin\lease-admin" cmd /k "npm run dev -- --host 127.0.0.1 --port 5173"
 
 echo Opening mini program folder...
 start "" explorer.exe "%ROOT_DIR%\miniprogram"
@@ -113,18 +120,32 @@ if "%USE_DOCKER%"=="1" (
 echo.
 exit /b 0
 
+:ensure_port_free
+set "CHECK_PORT=%~1"
+set "CHECK_NAME=%~2"
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$conn = Get-NetTCPConnection -State Listen -LocalPort %CHECK_PORT% -ErrorAction SilentlyContinue | Select-Object -First 1; if ($conn) { exit 1 } else { exit 0 }" >nul 2>&1
+if errorlevel 1 (
+  echo [ERROR] Port %CHECK_PORT% is already in use before Docker startup.
+  echo         Docker %CHECK_NAME% needs this port on the host.
+  echo         Stop the local process using %CHECK_PORT% and rerun, or use:
+  echo           start-dev.bat --local
+  exit /b 1
+)
+exit /b 0
+
 :help
 echo Usage: start-dev.bat
 echo.
 echo Default mode:
-echo   Uses local MySQL/Redis on this machine.
+echo   Uses docker-compose MySQL/Redis.
 echo.
 echo Optional:
-echo   start-dev.bat --docker
-echo     Uses docker-compose MySQL/Redis instead.
+echo   start-dev.bat --local
+echo     Uses local MySQL/Redis on this machine instead.
 echo.
 echo Starts:
-echo   1. Infrastructure ^(local by default, docker with --docker^)
+echo   1. Infrastructure ^(docker by default, local with --local^)
 echo   2. Spring Boot backend
 echo   3. Vue admin dev server
 echo   4. Opens the mini program folder
