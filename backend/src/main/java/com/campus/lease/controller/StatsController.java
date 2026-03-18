@@ -11,6 +11,8 @@ import com.campus.lease.service.ItemService;
 import com.campus.lease.service.OrderService;
 import com.campus.lease.service.UserService;
 import com.campus.lease.support.AdminAccessGuard;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Tag(name = "数据统计", description = "后台首页指标与统计报表接口")
 @RestController
 @RequestMapping("/api/stats")
 @RequiredArgsConstructor
@@ -36,6 +39,7 @@ public class StatsController {
     private final PaymentRecordMapper paymentRecordMapper;
     private final AdminAccessGuard adminAccessGuard;
 
+    @Operation(summary = "获取后台仪表盘数据", description = "返回后台首页所需的关键指标、分布统计和待关注事项")
     @GetMapping("/dashboard")
     public Result<Map<String, Object>> getDashboard() {
         adminAccessGuard.requireAdminId();
@@ -99,6 +103,7 @@ public class StatsController {
         return Result.success(result);
     }
 
+    @Operation(summary = "获取统计报表", description = "返回订单、收入、押金和退款等统计报表数据")
     @GetMapping("/report")
     public Result<Map<String, Object>> getReport() {
         adminAccessGuard.requireAdminId();

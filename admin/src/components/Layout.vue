@@ -47,7 +47,6 @@
         </div>
         <div class="topbar-actions">
           <div class="topbar-meta">
-            <div class="meta-pill">统一后台 / 小程序</div>
             <div class="meta-pill accent">{{ todayLabel }}</div>
           </div>
           <div class="topbar-user">

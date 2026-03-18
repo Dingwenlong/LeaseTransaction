@@ -1,6 +1,9 @@
 package com.campus.lease.controller;
 
 import com.campus.lease.common.result.Result;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Tag(name = "文件服务", description = "图片文件上传接口")
 @RestController
 @RequestMapping("/api/file")
 public class FileController {
@@ -32,8 +36,12 @@ public class FileController {
     private static final String[] ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"};
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
+    @Operation(summary = "上传图片文件", description = "上传图片到本地文件目录并返回访问 URL，仅支持 jpg、jpeg、png、gif、webp，大小不超过 10MB")
     @PostMapping("/upload")
-    public Result<Map<String, String>> uploadFile(@RequestParam("file") MultipartFile file) {
+    public Result<Map<String, String>> uploadFile(
+            @Parameter(description = "要上传的图片文件")
+            @RequestParam("file") MultipartFile file
+    ) {
         if (file.isEmpty()) {
             return Result.error("文件不能为空");
         }

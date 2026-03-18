@@ -1,8 +1,16 @@
 package com.campus.lease.common.result;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "ApiResult", description = "统一接口响应结构")
 public class Result<T> {
+    @Schema(description = "业务状态码，200 表示成功", example = "200")
     private Integer code;
+
+    @Schema(description = "响应消息", example = "操作成功")
     private String message;
+
+    @Schema(description = "响应数据体")
     private T data;
 
     public Integer getCode() {

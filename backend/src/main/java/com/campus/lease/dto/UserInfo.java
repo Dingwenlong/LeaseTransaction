@@ -1,14 +1,34 @@
 package com.campus.lease.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "用户信息")
 public class UserInfo {
+    @Schema(description = "用户 ID", example = "1")
     private Long id;
+
+    @Schema(description = "昵称", example = "张三")
     private String nickname;
+
+    @Schema(description = "头像地址", example = "https://example.com/avatar.png")
     private String avatar;
+
+    @Schema(description = "学号", example = "2023001001")
     private String studentId;
+
+    @Schema(description = "院系", example = "计算机学院")
     private String department;
+
+    @Schema(description = "校区", example = "东校区")
     private String campus;
+
+    @Schema(description = "信用分", example = "100")
     private Integer creditScore;
+
+    @Schema(description = "是否已认证，0 否 1 是", example = "1")
     private Integer isVerified;
+
+    @Schema(description = "账号状态，0 禁用 1 正常", example = "1")
     private Integer status;
 
     public UserInfo() {

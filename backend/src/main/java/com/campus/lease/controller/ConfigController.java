@@ -2,6 +2,8 @@ package com.campus.lease.controller;
 
 import com.campus.lease.common.result.Result;
 import com.campus.lease.support.AdminAccessGuard;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "系统配置", description = "后台系统配置读取和保存接口")
 @RestController
 @RequestMapping("/api/config")
 @RequiredArgsConstructor
@@ -42,14 +45,22 @@ public class ConfigController {
         )));
     }
 
+    @Operation(summary = "获取系统配置", description = "后台读取系统配置，包含轮播图、公告、分类、校区和风控规则等内容")
     @GetMapping("/system")
     public Result<Map<String, Object>> getSystemConfig() {
         adminAccessGuard.requireAdminId();
         return Result.success(config);
     }
 
+    @Operation(summary = "保存系统配置", description = "后台保存系统配置对象，支持覆盖已有配置项")
     @PostMapping("/system")
-    public Result<Map<String, Object>> saveSystemConfig(@RequestBody Map<String, Object> request) {
+    public Result<Map<String, Object>> saveSystemConfig(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "系统配置对象，可包含 banners、announcements、categories、campuses、riskRules 等键",
+                    required = true
+            )
+            @RequestBody Map<String, Object> request
+    ) {
         adminAccessGuard.requireAdminId();
         config.putAll(request);
         return Result.success(config);

@@ -6,11 +6,16 @@ import com.campus.lease.common.constant.BusinessConstants;
 import com.campus.lease.common.exception.BusinessException;
 import com.campus.lease.common.result.Result;
 import com.campus.lease.dto.OrderStatusUpdateRequest;
+import com.campus.lease.dto.PaymentCreateRequest;
+import com.campus.lease.dto.PaymentRefundRequest;
 import com.campus.lease.entity.Order;
 import com.campus.lease.entity.PaymentRecord;
 import com.campus.lease.mapper.PaymentRecordMapper;
 import com.campus.lease.service.OrderService;
 import com.campus.lease.support.AuthContext;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Tag(name = "支付管理", description = "支付创建、回调、查询、退款和资金概览接口")
 @RestController
 @RequestMapping("/api/payment")
 @RequiredArgsConstructor
@@ -28,9 +34,10 @@ public class PaymentController {
     private final PaymentRecordMapper paymentRecordMapper;
     private final AuthContext authContext;
 
+    @Operation(summary = "创建支付单", description = "根据订单生成模拟支付参数，返回前端拉起支付所需的数据")
     @PostMapping("/create")
-    public Result<Map<String, Object>> createPayment(@RequestBody Map<String, Object> request) {
-        Long orderId = Long.valueOf(request.get("orderId").toString());
+    public Result<Map<String, Object>> createPayment(@RequestBody PaymentCreateRequest request) {
+        Long orderId = request.getOrderId();
         Order order = orderService.getById(orderId);
         if (order == null) {
             throw new BusinessException("订单不存在");
@@ -58,14 +65,22 @@ public class PaymentController {
         return Result.success(result);
     }
 
+    @Operation(summary = "接收支付回调", description = "接收微信支付平台的异步通知，当前实现返回模拟成功响应")
     @PostMapping("/notify")
-    public String paymentNotify(@RequestBody String notifyData) {
+    public String paymentNotify(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "微信支付回调原始报文", required = true)
+            @RequestBody String notifyData
+    ) {
         System.out.println("收到微信支付回调: " + notifyData);
         return "<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>";
     }
 
+    @Operation(summary = "查询支付状态", description = "根据订单 ID 查询最近一条支付流水的处理状态")
     @GetMapping("/query/{orderId}")
-    public Result<Map<String, Object>> queryPayment(@PathVariable Long orderId) {
+    public Result<Map<String, Object>> queryPayment(
+            @Parameter(description = "订单 ID", example = "1")
+            @PathVariable Long orderId
+    ) {
         LambdaQueryWrapper<PaymentRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PaymentRecord::getOrderId, orderId).orderByDesc(PaymentRecord::getCreateTime).last("limit 1");
         PaymentRecord record = paymentRecordMapper.selectOne(wrapper);
@@ -77,10 +92,11 @@ public class PaymentController {
         return Result.success(result);
     }
 
+    @Operation(summary = "申请退款", description = "对指定订单发起退款处理，并写入退款流水记录")
     @PostMapping("/refund")
-    public Result<Map<String, Object>> refund(@RequestBody Map<String, Object> request) {
-        Long orderId = Long.valueOf(request.get("orderId").toString());
-        String reason = request.get("reason").toString();
+    public Result<Map<String, Object>> refund(@RequestBody PaymentRefundRequest request) {
+        Long orderId = request.getOrderId();
+        String reason = request.getReason();
 
         OrderStatusUpdateRequest updateRequest = new OrderStatusUpdateRequest();
         updateRequest.setStatus(BusinessConstants.OrderStatus.REFUNDING);
@@ -106,6 +122,7 @@ public class PaymentController {
         return Result.success(result);
     }
 
+    @Operation(summary = "获取支付汇总", description = "返回当前登录用户的支付、押金和退款汇总信息")
     @GetMapping("/summary")
     public Result<Map<String, Object>> getSummary() {
         Long userId = authContext.getCurrentUserIdOrDefault(2L);
@@ -148,9 +165,12 @@ public class PaymentController {
         return Result.success(result);
     }
 
+    @Operation(summary = "分页查询支付记录", description = "返回当前登录用户的支付流水分页列表")
     @GetMapping("/records")
     public Result<Page<Map<String, Object>>> getRecords(
+            @Parameter(description = "页码，从 1 开始", example = "1")
             @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量", example = "10")
             @RequestParam(defaultValue = "10") Integer size
     ) {
         Long userId = authContext.getCurrentUserIdOrDefault(2L);
