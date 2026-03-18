@@ -86,9 +86,9 @@ echo [5/6] Starting backend service...
 start "Lease Backend" /D "%ROOT_DIR%\backend\lease-backend" cmd /k "set \"LEASE_DB_URL=jdbc:mysql://127.0.0.1:%LEASE_DB_PORT%/lease_db?useUnicode=true^&characterEncoding=utf-8^&serverTimezone=Asia/Shanghai^&useSSL=false^&allowPublicKeyRetrieval=true\" && set \"LEASE_DB_USERNAME=%LEASE_DB_USERNAME%\" && set \"LEASE_DB_PASSWORD=%LEASE_DB_PASSWORD%\" && set \"LEASE_REDIS_HOST=127.0.0.1\" && set \"LEASE_REDIS_PORT=%LEASE_REDIS_PORT%\" && mvn spring-boot:run"
 
 echo [6/6] Starting admin console...
-if not exist "%ROOT_DIR%\admin\lease-admin\node_modules" (
+if not exist "%ROOT_DIR%\admin\node_modules" (
   echo [lease-admin] Installing npm dependencies...
-  pushd "%ROOT_DIR%\admin\lease-admin"
+  pushd "%ROOT_DIR%\admin"
   npm install
   if errorlevel 1 (
     popd
@@ -97,7 +97,7 @@ if not exist "%ROOT_DIR%\admin\lease-admin\node_modules" (
   )
   popd
 )
-start "Lease Admin" /D "%ROOT_DIR%\admin\lease-admin" cmd /k "npm run dev -- --host 127.0.0.1 --port 5173"
+start "Lease Admin" /D "%ROOT_DIR%\admin" cmd /k "npm run dev -- --host 127.0.0.1 --port 5173"
 
 echo Opening mini program folder...
 start "" explorer.exe "%ROOT_DIR%\miniprogram"
