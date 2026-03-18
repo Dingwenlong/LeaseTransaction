@@ -3,9 +3,7 @@
     <div class="page-header-main">
       <p class="page-eyebrow">Config</p>
       <h1 class="page-title">首页内容、分类字典和风控规则统一配置。</h1>
-      <p class="page-description">
-        系统配置页用于维护轮播内容、公告、类目、校区和风控策略，为管理端和小程序提供一致的数据源。
-      </p>
+      <p class="page-description">统一维护首页内容和基础字典。</p>
     </div>
     <div class="page-actions">
       <button class="button button-ghost" @click="loadConfig">重新加载</button>
@@ -21,7 +19,7 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">轮播配置</h2>
-          <p class="panel-subtitle">用于首页 Hero 和运营专题入口。</p>
+          <p class="panel-subtitle">维护首页轮播。</p>
         </div>
         <button class="button button-ghost button-sm" @click="addBanner">新增</button>
       </div>
@@ -46,7 +44,7 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">公告配置</h2>
-          <p class="panel-subtitle">同步到后台和小程序的系统通知区域。</p>
+          <p class="panel-subtitle">维护系统公告。</p>
         </div>
         <button class="button button-ghost button-sm" @click="addAnnouncement">新增</button>
       </div>
@@ -69,7 +67,7 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">分类与校区</h2>
-          <p class="panel-subtitle">作为物品发布、筛选和附近推荐的基础字典。</p>
+          <p class="panel-subtitle">维护分类和校区字典。</p>
         </div>
       </div>
       <div class="panel-body">
@@ -90,7 +88,7 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">风控规则</h2>
-          <p class="panel-subtitle">用于高价值物品、低信用用户和长租订单的额外控制。</p>
+          <p class="panel-subtitle">维护风控开关。</p>
         </div>
         <button class="button button-ghost button-sm" @click="addRiskRule">新增</button>
       </div>

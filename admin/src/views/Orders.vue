@@ -3,9 +3,7 @@
     <div class="page-header-main">
       <p class="page-eyebrow">Orders</p>
       <h1 class="page-title">订单流程、金额和异常状态直接挂钩处理动作。</h1>
-      <p class="page-description">
-        订单页按状态驱动处理，待付款、履约中、待验收和纠纷态都可在列表或详情中快速推进。
-      </p>
+      <p class="page-description">按状态处理订单和异常。</p>
     </div>
     <div class="page-actions">
       <button class="button button-ghost" @click="resetFilters">重置条件</button>
@@ -31,7 +29,7 @@
     <div class="panel-header">
       <div>
         <h2 class="panel-title">订单筛选</h2>
-        <p class="panel-subtitle">状态和类型均与后端枚举保持一致，避免前后台文案错位。</p>
+        <p class="panel-subtitle">按类型和状态筛选订单。</p>
       </div>
     </div>
     <div class="panel-body">
@@ -74,7 +72,7 @@
     <div class="panel-header">
       <div>
         <h2 class="panel-title">订单列表</h2>
-        <p class="panel-subtitle">优先突出订单状态、交易双方和金额，详情弹窗再展开时间区间与备注。</p>
+        <p class="panel-subtitle">查看状态、双方和金额。</p>
       </div>
       <span class="mini-chip">总额 ¥{{ totalAmount }}</span>
     </div>

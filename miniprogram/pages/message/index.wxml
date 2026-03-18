@@ -3,7 +3,7 @@
     <view class="mp-hero">
       <view class="mp-eyebrow">Inbox</view>
       <view class="mp-title">消息中心</view>
-      <view class="mp-subtitle">订单消息、聊天提醒和系统通知共用一套整齐的列表结构。</view>
+      <view class="mp-subtitle">查看订单消息、聊天提醒和系统通知。</view>
       <view class="mp-chip-row message-tabs">
         <view
           wx:for="{{tabs}}"

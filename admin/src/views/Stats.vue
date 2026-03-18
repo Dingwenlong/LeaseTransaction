@@ -2,10 +2,8 @@
   <section class="page-header">
     <div class="page-header-main">
       <p class="page-eyebrow">Analytics</p>
-      <h1 class="page-title">用户、类目、订单与财务的同屏可视化视图。</h1>
-      <p class="page-description">
-        数据统计页用于观察校区活跃分布、热门类目、订单结构和资金流向，辅助运营与风控决策。
-      </p>
+      <h1 class="page-title">用户、类目、订单与财务统计</h1>
+      <p class="page-description">查看校区、类目、订单和财务。</p>
     </div>
     <div class="page-actions">
       <button class="button button-primary" @click="loadData">
@@ -22,7 +20,7 @@
         <h3 class="metric-value">{{ metric.value }}</h3>
         <span class="status-pill" :class="metric.tone">{{ metric.delta }}</span>
       </div>
-      <p class="metric-foot">用于从全局判断平台活跃度、审核积压和履约压力。</p>
+      <p class="metric-foot">用于快速查看当前统计结果。</p>
     </article>
   </section>
 
@@ -31,7 +29,7 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">校区分布</h2>
-          <p class="panel-subtitle">决定附近推荐、线下交接和活动投放策略。</p>
+          <p class="panel-subtitle">查看校区活跃度。</p>
         </div>
       </div>
       <div class="panel-body">
@@ -53,7 +51,7 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">热门类目</h2>
-          <p class="panel-subtitle">帮助决定首页专题、审核优先级和活动资源倾斜。</p>
+          <p class="panel-subtitle">查看类目热度。</p>
         </div>
       </div>
       <div class="panel-body">
@@ -77,7 +75,7 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">订单状态结构</h2>
-          <p class="panel-subtitle">直观看到待付款、履约中、完成和纠纷分布。</p>
+          <p class="panel-subtitle">查看订单状态分布。</p>
         </div>
       </div>
       <div class="panel-body">
@@ -99,7 +97,7 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">财务汇总</h2>
-          <p class="panel-subtitle">观察收款、退款和押金沉淀情况。</p>
+          <p class="panel-subtitle">查看收入、退款和押金。</p>
         </div>
       </div>
       <div class="panel-body">

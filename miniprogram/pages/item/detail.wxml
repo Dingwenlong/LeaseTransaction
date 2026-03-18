@@ -53,7 +53,7 @@
           </view>
           <view class="detail-info-row">
             <text class="detail-info-label">押金</text>
-            <text class="detail-info-value">{{item.type === 1 ? `¥${item.deposit}` : '无押金'}}</text>
+            <text class="detail-info-value">{{item.depositText}}</text>
           </view>
           <view class="detail-info-row">
             <text class="detail-info-label">履约提示</text>

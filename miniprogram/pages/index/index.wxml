@@ -5,9 +5,8 @@
         <view class="home-hero-copy">
           <view class="mp-eyebrow">Campus Lease</view>
           <view class="mp-title">校园租赁交易</view>
-          <view class="mp-subtitle">分类浏览、附近推荐、公告提醒和租售双模式统一放进一张首页。</view>
+          <view class="mp-subtitle">支持搜索、分类筛选和附近推荐。</view>
         </view>
-        <view class="home-hero-tag">Y2K</view>
       </view>
 
       <view class="mp-search home-search">
@@ -39,7 +38,6 @@
       <swiper-item wx:for="{{banners}}" wx:key="index">
         <view class="mp-panel home-banner">
           <view class="mp-panel-body">
-            <view class="mp-eyebrow">Campaign</view>
             <view class="home-banner-title">{{item.title}}</view>
             <view class="home-banner-subtitle">{{item.subtitle}}</view>
           </view>
@@ -52,7 +50,7 @@
         <view class="mp-section-head">
           <view>
             <view class="mp-section-title">平台公告</view>
-            <view class="mp-section-desc">同步展示审核、认证和安全交易提醒。</view>
+            <view class="mp-section-desc">查看审核、认证和安全交易提醒。</view>
           </view>
         </view>
         <view class="home-notice-list">
@@ -67,7 +65,7 @@
     <view class="mp-section-head">
       <view>
         <view class="mp-section-title">分类导航</view>
-        <view class="mp-section-desc">支持按类目快速切换，减少首页搜索成本。</view>
+        <view class="mp-section-desc">按类目快速切换物品列表。</view>
       </view>
       <view class="mp-meta-pill">{{activeCategory}}</view>
     </view>
@@ -87,7 +85,7 @@
     <view class="mp-section-head">
       <view>
         <view class="mp-section-title">精选物品</view>
-        <view class="mp-section-desc">卡片按标题、校区、价格、模式和提示语组织。</view>
+        <view class="mp-section-desc">查看物品标题、校区、价格和模式。</view>
       </view>
       <view class="mp-meta-pill">共 {{items.length}} 件</view>
     </view>
@@ -124,7 +122,7 @@
     <view class="mp-section-head" wx:if="{{nearbyItems.length > 0}}">
       <view>
         <view class="mp-section-title">附近推荐</view>
-        <view class="mp-section-desc">优先展示当前校区附近更容易线下交接的物品。</view>
+        <view class="mp-section-desc">优先展示当前校区附近的物品。</view>
       </view>
       <view class="mp-meta-pill">Nearby</view>
     </view>

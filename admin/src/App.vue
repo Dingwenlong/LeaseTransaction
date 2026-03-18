@@ -4,9 +4,12 @@ import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <Layout>
-    <RouterView />
-  </Layout>
+  <RouterView v-slot="{ Component, route }">
+    <Layout v-if="!route.meta.public">
+      <component :is="Component" />
+    </Layout>
+    <component :is="Component" v-else />
+  </RouterView>
 </template>
 
 <style scoped>

@@ -114,6 +114,7 @@ Page({
       coverImage: item.coverImage || images[0] || DEFAULT_IMAGE,
       price: Number(item.price || 0).toFixed(2),
       deposit: Number(item.deposit || 0).toFixed(2),
+      depositText: item.type === 1 ? `¥${Number(item.deposit || 0).toFixed(2)}` : '无押金',
       type: item.type,
       typeText: item.typeText || (item.type === 1 ? '租赁' : '出售'),
       typeClass: item.type === 1 ? 'lease' : 'sale',

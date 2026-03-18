@@ -3,9 +3,7 @@
     <div class="page-header-main">
       <p class="page-eyebrow">Users</p>
       <h1 class="page-title">用户审核、校区身份和信用状态放回同一视线。</h1>
-      <p class="page-description">
-        管理端用户页直接围绕账号状态、校园认证、信用分和所属校区展开，便于审核与运营快速处置。
-      </p>
+      <p class="page-description">管理用户状态、认证和信用。</p>
     </div>
     <div class="page-actions">
       <button class="button button-ghost" @click="resetFilters">重置筛选</button>
@@ -31,7 +29,7 @@
     <div class="panel-header">
       <div>
         <h2 class="panel-title">筛选工具栏</h2>
-        <p class="panel-subtitle">字段顺序与表格列顺序一致，避免巡检时来回跳转。</p>
+        <p class="panel-subtitle">按状态和认证筛选。</p>
       </div>
     </div>
     <div class="panel-body">
@@ -74,7 +72,7 @@
     <div class="panel-header">
       <div>
         <h2 class="panel-title">用户列表</h2>
-        <p class="panel-subtitle">优先看校区、认证和信用，操作按钮始终靠右，减少误触。</p>
+        <p class="panel-subtitle">查看校区、认证和信用。</p>
       </div>
       <span class="mini-chip">总计 {{ total }} 位</span>
     </div>

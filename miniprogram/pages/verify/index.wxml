@@ -3,7 +3,7 @@
     <view class="mp-hero">
       <view class="mp-eyebrow">Verify</view>
       <view class="mp-title">完成校园身份核验</view>
-      <view class="mp-subtitle">认证后可解锁更多交易能力，并为信用免押和附近推荐提供基础数据。</view>
+      <view class="mp-subtitle">完成认证后可使用校园相关功能。</view>
     </view>
 
     <view class="mp-panel">
@@ -11,7 +11,7 @@
         <view class="mp-section-head">
           <view>
             <view class="mp-section-title">认证信息</view>
-            <view class="mp-section-desc">请填写学号、院系和校区信息，系统将标记为已认证用户。</view>
+            <view class="mp-section-desc">请填写学号、院系和校区信息。</view>
           </view>
         </view>
 

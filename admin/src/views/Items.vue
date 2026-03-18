@@ -3,9 +3,7 @@
     <div class="page-header-main">
       <p class="page-eyebrow">Items</p>
       <h1 class="page-title">物品审核、价格结构和校区归属放在同一张卡里。</h1>
-      <p class="page-description">
-        物品管理页围绕审核态、租售类型、押金价格和校区陈列展开，便于批量检查内容完整性与上线节奏。
-      </p>
+      <p class="page-description">管理审核、价格和校区信息。</p>
     </div>
     <div class="page-actions">
       <button class="button button-ghost" @click="resetFilters">清空筛选</button>
@@ -31,7 +29,7 @@
     <div class="panel-header">
       <div>
         <h2 class="panel-title">筛选工具栏</h2>
-        <p class="panel-subtitle">筛选条件和卡片字段一一对应，审核动作可以直接落在卡片底部。</p>
+        <p class="panel-subtitle">按条件筛选后直接审核。</p>
       </div>
     </div>
     <div class="panel-body">

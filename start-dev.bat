@@ -3,14 +3,19 @@ setlocal EnableExtensions EnableDelayedExpansion
 
 set "ROOT_DIR=%~dp0"
 if "%ROOT_DIR:~-1%"=="\" set "ROOT_DIR=%ROOT_DIR:~0,-1%"
-set "USE_DOCKER=1"
-set "AUTO_SWITCHED=0"
 
-if /I "%~1"=="--docker" set "USE_DOCKER=1"
-if /I "%~1"=="--local" set "USE_DOCKER=0"
+set "RUN_MODE=auto"
+if /I "%~1"=="--docker" set "RUN_MODE=docker"
+if /I "%~1"=="--local" set "RUN_MODE=local"
 
 if /I "%~1"=="-h" goto :help
 if /I "%~1"=="--help" goto :help
+
+set "LOCAL_DB_PORT=3307"
+if defined LEASE_DB_PORT set "LOCAL_DB_PORT=%LEASE_DB_PORT%"
+set "LOCAL_REDIS_PORT=6379"
+if defined LEASE_REDIS_PORT set "LOCAL_REDIS_PORT=%LEASE_REDIS_PORT%"
+set "ADMIN_PORT=5173"
 
 echo.
 echo ==========================================
@@ -25,134 +30,203 @@ if errorlevel 1 exit /b 1
 call :require_command npm "npm"
 if errorlevel 1 exit /b 1
 
-if "%USE_DOCKER%"=="1" (
-  echo [1/6] Checking docker port availability...
+echo [1/6] Selecting runtime mode...
+call :choose_mode
+if errorlevel 1 exit /b 1
 
-  call :check_port 3306
-  set "MYSQL_PORT_FREE=!ERRORLEVEL!"
-  call :check_port 6379
-  set "REDIS_PORT_FREE=!ERRORLEVEL!"
-
-  if "!MYSQL_PORT_FREE!"=="0" if "!REDIS_PORT_FREE!"=="0" (
-    echo [INFO] Docker ports 3306 and 6379 are both available.
-  ) else (
-    echo [WARN] Some Docker ports are in use.
-    if "!MYSQL_PORT_FREE!"=="1" (
-      echo         - Port 3306 ^(MySQL^): IN USE
-    )
-    if "!REDIS_PORT_FREE!"=="1" (
-      echo         - Port 6379 ^(Redis^): IN USE
-    )
-    echo.
-    echo Detecting local services...
-
-    call :detect_local_mysql
-    set "LOCAL_MYSQL_AVAILABLE=!ERRORLEVEL!"
-
-    call :detect_local_redis
-    set "LOCAL_REDIS_AVAILABLE=!ERRORLEVEL!"
-
-    if "!LOCAL_MYSQL_AVAILABLE!"=="0" if "!LOCAL_REDIS_AVAILABLE!"=="0" (
-      echo [INFO] Local MySQL and Redis detected. Auto-switching to --local mode.
-      echo.
-      set "USE_DOCKER=0"
-      set "AUTO_SWITCHED=1"
-    ) else (
-      echo.
-      echo [ERROR] Cannot start services.
-      if "!LOCAL_MYSQL_AVAILABLE!"=="1" (
-        echo         - Local MySQL on port 3307: NOT detected
-      ) else (
-        echo         - Local MySQL on port 3307: detected
-      )
-      if "!LOCAL_REDIS_AVAILABLE!"=="1" (
-        echo         - Local Redis on port 6379: NOT detected
-      ) else (
-        echo         - Local Redis on port 6379: detected
-      )
-      echo.
-      echo Options:
-      echo   1. Free Docker ports 3306 and/or 6379, then rerun
-      echo   2. Start local MySQL on port 3307 and Redis on port 6379, then rerun
-      echo   3. Use --local with custom ports:
-      echo      set LEASE_DB_PORT=3306 ^&^& start-dev.bat --local
-      echo.
-      exit /b 1
-    )
-  )
-)
-
-if "%USE_DOCKER%"=="1" (
-  set "LEASE_DB_PORT=3306"
-  if not defined LEASE_DB_USERNAME set "LEASE_DB_USERNAME=root"
-  if not defined LEASE_DB_PASSWORD set "LEASE_DB_PASSWORD=root"
-  set "LEASE_REDIS_PORT=6379"
-
-  call :resolve_docker_compose
-  if errorlevel 1 exit /b 1
-
-  echo [2/6] Starting MySQL and Redis with Docker...
-  pushd "%ROOT_DIR%"
-  %DOCKER_COMPOSE_CMD% up -d
-  if errorlevel 1 (
-    popd
-    echo [ERROR] Failed to start docker services.
-    exit /b 1
-  )
-  popd
-
-  echo [3/6] Waiting for MySQL on 127.0.0.1:3306...
-  call :wait_for_port 3306 60 "MySQL" "mysql"
-  if errorlevel 1 exit /b 1
-
-  echo [4/6] Waiting for Redis on 127.0.0.1:6379...
-  call :wait_for_port 6379 60 "Redis" "redis"
-  if errorlevel 1 exit /b 1
+if /I "%SELECTED_MODE%"=="docker" (
+  echo [INFO] Mode: Docker
 ) else (
-  if not defined LEASE_DB_PORT set "LEASE_DB_PORT=3307"
-  if not defined LEASE_DB_USERNAME set "LEASE_DB_USERNAME=root"
-  if not defined LEASE_DB_PASSWORD set "LEASE_DB_PASSWORD=123456"
-  if not defined LEASE_REDIS_PORT set "LEASE_REDIS_PORT=6379"
-
-  if "%AUTO_SWITCHED%"=="1" (
-    echo [1/6] Using detected local MySQL and Redis...
-  ) else (
-    echo [1/6] Using local MySQL and Redis...
+  if /I "%MODE_REASON%"=="fallback_local" (
+    echo [WARN] Docker host ports are occupied. Falling back to local MySQL/Redis.
   )
-  call :ensure_local_mysql
-  if errorlevel 1 exit /b 1
+  echo [INFO] Mode: Local
+)
+echo.
 
-  echo [2/6] Waiting for local MySQL on 127.0.0.1:!LEASE_DB_PORT!...
-  call :wait_for_port !LEASE_DB_PORT! 20 "MySQL"
-  if errorlevel 1 exit /b 1
+echo [2/6] Preparing infrastructure...
+if /I "%SELECTED_MODE%"=="docker" (
+  call :start_docker_stack
+) else (
+  call :start_local_stack
+)
+if errorlevel 1 exit /b 1
 
-  echo [3/6] Initializing local schema if needed...
-  call :init_local_mysql
-  if errorlevel 1 exit /b 1
+echo [3/6] Choosing admin port...
+call :choose_admin_port 5173
+if errorlevel 1 exit /b 1
+echo [OK] Admin will use http://127.0.0.1:%ADMIN_PORT%
 
-  echo [4/6] Waiting for local Redis on 127.0.0.1:!LEASE_REDIS_PORT!...
-  call :wait_for_port !LEASE_REDIS_PORT! 10 "Redis"
-  if errorlevel 1 (
-    echo [ERROR] Redis is not listening on port !LEASE_REDIS_PORT!.
-    echo         Start your local redis-server or rerun without --local after freeing 6379.
-    exit /b 1
-  )
+echo [4/6] Starting backend service...
+call :start_backend
+if errorlevel 1 exit /b 1
+
+echo [5/6] Starting admin console...
+call :start_admin
+if errorlevel 1 exit /b 1
+
+echo [6/6] Opening mini program folder...
+start "" explorer.exe "%ROOT_DIR%\miniprogram"
+
+echo.
+echo Services are being launched in separate windows:
+echo   Backend: http://127.0.0.1:8081
+echo   Admin:   http://127.0.0.1:%ADMIN_PORT%
+echo   MiniApp: open the ^"miniprogram^" folder in WeChat DevTools
+echo.
+if /I "%SELECTED_MODE%"=="docker" (
+  echo Docker stack:
+  echo   MySQL 127.0.0.1:3306  user=root
+  echo   Redis 127.0.0.1:6379
+  echo.
+  echo If backend startup fails, inspect:
+  echo   docker compose logs mysql
+  echo   docker compose logs redis
+) else (
+  echo Local stack:
+  echo   MySQL 127.0.0.1:%LEASE_DB_PORT%  user=%LEASE_DB_USERNAME%
+  echo   Redis 127.0.0.1:%LEASE_REDIS_PORT%
+)
+echo.
+exit /b 0
+
+:choose_mode
+set "SELECTED_MODE="
+set "MODE_REASON="
+
+if /I "%RUN_MODE%"=="docker" (
+  set "SELECTED_MODE=docker"
+  set "MODE_REASON=forced_docker"
+  exit /b 0
 )
 
-echo [5/6] Starting backend service...
-echo         DB: 127.0.0.1:!LEASE_DB_PORT!, Redis: 127.0.0.1:!LEASE_REDIS_PORT!
+if /I "%RUN_MODE%"=="local" (
+  set "SELECTED_MODE=local"
+  set "MODE_REASON=forced_local"
+  exit /b 0
+)
+
+call :is_port_free 3306
+set "DOCKER_MYSQL_FREE=%ERRORLEVEL%"
+call :is_port_free 6379
+set "DOCKER_REDIS_FREE=%ERRORLEVEL%"
+
+if "%DOCKER_MYSQL_FREE%"=="0" if "%DOCKER_REDIS_FREE%"=="0" (
+  set "SELECTED_MODE=docker"
+  set "MODE_REASON=auto_docker"
+  exit /b 0
+)
+
+call :can_connect 127.0.0.1 %LOCAL_DB_PORT%
+set "LOCAL_MYSQL_READY=%ERRORLEVEL%"
+call :can_connect 127.0.0.1 %LOCAL_REDIS_PORT%
+set "LOCAL_REDIS_READY=%ERRORLEVEL%"
+
+if "%LOCAL_MYSQL_READY%"=="0" if "%LOCAL_REDIS_READY%"=="0" (
+  set "SELECTED_MODE=local"
+  set "MODE_REASON=fallback_local"
+  exit /b 0
+)
+
+echo [ERROR] Cannot select a runnable mode.
+if not "%DOCKER_MYSQL_FREE%"=="0" call :describe_port_usage 3306 "MySQL"
+if not "%DOCKER_REDIS_FREE%"=="0" call :describe_port_usage 6379 "Redis"
+echo.
+echo Neither Docker nor the local dependency stack is fully available.
+echo   Docker requires host ports 3306 and 6379 to be free.
+echo   Local mode requires MySQL on %LOCAL_DB_PORT% and Redis on %LOCAL_REDIS_PORT%.
+echo.
+echo Try one of these:
+echo   1. Free ports 3306 and 6379, then rerun
+echo   2. Start local MySQL and Redis, then rerun
+echo   3. Force a mode explicitly:
+echo      start-dev.bat --docker
+echo      start-dev.bat --local
+echo.
+exit /b 1
+
+:start_docker_stack
+call :resolve_docker_compose
+if errorlevel 1 exit /b 1
+
+call :assert_port_free 3306 "MySQL"
+if errorlevel 1 exit /b 1
+call :assert_port_free 6379 "Redis"
+if errorlevel 1 exit /b 1
+
+set "LEASE_DB_PORT=3306"
+if not defined LEASE_DB_USERNAME set "LEASE_DB_USERNAME=root"
+if not defined LEASE_DB_PASSWORD set "LEASE_DB_PASSWORD=root"
+set "LEASE_REDIS_PORT=6379"
+
+pushd "%ROOT_DIR%"
+%DOCKER_COMPOSE_CMD% up -d
+if errorlevel 1 (
+  popd
+  echo [ERROR] Failed to start docker services.
+  exit /b 1
+)
+popd
+
+echo [INFO] Waiting for MySQL on 127.0.0.1:3306...
+call :wait_for_port 3306 60 "MySQL" "mysql"
+if errorlevel 1 exit /b 1
+
+echo [INFO] Waiting for Redis on 127.0.0.1:6379...
+call :wait_for_port 6379 60 "Redis" "redis"
+if errorlevel 1 exit /b 1
+
+exit /b 0
+
+:start_local_stack
+set "LEASE_DB_PORT=%LOCAL_DB_PORT%"
+if not defined LEASE_DB_USERNAME set "LEASE_DB_USERNAME=root"
+if not defined LEASE_DB_PASSWORD set "LEASE_DB_PASSWORD=123456"
+set "LEASE_REDIS_PORT=%LOCAL_REDIS_PORT%"
+
+call :ensure_local_mysql
+if errorlevel 1 exit /b 1
+
+echo [INFO] Waiting for local MySQL on 127.0.0.1:%LEASE_DB_PORT%...
+call :wait_for_port %LEASE_DB_PORT% 20 "MySQL"
+if errorlevel 1 exit /b 1
+
+echo [INFO] Initializing local schema if needed...
+call :init_local_mysql
+if errorlevel 1 exit /b 1
+
+echo [INFO] Waiting for local Redis on 127.0.0.1:%LEASE_REDIS_PORT%...
+call :wait_for_port %LEASE_REDIS_PORT% 10 "Redis"
+if errorlevel 1 (
+  echo [ERROR] Redis is not listening on port %LEASE_REDIS_PORT%.
+  echo         Start a local redis-server or rerun with --docker after freeing 6379.
+  exit /b 1
+)
+
+exit /b 0
+
+:start_backend
+call :is_port_free 8081
+if errorlevel 1 (
+  echo [INFO] Backend is already listening on http://127.0.0.1:8081
+  exit /b 0
+)
+
+set "BACKEND_BOOTSTRAP=%TEMP%\lease-start-backend.bat"
 (
   echo @echo off
-  echo set LEASE_DB_URL=jdbc:mysql://127.0.0.1:!LEASE_DB_PORT!/lease_db?useUnicode=true^^^&characterEncoding=utf-8^^^&serverTimezone=Asia/Shanghai^^^&useSSL=false^^^&allowPublicKeyRetrieval=true
-  echo set LEASE_DB_USERNAME=!LEASE_DB_USERNAME!
-  echo set LEASE_DB_PASSWORD=!LEASE_DB_PASSWORD!
-  echo set LEASE_REDIS_HOST=127.0.0.1
-  echo set LEASE_REDIS_PORT=!LEASE_REDIS_PORT!
+  echo set LEASE_DB_URL=jdbc:mysql://127.0.0.1:%LEASE_DB_PORT%/lease_db?useUnicode=true^&characterEncoding=utf-8^&serverTimezone=Asia/Shanghai^&useSSL=false^&allowPublicKeyRetrieval=true
+  echo set "LEASE_DB_USERNAME=%LEASE_DB_USERNAME%"
+  echo set "LEASE_DB_PASSWORD=%LEASE_DB_PASSWORD%"
+  echo set "LEASE_REDIS_HOST=127.0.0.1"
+  echo set "LEASE_REDIS_PORT=%LEASE_REDIS_PORT%"
   echo mvn spring-boot:run
-) > "%TEMP%\start-backend.bat"
-start "Lease Backend" /D "%ROOT_DIR%\backend\lease-backend" cmd /k "%TEMP%\start-backend.bat"
+) > "%BACKEND_BOOTSTRAP%"
 
-echo [6/6] Starting admin console...
+start "Lease Backend" /D "%ROOT_DIR%\backend" cmd /k call "%BACKEND_BOOTSTRAP%"
+exit /b 0
+
+:start_admin
 if not exist "%ROOT_DIR%\admin\node_modules" (
   echo [lease-admin] Installing npm dependencies...
   pushd "%ROOT_DIR%\admin"
@@ -164,86 +238,68 @@ if not exist "%ROOT_DIR%\admin\node_modules" (
   )
   popd
 )
-start "Lease Admin" /D "%ROOT_DIR%\admin" cmd /k "npm run dev -- --host 127.0.0.1 --port 5173"
 
-echo Opening mini program folder...
-start "" explorer.exe "%ROOT_DIR%\miniprogram"
-
-echo.
-echo Services are being launched in separate windows:
-echo   Backend: http://127.0.0.1:8081
-echo   Admin:   http://127.0.0.1:5173
-echo   MiniApp: open the ^"miniprogram^" folder in WeChat DevTools
-echo.
-if "%USE_DOCKER%"=="1" (
-  echo Docker stack:
-  echo   MySQL 127.0.0.1:3306  user=root
-  echo   Redis 127.0.0.1:6379
-  echo.
-  echo If backend startup fails, check docker logs:
-  echo   docker compose logs mysql
-  echo   docker compose logs redis
-) else (
-  echo Local stack:
-  echo   MySQL 127.0.0.1:%LEASE_DB_PORT%  user=%LEASE_DB_USERNAME%
-  echo   Redis 127.0.0.1:%LEASE_REDIS_PORT%
-)
-echo.
+start "Lease Admin" /D "%ROOT_DIR%\admin" cmd /k "npm run dev -- --host 127.0.0.1 --port %ADMIN_PORT%"
 exit /b 0
 
-:check_port
-set "CHECK_PORT=%~1"
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$conn = Get-NetTCPConnection -State Listen -LocalPort %CHECK_PORT% -ErrorAction SilentlyContinue | Select-Object -First 1; if ($conn) { exit 1 } else { exit 0 }" >nul 2>&1
-exit /b %ERRORLEVEL%
-
-:detect_local_mysql
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$client = $null; try { $client = New-Object Net.Sockets.TcpClient; $client.Connect('127.0.0.1', 3307); exit 0 } catch { exit 1 } finally { if ($client) { $client.Close() } }" >nul 2>&1
-exit /b %ERRORLEVEL%
-
-:detect_local_redis
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$client = $null; try { $client = New-Object Net.Sockets.TcpClient; $client.Connect('127.0.0.1', 6379); exit 0 } catch { exit 1 } finally { if ($client) { $client.Close() } }" >nul 2>&1
-exit /b %ERRORLEVEL%
-
-:ensure_port_free
-set "CHECK_PORT=%~1"
-set "CHECK_NAME=%~2"
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$conn = Get-NetTCPConnection -State Listen -LocalPort %CHECK_PORT% -ErrorAction SilentlyContinue | Select-Object -First 1; if ($conn) { exit 1 } else { exit 0 }" >nul 2>&1
-if errorlevel 1 (
-  echo [ERROR] Port %CHECK_PORT% is already in use before Docker startup.
-  echo         Docker %CHECK_NAME% needs this port on the host.
-  echo         Stop the local process using %CHECK_PORT% and rerun, or use:
-  echo           start-dev.bat --local
+:choose_admin_port
+set "ADMIN_PORT=%~1"
+:choose_admin_port_loop
+call :is_port_free %ADMIN_PORT%
+if not errorlevel 1 exit /b 0
+set /a ADMIN_PORT+=1
+if %ADMIN_PORT% GTR 5200 (
+  echo [ERROR] Could not find a free admin port in the 5173-5200 range.
   exit /b 1
 )
+goto :choose_admin_port_loop
+
+:is_port_free
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$conn = Get-NetTCPConnection -State Listen -LocalPort %~1 -ErrorAction SilentlyContinue | Select-Object -First 1; if ($conn) { exit 1 } else { exit 0 }" >nul 2>&1
+exit /b %ERRORLEVEL%
+
+:can_connect
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$client = $null; try { $client = New-Object Net.Sockets.TcpClient; $client.Connect('%~1', %~2); exit 0 } catch { exit 1 } finally { if ($client) { $client.Close() } }" >nul 2>&1
+exit /b %ERRORLEVEL%
+
+:assert_port_free
+call :is_port_free %~1
+if not errorlevel 1 exit /b 0
+echo [ERROR] Port %~1 is already in use.
+call :describe_port_usage %~1 "%~2"
+echo         Free the port and rerun, or use:
+echo           start-dev.bat --local
+exit /b 1
+
+:describe_port_usage
+for /f "usebackq delims=" %%I in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "$conn = Get-NetTCPConnection -State Listen -LocalPort %~1 -ErrorAction SilentlyContinue | Select-Object -First 1; if ($conn) { $proc = Get-Process -Id $conn.OwningProcess -ErrorAction SilentlyContinue; if ($proc) { Write-Output ('        - Port %~1 (%~2): ' + $proc.ProcessName + ' (PID ' + $conn.OwningProcess + ')') } else { Write-Output ('        - Port %~1 (%~2): PID ' + $conn.OwningProcess) } }"` ) do echo %%I
 exit /b 0
 
 :help
-echo Usage: start-dev.bat [options]
+echo Usage: start-dev.bat [--docker ^| --local]
+echo.
+echo Default behavior:
+echo   Prefer Docker.
+echo   If Docker host ports are occupied and local MySQL/Redis are available,
+echo   the script falls back to local mode automatically.
 echo.
 echo Options:
-echo   --docker    Force Docker mode ^(default^)
-echo   --local     Use local MySQL/Redis instead of Docker
+echo   --docker    Force Docker mode only
+echo   --local     Force local mode only
 echo   -h, --help  Show this help message
 echo.
 echo Environment variables:
-echo   LEASE_DB_PORT       MySQL port ^(default: 3306 for docker, 3307 for local^)
+echo   LEASE_DB_PORT       Local MySQL port override ^(default: 3307 in local mode^)
 echo   LEASE_DB_USERNAME   MySQL username ^(default: root^)
-echo   LEASE_DB_PASSWORD   MySQL password ^(default: root for docker, 123456 for local^)
-echo   LEASE_REDIS_PORT    Redis port ^(default: 6379^)
-echo.
-echo Examples:
-echo   start-dev.bat              Auto-detect mode ^(docker if ports free, else local if available^)
-echo   start-dev.bat --docker     Force Docker mode
-echo   start-dev.bat --local      Force local mode
+echo   LEASE_DB_PASSWORD   MySQL password ^(default: root for Docker, 123456 for local^)
+echo   LEASE_REDIS_PORT    Local Redis port override ^(default: 6379^)
 echo.
 echo Starts:
-echo   1. Infrastructure ^(docker by default, local with --local^)
+echo   1. MySQL + Redis ^(Docker preferred, local fallback when available^)
 echo   2. Spring Boot backend      http://127.0.0.1:8081
-echo   3. Vue admin dev server     http://127.0.0.1:5173
+echo   3. Vue admin dev server     http://127.0.0.1:5173 ^(or next free port^)
 echo   4. Opens the mini program folder in explorer
 echo.
 exit /b 0
@@ -277,13 +333,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
 exit /b 0
 
 :init_local_mysql
-set "MYSQL_EXE=C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"
-if not exist "%MYSQL_EXE%" (
-  echo [ERROR] mysql.exe was not found at:
-  echo         %MYSQL_EXE%
-  exit /b 1
+set "MYSQL_EXE="
+for /f "usebackq delims=" %%I in (`where mysql 2^>nul`) do (
+  set "MYSQL_EXE=%%I"
+  goto :mysql_cli_found
 )
+if exist "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" (
+  set "MYSQL_EXE=C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"
+  goto :mysql_cli_found
+)
+echo [ERROR] mysql.exe was not found in PATH or the default install path.
+exit /b 1
 
+:mysql_cli_found
 "%MYSQL_EXE%" -h 127.0.0.1 -P %LEASE_DB_PORT% -u %LEASE_DB_USERNAME% -p%LEASE_DB_PASSWORD% -e "CREATE DATABASE IF NOT EXISTS lease_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>&1
 if errorlevel 1 (
   echo [ERROR] Failed to connect to local MySQL with current credentials.
@@ -292,7 +354,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-type "%ROOT_DIR%\backend\lease-backend\src\main\resources\schema.sql" | "%MYSQL_EXE%" -h 127.0.0.1 -P %LEASE_DB_PORT% -u %LEASE_DB_USERNAME% -p%LEASE_DB_PASSWORD% lease_db >nul 2>&1
+type "%ROOT_DIR%\backend\src\main\resources\schema.sql" | "%MYSQL_EXE%" -h 127.0.0.1 -P %LEASE_DB_PORT% -u %LEASE_DB_USERNAME% -p%LEASE_DB_PASSWORD% lease_db >nul 2>&1
 if errorlevel 1 (
   echo [ERROR] Failed to initialize lease_db schema in local MySQL.
   exit /b 1
@@ -306,9 +368,8 @@ set "SERVICE_NAME=%~3"
 set "SERVICE_ID=%~4"
 set /a ELAPSED=0
 
-:wait_loop
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$client = $null; try { $client = New-Object Net.Sockets.TcpClient; $client.Connect('127.0.0.1', %TARGET_PORT%); exit 0 } catch { exit 1 } finally { if ($client) { $client.Close() } }" >nul 2>&1
+:wait_for_port_loop
+call :can_connect 127.0.0.1 %TARGET_PORT%
 if not errorlevel 1 (
   echo [OK] %SERVICE_NAME% is ready.
   exit /b 0
@@ -325,4 +386,4 @@ if %ELAPSED% GEQ %WAIT_SECONDS% (
 
 timeout /t 2 /nobreak >nul
 set /a ELAPSED+=2
-goto :wait_loop
+goto :wait_for_port_loop

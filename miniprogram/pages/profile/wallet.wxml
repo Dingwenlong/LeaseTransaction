@@ -26,7 +26,7 @@
         <view class="mp-section-head">
           <view>
             <view class="mp-section-title">最近流水</view>
-            <view class="mp-section-desc">支付、押金冻结和退款会统一记录在这里。</view>
+            <view class="mp-section-desc">查看支付、押金和退款记录。</view>
           </view>
         </view>
         <view class="wallet-record-list">

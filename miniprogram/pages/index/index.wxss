@@ -21,21 +21,6 @@
   min-width: 0;
 }
 
-.home-hero-tag {
-  flex-shrink: 0;
-  min-width: 120rpx;
-  height: 64rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
-  background: rgba(15, 23, 42, 0.72);
-  color: #67e8f9;
-  font-size: 24rpx;
-  font-weight: 700;
-}
-
 .home-search-action {
   flex-shrink: 0;
   min-width: 108rpx;

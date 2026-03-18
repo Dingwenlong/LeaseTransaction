@@ -1,4 +1,5 @@
 import request from '../utils/request'
+import type { AdminSessionUser } from '../utils/auth'
 
 export interface User {
   id: number
@@ -94,6 +95,22 @@ export interface SystemConfig {
   riskRules: Array<{ name: string; enabled: boolean }>
 }
 
+export interface AdminLoginResponse {
+  token: string
+  userInfo: AdminSessionUser
+}
+
+export interface SystemUser {
+  id: number
+  username: string
+  displayName: string
+  role: string
+  status: number
+  lastLoginTime?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface PageResult<T> {
   records: T[]
   total: number
@@ -117,6 +134,31 @@ export const userApi = {
 
   updateStatus: (id: number, status: number) =>
     request.post(`/user/status/${id}`, { status })
+}
+
+export const adminAuthApi = {
+  login: (data: { username: string; password: string }) =>
+    request.post<AdminLoginResponse>('/admin/auth/login', data),
+
+  getMe: () =>
+    request.get<AdminSessionUser>('/admin/auth/me')
+}
+
+export const systemUserApi = {
+  getList: (params?: Record<string, unknown>) =>
+    request.get<PageResult<SystemUser>>('/admin/system-users/list', { params }),
+
+  create: (data: { username: string; displayName: string; password: string; role: string }) =>
+    request.post<SystemUser>('/admin/system-users', data),
+
+  update: (id: number, data: { displayName?: string; role?: string; status?: number }) =>
+    request.put<SystemUser>(`/admin/system-users/${id}`, data),
+
+  updateStatus: (id: number, status: number) =>
+    request.post<void>(`/admin/system-users/${id}/status`, { status }),
+
+  resetPassword: (id: number, password: string) =>
+    request.post<void>(`/admin/system-users/${id}/reset-password`, { password })
 }
 
 export const itemApi = {
