@@ -14,7 +14,7 @@
         <view class="mp-section-head">
           <view>
             <view class="mp-section-title">订单信息</view>
-            <view class="mp-section-desc">订单号支持断行，长内容不会挤破版面。</view>
+            <view class="mp-section-desc">查看订单号、下单时间和交付方式。</view>
           </view>
         </view>
         <view class="order-detail-list">
@@ -39,7 +39,7 @@
         <view class="mp-section-head">
           <view>
             <view class="mp-section-title">物品信息</view>
-            <view class="mp-section-desc">物品卡片与首页保持相同的信息结构。</view>
+            <view class="mp-section-desc">查看关联物品信息。</view>
           </view>
         </view>
         <view class="order-detail-item">
@@ -59,7 +59,7 @@
         <view class="mp-section-head">
           <view>
             <view class="mp-section-title">费用明细</view>
-            <view class="mp-section-desc">金额信息统一使用高亮色，和后台保持一致。</view>
+            <view class="mp-section-desc">查看订单金额、押金和租期。</view>
           </view>
         </view>
         <view class="order-detail-list">
@@ -96,7 +96,7 @@
         <view class="mp-section-head">
           <view>
             <view class="mp-section-title">备注与申诉</view>
-            <view class="mp-section-desc">履约备注、归还验收说明和申诉原因统一收在这里。</view>
+            <view class="mp-section-desc">查看订单备注和申诉信息。</view>
           </view>
         </view>
         <view class="order-detail-remark">{{order.remark}}</view>
@@ -108,7 +108,7 @@
         <view class="mp-section-head">
           <view>
             <view class="mp-section-title">订单评价</view>
-            <view class="mp-section-desc">完成后的双方评价会展示在订单详情中。</view>
+            <view class="mp-section-desc">查看订单评价。</view>
           </view>
         </view>
         <view class="order-review-list">

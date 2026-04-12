@@ -3,11 +3,11 @@
     <view class="mp-hero">
       <view class="mp-eyebrow">Publish</view>
       <view class="mp-title">发布你的物品</view>
-      <view class="mp-subtitle">表单字段顺序与物品详情卡一致，减少填写时的心智切换。</view>
+      <view class="mp-subtitle">填写物品信息并提交审核。</view>
       <view class="mp-meta-row publish-tips">
         <view class="mp-meta-pill">图片最多 9 张</view>
         <view class="mp-meta-pill">支持租赁 / 出售</view>
-        <view class="mp-meta-pill">底部操作栏已避让安全区</view>
+        <view class="mp-meta-pill">支持暂存草稿</view>
       </view>
     </view>
 
@@ -16,7 +16,7 @@
         <view class="mp-section-head">
           <view>
             <view class="mp-section-title">基本信息</view>
-            <view class="mp-section-desc">先上传图片，再填写标题、类型、价格和校区。</view>
+            <view class="mp-section-desc">上传图片并填写标题、类型、价格和校区。</view>
           </view>
         </view>
 
@@ -111,7 +111,7 @@
         <view class="mp-section-head">
           <view>
             <view class="mp-section-title">物品描述</view>
-            <view class="mp-section-desc">补充成色、配件和交接方式，长文本自动换行。</view>
+            <view class="mp-section-desc">补充成色、配件和交接方式。</view>
           </view>
         </view>
         <view class="publish-field">

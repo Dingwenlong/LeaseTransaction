@@ -65,7 +65,7 @@
         <view class="mp-section-head">
           <view>
             <view class="mp-section-title">交易服务</view>
-            <view class="mp-section-desc">先放与交易直接相关的入口，减少跳转成本。</view>
+            <view class="mp-section-desc">常用交易入口。</view>
           </view>
         </view>
         <view class="profile-menu">
@@ -93,7 +93,7 @@
         <view class="mp-section-head">
           <view>
             <view class="mp-section-title">帮助与支持</view>
-            <view class="mp-section-desc">保留消息、帮助和人工介入入口。</view>
+            <view class="mp-section-desc">消息、帮助和客服入口。</view>
           </view>
         </view>
         <view class="profile-menu">

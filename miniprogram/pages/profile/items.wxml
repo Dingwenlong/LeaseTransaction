@@ -9,7 +9,7 @@
     <view class="mp-section-head">
       <view>
         <view class="mp-section-title">发布列表</view>
-        <view class="mp-section-desc">支持在这里继续查看详情，或对已上架物品做上下架操作。</view>
+        <view class="mp-section-desc">查看物品详情或修改上架状态。</view>
       </view>
       <view class="mp-meta-pill">共 {{total}} 件</view>
     </view>

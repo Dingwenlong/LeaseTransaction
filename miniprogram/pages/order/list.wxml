@@ -3,7 +3,7 @@
     <view class="mp-hero">
       <view class="mp-eyebrow">Orders</view>
       <view class="mp-title">我的订单</view>
-      <view class="mp-subtitle">订单卡片与后台订单表采用同一状态语义，方便履约、退款和申诉处理。</view>
+      <view class="mp-subtitle">查看各状态订单并进入详情处理。</view>
       <view class="mp-chip-row order-tabs">
         <view
           wx:for="{{tabs}}"
@@ -21,7 +21,7 @@
     <view class="mp-section-head">
       <view>
         <view class="mp-section-title">订单列表</view>
-        <view class="mp-section-desc">订单号可换行，状态标签和金额固定位置，移动端查看更稳定。</view>
+        <view class="mp-section-desc">查看订单号、状态、时间和金额。</view>
       </view>
       <view class="mp-meta-pill">共 {{displayOrders.length}} 单</view>
     </view>

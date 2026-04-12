@@ -3,7 +3,7 @@
     <view class="mp-hero">
       <view class="mp-eyebrow">Create Order</view>
       <view class="mp-title">{{item.title || '创建订单'}}</view>
-      <view class="mp-subtitle">租赁支持选择开始日期和租期，出售支持直接提交交易订单。</view>
+      <view class="mp-subtitle">根据物品类型填写订单信息。</view>
     </view>
 
     <view class="mp-panel" wx:if="{{item.id}}">
