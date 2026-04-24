@@ -1,4 +1,5 @@
 const api = require('../../utils/api.js')
+const auth = require('../../utils/auth.js')
 const { showToast, showLoading, hideLoading } = require('../../utils/util.js')
 
 Page({
@@ -18,6 +19,9 @@ Page({
   },
 
   onLoad() {
+    if (!auth.ensureLogin()) {
+      return
+    }
     this.loadConfig()
     this.loadDraft()
   },

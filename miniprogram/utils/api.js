@@ -6,6 +6,7 @@ module.exports = {
   user: {
     login: (data) => request.post('/user/login', data),
     getInfo: () => request.get('/user/info'),
+    profile: (id) => request.get('/user/profile/' + id),
     updateProfile: (data) => request.put('/user/profile', data),
     verify: (data) => request.post('/user/verify', data)
   },
@@ -38,7 +39,8 @@ module.exports = {
   },
   review: {
     submit: (data) => request.post('/review/submit', data),
-    order: (orderId) => request.get('/review/order/' + orderId)
+    order: (orderId) => request.get('/review/order/' + orderId),
+    user: (userId) => request.get('/review/user/' + userId)
   },
   payment,
   websocket

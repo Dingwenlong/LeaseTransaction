@@ -2,6 +2,7 @@ package com.campus.lease.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.campus.lease.common.constant.BusinessConstants;
 import com.campus.lease.common.exception.BusinessException;
 import com.campus.lease.dto.ReviewSubmitRequest;
 import com.campus.lease.entity.Item;
@@ -9,6 +10,7 @@ import com.campus.lease.entity.Order;
 import com.campus.lease.entity.Review;
 import com.campus.lease.entity.User;
 import com.campus.lease.mapper.ReviewMapper;
+import com.campus.lease.service.CreditService;
 import com.campus.lease.service.ItemService;
 import com.campus.lease.service.MessageService;
 import com.campus.lease.service.OrderService;
@@ -31,6 +33,7 @@ public class ReviewServiceImpl extends ServiceImpl<ReviewMapper, Review> impleme
     private final UserService userService;
     private final ItemService itemService;
     private final MessageService messageService;
+    private final CreditService creditService;
 
     @Override
     @Transactional
@@ -75,6 +78,12 @@ public class ReviewServiceImpl extends ServiceImpl<ReviewMapper, Review> impleme
         review.setIsAnonymous(request.getIsAnonymous() == null ? 0 : request.getIsAnonymous());
         save(review);
 
+        if (request.getRating() >= 4) {
+            creditService.applyRule(revieweeId, BusinessConstants.Credit.GOOD_REVIEW, order.getId(), "收到 " + request.getRating() + " 星评价");
+        } else if (request.getRating() <= 2) {
+            creditService.applyRule(revieweeId, BusinessConstants.Credit.BAD_REVIEW, order.getId(), "收到 " + request.getRating() + " 星评价");
+        }
+
         messageService.sendSystemMessage(
                 revieweeId,
                 "收到新的评价",
@@ -88,6 +97,13 @@ public class ReviewServiceImpl extends ServiceImpl<ReviewMapper, Review> impleme
     public List<Map<String, Object>> getOrderReviews(Long orderId) {
         LambdaQueryWrapper<Review> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Review::getOrderId, orderId).orderByDesc(Review::getCreateTime);
+        return list(wrapper).stream().map(this::convertToReviewMap).toList();
+    }
+
+    @Override
+    public List<Map<String, Object>> getUserReviews(Long userId) {
+        LambdaQueryWrapper<Review> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Review::getRevieweeId, userId).orderByDesc(Review::getCreateTime);
         return list(wrapper).stream().map(this::convertToReviewMap).toList();
     }
 

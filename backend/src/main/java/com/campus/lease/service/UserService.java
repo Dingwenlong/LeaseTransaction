@@ -5,6 +5,7 @@ import com.campus.lease.dto.CampusVerifyRequest;
 import com.campus.lease.dto.LoginRequest;
 import com.campus.lease.dto.LoginResponse;
 import com.campus.lease.dto.UserInfo;
+import com.campus.lease.dto.UserCreditAdjustRequest;
 import com.campus.lease.dto.UserProfileUpdateRequest;
 import com.campus.lease.entity.User;
 
@@ -18,6 +19,8 @@ public interface UserService extends IService<User> {
     UserInfo getUserInfo(Long userId);
     UserInfo updateProfile(Long userId, UserProfileUpdateRequest request);
     UserInfo verifyCampus(Long userId, CampusVerifyRequest request);
+    Map<String, Object> getPublicProfile(Long userId);
     Map<String, Object> getUserPage(Integer current, Integer size, String keyword, Integer status, Integer verified);
     void updateUserStatus(Long userId, Integer status);
+    Map<String, Object> adjustUserCredit(Long userId, UserCreditAdjustRequest request);
 }

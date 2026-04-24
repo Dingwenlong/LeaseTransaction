@@ -119,7 +119,7 @@ lease-admin/
 
 ## 相关项目
 
-- **后端 API**: Java 25 + Spring Boot 3.x
+- **后端 API**: Java 21 + Spring Boot 3.x
 - **微信小程序**: 用户端应用
 - **完整规范**: [Spec 文档](../../.trae/specs/campus-lease-trading-system/spec.md)
 

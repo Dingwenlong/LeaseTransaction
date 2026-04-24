@@ -1,13 +1,9 @@
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
 
 spring:
   application:
     name: lease-backend
-
-  sql:
-    init:
-      mode: never
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -15,7 +11,10 @@ spring:
     username: ${LEASE_DB_USERNAME:root}
     password: ${LEASE_DB_PASSWORD:root}
 
-
+  flyway:
+    enabled: ${FLYWAY_ENABLED:true}
+    baseline-on-migrate: true
+    locations: classpath:db/migration
 
   data:
     redis:
@@ -29,8 +28,8 @@ spring:
       max-request-size: 10MB
 
 jwt:
-  secret: campus-lease-secret-key-2024-very-long-secret-key-for-jwt-token-generation
-  expiration: 86400000
+  secret: ${JWT_SECRET:campus-lease-secret-key-2024-very-long-secret-key-for-local-dev-only}
+  expiration: ${JWT_EXPIRATION:86400000}
 
 admin:
   bootstrap:
@@ -42,7 +41,7 @@ mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.stdout.StdOutImpl}
   global-config:
     db-config:
       id-type: auto
@@ -56,7 +55,17 @@ logging:
 
 file:
   upload:
-    path: ./uploads
+    path: ${FILE_UPLOAD_PATH:./uploads}
   access:
-    path: /uploads
+    path: ${FILE_ACCESS_PATH:/uploads}
+  public-base-url: ${FILE_PUBLIC_BASE_URL:http://localhost:${server.port}}
+
+wechat:
+  pay:
+    app-id: ${WECHAT_PAY_APP_ID:local-app}
+    mch-id: ${WECHAT_PAY_MCH_ID:local-mch}
+    mch-serial-no: ${WECHAT_PAY_MCH_SERIAL_NO:local-serial}
+    private-key-path: ${WECHAT_PAY_PRIVATE_KEY_PATH:}
+    api-v3-key: ${WECHAT_PAY_API_V3_KEY:local-api-v3-key}
+    notify-url: ${WECHAT_PAY_NOTIFY_URL:http://127.0.0.1:${server.port}/api/payment/notify}
 

@@ -1,88 +1,55 @@
-$ErrorActionPreference = "Continue"
+$ErrorActionPreference = "Stop"
+
+$RootDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+
 Write-Host ""
 Write-Host "=========================================="
 Write-Host "  Campus Lease Transaction Dev Launcher"
 Write-Host "=========================================="
 Write-Host ""
 
-$ROOT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
-$BACKEND_PORT = 8081
-
-Write-Host "[INFO] Checking Docker services..."
-$mysqlRunning = docker ps --filter "name=campus-errand-mysql" --format "{{.Names}}" 2>$null | Select-String "campus-errand-mysql"
-$leaseMysqlRunning = docker ps --filter "name=lease-mysql" --format "{{.Names}}" 2>$null | Select-String "lease-mysql"
-
-if ($mysqlRunning -or $leaseMysqlRunning) {
-    Write-Host "[OK] Docker MySQL is already running."
-} else {
-    Write-Host "[ERROR] No Docker MySQL found. Please start campus-errand-mysql container first."
-    Write-Host "Press Enter to exit..."
-    Read-Host
-    exit 1
+if (-not (Test-Path (Join-Path $RootDir ".env"))) {
+    Copy-Item (Join-Path $RootDir ".env.example") (Join-Path $RootDir ".env")
+    Write-Host "[INFO] Created .env from .env.example. Review secrets before production use."
 }
 
-Write-Host "[2/5] Waiting for MySQL on 127.0.0.1:3306..."
-$startTime = Get-Date
-while ($true) {
-    $client = New-Object Net.Sockets.TcpClient
-    try {
-        $client.Connect('127.0.0.1', 3306)
-        $client.Close()
-        Write-Host "[OK] MySQL is ready."
-        break
-    } catch {
-        if ((Get-Date).Subtract($startTime).TotalSeconds -gt 60) {
-            Write-Host "[ERROR] Timeout waiting for MySQL on port 3306."
-            Write-Host "Press Enter to exit..."
-            Read-Host
-            exit 1
+Write-Host "[1/4] Starting MySQL and Redis..."
+docker compose up -d mysql redis
+
+function Wait-Port($Port, $Name) {
+    $startTime = Get-Date
+    while ($true) {
+        $client = New-Object Net.Sockets.TcpClient
+        try {
+            $client.Connect("127.0.0.1", $Port)
+            $client.Close()
+            Write-Host "[OK] $Name is ready."
+            return
+        } catch {
+            if ((Get-Date).Subtract($startTime).TotalSeconds -gt 90) {
+                throw "Timeout waiting for $Name on port $Port"
+            }
+            Start-Sleep -Seconds 2
         }
-        Start-Sleep -Seconds 2
     }
 }
 
-Write-Host "[3/5] Waiting for Redis on 127.0.0.1:6379..."
-$startTime = Get-Date
-while ($true) {
-    $client = New-Object Net.Sockets.TcpClient
-    try {
-        $client.Connect('127.0.0.1', 6379)
-        $client.Close()
-        Write-Host "[OK] Redis is ready."
-        break
-    } catch {
-        if ((Get-Date).Subtract($startTime).TotalSeconds -gt 60) {
-            Write-Host "[ERROR] Timeout waiting for Redis on port 6379."
-            Write-Host "Press Enter to exit..."
-            Read-Host
-            exit 1
-        }
-        Start-Sleep -Seconds 2
-    }
-}
+Write-Host "[2/4] Waiting for dependencies..."
+Wait-Port 3306 "MySQL"
+Wait-Port 6379 "Redis"
 
-Write-Host "[4/5] Starting backend service..."
-Start-Process powershell -ArgumentList "-NoProfile","-ExecutionPolicy","Bypass","-File","$ROOT_DIR\run-backend.ps1" -WorkingDirectory "$ROOT_DIR\backend\lease-backend" -WindowStyle Normal
+Write-Host "[3/4] Starting backend..."
+Start-Process powershell -ArgumentList "-NoProfile","-ExecutionPolicy","Bypass","-File",(Join-Path $RootDir "run-backend.ps1") -WorkingDirectory $RootDir -WindowStyle Normal
 
-Write-Host "[5/5] Starting admin console..."
-if (-not (Test-Path "$ROOT_DIR\admin\lease-admin\node_modules")) {
-    Write-Host "[lease-admin] Installing npm dependencies..."
-    Push-Location "$ROOT_DIR\admin\lease-admin"
+Write-Host "[4/4] Starting admin console..."
+if (-not (Test-Path (Join-Path $RootDir "admin\node_modules"))) {
+    Push-Location (Join-Path $RootDir "admin")
     npm install
     Pop-Location
 }
-Start-Process cmd -ArgumentList "/c","npm run dev" -WorkingDirectory "$ROOT_DIR\admin\lease-admin" -WindowStyle Normal
-
-Write-Host "Opening miniprogram folder..."
-Start-Process explorer -ArgumentList "$ROOT_DIR\miniprogram"
+Start-Process cmd -ArgumentList "/c","npm run dev" -WorkingDirectory (Join-Path $RootDir "admin") -WindowStyle Normal
 
 Write-Host ""
-Write-Host "=========================================="
-Write-Host "  Services are being launched:"
-Write-Host "  Backend: http://127.0.0.1:$BACKEND_PORT"
-Write-Host "  Admin:   http://127.0.0.1:5173"
-Write-Host "  MiniApp: Open miniprogram in WeChat DevTools"
-Write-Host "=========================================="
-Write-Host ""
-Write-Host "Press Enter to exit..."
-Read-Host
+Write-Host "Backend: http://127.0.0.1:8081"
+Write-Host "Admin:   http://127.0.0.1:5173"
+Write-Host "MiniApp: open miniprogram in WeChat DevTools"

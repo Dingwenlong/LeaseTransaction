@@ -21,6 +21,10 @@
   min-width: 0;
 }
 
+.home-hero-copy .mp-meta-pill {
+  margin-top: 18rpx;
+}
+
 .home-search-action {
   flex-shrink: 0;
   min-width: 108rpx;
@@ -33,6 +37,50 @@
   color: #04111f;
   font-size: 24rpx;
   font-weight: 700;
+}
+
+.home-history {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.home-history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.home-history-title {
+  color: #cbd5e1;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.home-history-clear {
+  color: #67e8f9;
+  font-size: 22rpx;
+}
+
+.home-history-row {
+  gap: 12rpx;
+}
+
+.home-history-chip {
+  max-width: 100%;
+  gap: 8rpx;
+  justify-content: flex-start;
+  background: rgba(15, 23, 42, 0.52);
+}
+
+.home-history-icon {
+  flex-shrink: 0;
+  font-size: 22rpx;
+}
+
+.home-history-text {
+  min-width: 0;
 }
 
 .home-tabs .mp-chip {

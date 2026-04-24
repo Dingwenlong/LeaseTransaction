@@ -1,0 +1,55 @@
+<view class="mp-page profile-page" wx:if="{{profile}}">
+  <view class="mp-shell">
+    <view class="mp-hero profile-hero">
+      <view class="profile-head">
+        <view class="profile-avatar-wrap">
+          <image wx:if="{{profile.avatar}}" class="profile-avatar" src="{{profile.avatar}}" mode="aspectFill" />
+          <view wx:else class="profile-avatar profile-avatar-placeholder">👤</view>
+        </view>
+        <view class="profile-copy">
+          <view class="mp-eyebrow">Credit Profile</view>
+          <view class="profile-name">{{profile.nickname}}</view>
+          <view class="profile-id">{{profile.campus || '校区待补充'}} · {{profile.department || '院系待补充'}}</view>
+        </view>
+      </view>
+
+      <view class="mp-meta-row">
+        <view class="mp-tag {{profile.isVerified === 1 ? 'mp-tag-green' : 'mp-tag-yellow'}}">{{profile.isVerified === 1 ? '校园已认证' : '待校园认证'}}</view>
+        <view class="mp-meta-pill">信用等级 {{profile.creditLevel}}</view>
+      </view>
+
+      <view class="profile-credit">
+        <view>
+          <view class="profile-credit-label">信用分</view>
+          <view class="profile-credit-value">{{profile.creditScore}}</view>
+        </view>
+        <view class="profile-credit-side">
+          <view class="profile-credit-meta">累计 {{reviewStats.reviewCount}} 条评价</view>
+          <view class="profile-credit-meta">平均 {{reviewStats.averageRating}} 星</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="mp-panel">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">历史评价</view>
+            <view class="mp-section-desc">查看该用户在订单完成后的历史反馈。</view>
+          </view>
+        </view>
+        <view class="profile-review-list" wx:if="{{reviews.length > 0}}">
+          <view class="profile-review-item" wx:for="{{reviews}}" wx:key="id">
+            <view class="profile-review-head">
+              <view class="profile-review-name">{{item.reviewerName}}</view>
+              <view class="profile-review-rating">{{item.rating}} 星</view>
+            </view>
+            <view class="profile-review-meta">{{item.itemTitle}} · {{item.createdAt}}</view>
+            <view class="profile-review-content">{{item.content}}</view>
+          </view>
+        </view>
+        <view class="mp-section-desc" wx:else>该用户暂时还没有历史评价。</view>
+      </view>
+    </view>
+  </view>
+</view>

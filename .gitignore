@@ -19,6 +19,8 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+secrets/
+uploads/
 
 # 日志文件
 logs

@@ -1,5 +1,7 @@
 const api = require('../../utils/api.js')
-const { showLoading, hideLoading, showToast } = require('../../utils/util.js')
+const auth = require('../../utils/auth.js')
+const messageMock = require('../../mock/message.js')
+const { showLoading, hideLoading } = require('../../utils/util.js')
 
 Page({
   data: {
@@ -10,17 +12,22 @@ Page({
       { name: '系统', key: 'system', count: 0 }
     ],
     messages: [],
-    displayMessages: []
+    displayMessages: [],
+    usingMockData: false
   },
 
   onShow() {
-    if (!this.ensureLogin()) {
+    if (!this.canLoadMessages()) {
       return
     }
     this.loadMessages()
   },
 
   onPullDownRefresh() {
+    if (!this.canLoadMessages()) {
+      wx.stopPullDownRefresh()
+      return
+    }
     this.loadMessages().finally(() => {
       wx.stopPullDownRefresh()
     })
@@ -38,16 +45,16 @@ Page({
       return
     }
 
-    const userInfo = wx.getStorageSync('userInfo') || {}
-    if (!message.read && message.receiverId === userInfo.id) {
-      try {
-        await api.message.read(message.id)
-        const messages = this.data.messages.map((item) => item.id === message.id ? { ...item, read: true } : item)
-        this.setData({ messages })
-        this.syncTabs(messages)
-        this.applyFilter()
-      } catch (error) {
-        console.error('标记已读失败:', error)
+    if (!message.read && message.receiverId === this.getCurrentUserId()) {
+      if (message.isMock) {
+        this.markMessageRead(message.id)
+      } else {
+        try {
+          await api.message.read(message.id)
+          this.markMessageRead(message.id)
+        } catch (error) {
+          console.error('标记已读失败:', error)
+        }
       }
     }
 
@@ -61,20 +68,41 @@ Page({
   async loadMessages() {
     showLoading()
     try {
-      const res = await api.message.list({
-        page: 1,
-        size: 50
+      const useMockData = messageMock.isEnabled()
+      const res = useMockData
+        ? messageMock.listMockMessages({
+            page: 1,
+            size: 50,
+            userId: this.getCurrentUserId(),
+            studentId: this.getCurrentStudentId()
+          })
+        : await api.message.list({
+            page: 1,
+            size: 50
+          })
+
+      const messages = (res.records || []).map((item) => this.formatMessage(item))
+      this.setData({
+        messages,
+        usingMockData: useMockData
       })
-      const messages = (res.records || []).map((item) => ({
-        ...item,
-        time: this.formatDate(item.time)
-      }))
-      this.setData({ messages })
       this.syncTabs(messages)
       this.applyFilter()
     } catch (error) {
-      console.error('加载消息失败:', error)
-      showToast('消息加载失败')
+      console.error('加载消息失败，切换为演示数据:', error)
+      const res = messageMock.listMockMessages({
+        page: 1,
+        size: 50,
+        userId: this.getCurrentUserId(),
+        studentId: this.getCurrentStudentId()
+      })
+      const messages = (res.records || []).map((item) => this.formatMessage(item))
+      this.setData({
+        messages,
+        usingMockData: true
+      })
+      this.syncTabs(messages)
+      this.applyFilter()
     } finally {
       hideLoading()
     }
@@ -105,15 +133,62 @@ Page({
     this.setData({ tabs })
   },
 
-  ensureLogin() {
-    const token = wx.getStorageSync('token')
-    if (token) {
+  canLoadMessages() {
+    if (messageMock.isEnabled()) {
       return true
     }
-    wx.navigateTo({
-      url: '/pages/login/login'
+    return this.ensureLogin()
+  },
+
+  ensureLogin() {
+    return auth.ensureLogin()
+  },
+
+  getCurrentUserId() {
+    const userInfo = wx.getStorageSync('userInfo') || {}
+    return userInfo.id || messageMock.MOCK_USER_ID
+  },
+
+  getCurrentStudentId() {
+    const userInfo = wx.getStorageSync('userInfo') || {}
+    if (userInfo.studentId) {
+      return userInfo.studentId
+    }
+    if (typeof userInfo.id === 'string' && /^\d{10}$/.test(userInfo.id)) {
+      return userInfo.id
+    }
+    return messageMock.TARGET_STUDENT_ID
+  },
+
+  markMessageRead(messageId) {
+    const messages = this.data.messages.map((item) => {
+      if (item.id !== messageId) {
+        return item
+      }
+      return {
+        ...item,
+        read: true
+      }
     })
-    return false
+
+    this.setData({ messages })
+    this.syncTabs(messages)
+    this.applyFilter()
+  },
+
+  formatMessage(item) {
+    return {
+      ...item,
+      desc: item.desc || item.content || '',
+      icon: item.icon || this.getMessageIcon(item.type),
+      time: this.formatDate(item.time || item.createdAt)
+    }
+  },
+
+  getMessageIcon(type) {
+    if (type === 3) return '🔔'
+    if (type === 2) return '📦'
+    return '💬'
   },
 
   formatDate(value) {

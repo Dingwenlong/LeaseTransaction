@@ -1,22 +1,19 @@
-version: '3.8'
-
 services:
   mysql:
     image: mysql:8.0
     container_name: lease-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: lease_db
+      MYSQL_ROOT_PASSWORD: ${LEASE_DB_PASSWORD:-root}
+      MYSQL_DATABASE: ${LEASE_DB_NAME:-lease_db}
       MYSQL_CHARSET: utf8mb4
       MYSQL_COLLATION: utf8mb4_unicode_ci
     ports:
-      - "3306:3306"
+      - "${LEASE_DB_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./docker/mysql/init:/docker-entrypoint-initdb.d
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${LEASE_DB_PASSWORD:-root}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -27,7 +24,7 @@ services:
     image: redis:7-alpine
     container_name: lease-redis
     ports:
-      - "6379:6379"
+      - "${LEASE_REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
@@ -39,9 +36,49 @@ services:
     networks:
       - lease-network
 
+  backend:
+    build:
+      context: ./backend
+    container_name: lease-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
+      LEASE_DB_URL: jdbc:mysql://mysql:3306/${LEASE_DB_NAME:-lease_db}?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      LEASE_DB_USERNAME: ${LEASE_DB_USERNAME:-root}
+      LEASE_DB_PASSWORD: ${LEASE_DB_PASSWORD:-root}
+      LEASE_REDIS_HOST: redis
+      LEASE_REDIS_PORT: 6379
+      FILE_UPLOAD_PATH: /app/uploads
+      FILE_PUBLIC_BASE_URL: ${FILE_PUBLIC_BASE_URL:-http://127.0.0.1:8080}
+    ports:
+      - "${SERVER_PORT:-8081}:8081"
+    volumes:
+      - uploads_data:/app/uploads
+      - ./secrets:/app/secrets:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - lease-network
+
+  admin:
+    build:
+      context: ./admin
+    container_name: lease-admin-nginx
+    ports:
+      - "${ADMIN_PORT:-8080}:80"
+    volumes:
+      - uploads_data:/usr/share/nginx/html/uploads:ro
+    depends_on:
+      - backend
+    networks:
+      - lease-network
+
 volumes:
   mysql_data:
   redis_data:
+  uploads_data:
 
 networks:
   lease-network:

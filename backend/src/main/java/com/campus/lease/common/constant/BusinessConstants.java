@@ -56,4 +56,29 @@ public final class BusinessConstants {
         private PaymentType() {
         }
     }
+
+    public static final class PaymentStatus {
+        public static final int FAILED = 0;
+        public static final int SUCCESS = 1;
+        public static final int PROCESSING = 2;
+
+        private PaymentStatus() {
+        }
+    }
+
+    public static final class Credit {
+        public static final int DEFAULT_SCORE = 100;
+        public static final int MIN_SCORE = 0;
+        public static final int MAX_SCORE = 200;
+
+        public static final String REAL_NAME = "REAL_NAME";
+        public static final String SUCCESSFUL_TRANSACTION = "SUCCESSFUL_TRANSACTION";
+        public static final String GOOD_REVIEW = "GOOD_REVIEW";
+        public static final String BAD_REVIEW = "BAD_REVIEW";
+        public static final String BREACH = "BREACH";
+        public static final String COMPLAINT_CONFIRMED = "COMPLAINT_CONFIRMED";
+
+        private Credit() {
+        }
+    }
 }

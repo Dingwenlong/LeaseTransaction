@@ -14,7 +14,7 @@ public class AdminAccessGuard {
     private final SystemUserService systemUserService;
 
     public Long requireAdminId() {
-        Long adminId = authContext.requireAdminId();
+        Long adminId = authContext.requireCurrentAdminId();
         systemUserService.ensureActiveAdmin(adminId);
         return adminId;
     }

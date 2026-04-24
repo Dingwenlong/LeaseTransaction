@@ -2,15 +2,18 @@ package com.campus.lease.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.campus.lease.common.constant.BusinessConstants;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.campus.lease.common.exception.BusinessException;
 import com.campus.lease.dto.CampusVerifyRequest;
 import com.campus.lease.dto.LoginRequest;
 import com.campus.lease.dto.LoginResponse;
 import com.campus.lease.dto.UserInfo;
+import com.campus.lease.dto.UserCreditAdjustRequest;
 import com.campus.lease.dto.UserProfileUpdateRequest;
 import com.campus.lease.entity.User;
 import com.campus.lease.mapper.UserMapper;
+import com.campus.lease.service.CreditService;
 import com.campus.lease.service.UserService;
 import com.campus.lease.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ import java.util.Map;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     private final JwtUtil jwtUtil;
+    private final CreditService creditService;
 
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -73,7 +77,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setOpenid(openid);
         user.setNickname(StringUtils.defaultIfBlank(nickname, "校园用户"));
         user.setAvatar(StringUtils.defaultString(avatar));
-        user.setCreditScore(100);
+        user.setCreditScore(BusinessConstants.Credit.DEFAULT_SCORE);
         user.setIsVerified(0);
         user.setStatus(1);
         save(user);
@@ -151,14 +155,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StringUtils.isAnyBlank(request.getStudentId(), request.getDepartment(), request.getCampus())) {
             throw new BusinessException("请完整填写学号、院系和校区信息");
         }
+        boolean firstVerify = user.getIsVerified() == null || user.getIsVerified() == 0;
 
         user.setStudentId(request.getStudentId());
         user.setDepartment(request.getDepartment());
         user.setCampus(request.getCampus());
         user.setIsVerified(1);
-        user.setCreditScore(Math.max(100, user.getCreditScore() == null ? 100 : user.getCreditScore()));
         updateById(user);
-        return convertToUserInfo(user);
+        if (firstVerify) {
+            creditService.applyRule(userId, BusinessConstants.Credit.REAL_NAME, null, null);
+        }
+        return convertToUserInfo(getById(userId));
+    }
+
+    @Override
+    public Map<String, Object> getPublicProfile(Long userId) {
+        User user = getById(userId);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", user.getId());
+        result.put("nickname", StringUtils.defaultIfBlank(user.getNickname(), "校园用户"));
+        result.put("avatar", StringUtils.defaultString(user.getAvatar()));
+        result.put("campus", user.getCampus());
+        result.put("department", user.getDepartment());
+        result.put("creditScore", user.getCreditScore() == null ? BusinessConstants.Credit.DEFAULT_SCORE : user.getCreditScore());
+        result.put("creditLevel", creditService.resolveCreditLevel(user.getCreditScore()));
+        result.put("isVerified", user.getIsVerified() == null ? 0 : user.getIsVerified());
+        return result;
     }
 
     @Override
@@ -208,6 +234,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         updateById(user);
     }
 
+    @Override
+    public Map<String, Object> adjustUserCredit(Long userId, UserCreditAdjustRequest request) {
+        if (request == null || StringUtils.isBlank(request.getAction())) {
+            throw new BusinessException("缺少信用处理动作");
+        }
+        return creditService.applyRule(userId, request.getAction(), request.getRelatedOrderId(), request.getNote());
+    }
+
     private UserInfo convertToUserInfo(User user) {
         UserInfo info = new UserInfo();
         info.setId(user.getId());
@@ -216,7 +250,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         info.setStudentId(user.getStudentId());
         info.setDepartment(user.getDepartment());
         info.setCampus(user.getCampus());
-        info.setCreditScore(user.getCreditScore() == null ? 100 : user.getCreditScore());
+        info.setCreditScore(user.getCreditScore() == null ? BusinessConstants.Credit.DEFAULT_SCORE : user.getCreditScore());
         info.setIsVerified(user.getIsVerified() == null ? 0 : user.getIsVerified());
         info.setStatus(user.getStatus() == null ? 1 : user.getStatus());
         return info;
@@ -231,7 +265,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         map.put("studentId", user.getStudentId());
         map.put("department", user.getDepartment());
         map.put("campus", user.getCampus());
-        map.put("creditScore", user.getCreditScore() == null ? 100 : user.getCreditScore());
+        map.put("creditScore", user.getCreditScore() == null ? BusinessConstants.Credit.DEFAULT_SCORE : user.getCreditScore());
         map.put("isVerified", user.getIsVerified() == null ? 0 : user.getIsVerified());
         map.put("status", user.getStatus() == null ? 1 : user.getStatus());
         map.put("createdAt", user.getCreateTime());

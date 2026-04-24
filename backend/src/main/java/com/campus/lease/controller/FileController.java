@@ -30,8 +30,8 @@ public class FileController {
     @Value("${file.access.path:/uploads}")
     private String accessPath;
 
-    @Value("${server.port:8080}")
-    private String serverPort;
+    @Value("${file.public-base-url:http://localhost:8081}")
+    private String publicBaseUrl;
 
     private static final String[] ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"};
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -70,7 +70,7 @@ public class FileController {
             String fullPath = saveDir + File.separator + newFilename;
             file.transferTo(new File(fullPath));
 
-            String fileUrl = "http://localhost:" + serverPort + accessPath + "/" + datePath + "/" + newFilename;
+            String fileUrl = publicBaseUrl.replaceAll("/$", "") + accessPath + "/" + datePath + "/" + newFilename;
             String relativePath = datePath + "/" + newFilename;
 
             Map<String, String> result = new HashMap<>();

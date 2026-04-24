@@ -34,7 +34,7 @@ public class ItemController {
     @PostMapping("/publish")
     public Result<Item> publishItem(@RequestBody ItemPublishRequest request) {
         log.info("物品发布请求，title: {}", request.getTitle());
-        Long userId = authContext.getCurrentUserIdOrDefault(2L);
+        Long userId = authContext.requireCurrentUserId();
         Item item = itemService.publishItem(userId, request);
         return Result.success(item);
     }
@@ -92,7 +92,7 @@ public class ItemController {
             @Parameter(description = "每页数量", example = "10")
             @RequestParam(defaultValue = "10") Integer size
     ) {
-        Long userId = authContext.getCurrentUserIdOrDefault(2L);
+        Long userId = authContext.requireCurrentUserId();
         return Result.success(itemService.getMyItems(userId, page, size));
     }
 
@@ -141,7 +141,7 @@ public class ItemController {
             @PathVariable Long id,
             @RequestBody ItemAuditRequest request
     ) {
-        Long userId = authContext.getCurrentUserIdOrDefault(2L);
+        Long userId = authContext.requireCurrentUserId();
         itemService.updateItemStatus(id, userId, request.getStatus());
         return Result.success();
     }

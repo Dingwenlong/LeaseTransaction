@@ -1,11 +1,15 @@
 const api = require('../../utils/api.js')
+const homeMock = require('../../mock/home.js')
 const { showLoading, hideLoading, showToast } = require('../../utils/util.js')
 
 const DEFAULT_IMAGE = 'https://dummyimage.com/640x640/0f172a/67e8f9.png&text=Campus+Lease'
+const SEARCH_HISTORY_KEY = 'home-search-history'
+const SEARCH_HISTORY_LIMIT = 10
 
 Page({
   data: {
     searchKeyword: '',
+    hasSearchKeyword: false,
     activeTab: 0,
     tabs: ['全部', '租赁', '出售'],
     activeCategory: '全部',
@@ -13,10 +17,14 @@ Page({
     banners: [],
     announcements: [],
     items: [],
-    nearbyItems: []
+    nearbyItems: [],
+    usingMockData: false,
+    showHomeHighlights: true,
+    searchHistory: []
   },
 
   onLoad() {
+    this.loadSearchHistory()
     this.loadHome()
   },
 
@@ -27,11 +35,39 @@ Page({
   },
 
   onSearchInput(e) {
-    this.setData({ searchKeyword: e.detail.value })
+    const searchKeyword = e.detail.value || ''
+    this.setData({
+      searchKeyword,
+      hasSearchKeyword: Boolean(searchKeyword.trim())
+    })
   },
 
   onSearch() {
-    this.loadItems()
+    this.executeSearch(this.data.searchKeyword)
+  },
+
+  onHistoryTap(e) {
+    this.executeSearch(e.currentTarget.dataset.keyword || '')
+  },
+
+  onClearHistory() {
+    if (!this.data.searchHistory.length) {
+      return
+    }
+
+    wx.showModal({
+      title: '清空搜索记录',
+      content: '确定清空最近搜索记录吗？',
+      success: (res) => {
+        if (!res.confirm) {
+          return
+        }
+
+        wx.removeStorageSync(SEARCH_HISTORY_KEY)
+        this.setData({ searchHistory: [] })
+        showToast('已清空')
+      }
+    })
   },
 
   onTabTap(e) {
@@ -70,9 +106,54 @@ Page({
     })
   },
 
+  executeSearch(keyword) {
+    const normalizedKeyword = String(keyword || '').trim()
+    const hasKeyword = Boolean(normalizedKeyword)
+
+    this.setData({
+      searchKeyword: normalizedKeyword,
+      hasSearchKeyword: hasKeyword,
+      showHomeHighlights: !hasKeyword
+    }, () => {
+      if (hasKeyword) {
+        this.saveSearchHistory(normalizedKeyword)
+      }
+      this.loadItems()
+    })
+  },
+
+  loadSearchHistory() {
+    const history = wx.getStorageSync(SEARCH_HISTORY_KEY)
+    const searchHistory = Array.isArray(history)
+      ? history.filter((item) => typeof item === 'string' && item.trim()).slice(0, SEARCH_HISTORY_LIMIT)
+      : []
+
+    this.setData({ searchHistory })
+  },
+
+  saveSearchHistory(keyword) {
+    const normalizedKeyword = String(keyword || '').trim()
+    if (!normalizedKeyword) {
+      return
+    }
+
+    const loweredKeyword = normalizedKeyword.toLowerCase()
+    const searchHistory = [normalizedKeyword]
+      .concat(this.data.searchHistory.filter((item) => item.toLowerCase() !== loweredKeyword))
+      .slice(0, SEARCH_HISTORY_LIMIT)
+
+    wx.setStorageSync(SEARCH_HISTORY_KEY, searchHistory)
+    this.setData({ searchHistory })
+  },
+
   async loadHome() {
     showLoading()
     try {
+      if (homeMock.isEnabled()) {
+        this.applyMockHomeData()
+        return
+      }
+
       const userInfo = wx.getStorageSync('userInfo') || {}
       const [config, itemRes, nearbyRes] = await Promise.all([
         api.config.system(),
@@ -83,17 +164,17 @@ Page({
         })
       ])
 
-      const categories = ['全部'].concat(config.categories || [])
-      this.setData({
-        categories,
+      this.setHomeData({
+        categories: ['全部'].concat(config.categories || []),
         banners: (config.banners || []).filter((item) => item.active !== false),
         announcements: config.announcements || [],
         items: (itemRes.records || []).map(this.formatItem),
-        nearbyItems: (nearbyRes || []).map(this.formatItem)
+        nearbyItems: (nearbyRes || []).map(this.formatItem),
+        usingMockData: false
       })
     } catch (error) {
-      console.error('加载首页数据失败:', error)
-      showToast('首页数据加载失败')
+      console.error('加载首页数据失败，切换为演示数据:', error)
+      this.applyMockHomeData()
     } finally {
       hideLoading()
     }
@@ -102,29 +183,66 @@ Page({
   async loadItems() {
     showLoading()
     try {
-      const res = await this.fetchItemList()
+      const useMockData = homeMock.isEnabled()
+      const res = useMockData
+        ? homeMock.listMockItems(this.buildItemListParams())
+        : await this.fetchItemList()
+
       this.setData({
-        items: (res.records || []).map(this.formatItem)
+        items: (res.records || []).map(this.formatItem),
+        usingMockData: useMockData
       })
     } catch (error) {
-      console.error('加载物品失败:', error)
-      showToast('加载物品失败')
+      console.error('加载物品失败，切换为演示数据:', error)
+      const res = homeMock.listMockItems(this.buildItemListParams())
+      this.setData({
+        items: (res.records || []).map(this.formatItem),
+        usingMockData: true
+      })
     } finally {
       hideLoading()
     }
   },
 
-  fetchItemList() {
+  buildItemListParams() {
     const type = this.data.activeTab === 1 ? 1 : this.data.activeTab === 2 ? 2 : undefined
     const category = this.data.activeCategory !== '全部' ? this.data.activeCategory : undefined
-    return api.item.list({
+
+    return {
       page: 1,
       size: 8,
       status: 1,
-      keyword: this.data.searchKeyword || undefined,
+      keyword: this.data.searchKeyword.trim() || undefined,
       type,
       category
+    }
+  },
+
+  fetchItemList() {
+    return api.item.list(this.buildItemListParams())
+  },
+
+  applyMockHomeData() {
+    const userInfo = wx.getStorageSync('userInfo') || {}
+    const config = homeMock.getHomeConfig()
+    const itemRes = homeMock.listMockItems(this.buildItemListParams())
+    const nearbyRes = homeMock.listMockNearbyItems({
+      campus: userInfo.campus || undefined,
+      limit: 4
     })
+
+    this.setHomeData({
+      categories: ['全部'].concat(config.categories || []),
+      banners: (config.banners || []).filter((item) => item.active !== false),
+      announcements: config.announcements || [],
+      items: (itemRes.records || []).map(this.formatItem),
+      nearbyItems: nearbyRes.map(this.formatItem),
+      usingMockData: true
+    })
+  },
+
+  setHomeData(payload) {
+    this.setData(payload)
   },
 
   formatItem(item) {
@@ -138,7 +256,8 @@ Page({
       location: item.campus || '校区待补充',
       ownerName: item.ownerName || '校园用户',
       reviewHint: item.reviewHint || '',
-      statusText: item.statusText || ''
+      statusText: item.statusText || '',
+      isMock: Boolean(item.isMock)
     }
   }
 })

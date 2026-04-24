@@ -1,4 +1,5 @@
-const BASE_URL = 'http://127.0.0.1:8081/api'
+const env = require('../mock/env.js')
+const auth = require('./auth.js')
 
 const request = (options) => {
   return new Promise((resolve, reject) => {
@@ -6,7 +7,7 @@ const request = (options) => {
     const token = wx.getStorageSync('token') || app.globalData.token
     
     wx.request({
-      url: BASE_URL + options.url,
+      url: env.getApiBaseUrl() + options.url,
       method: options.method || 'GET',
       data: options.data || {},
       header: {
@@ -25,10 +26,7 @@ const request = (options) => {
             reject(res.data)
           }
         } else if (res.statusCode === 401) {
-          wx.removeStorageSync('token')
-          wx.removeStorageSync('userInfo')
-          app.globalData.token = null
-          app.globalData.userInfo = null
+          auth.clearSession()
           wx.showToast({
             title: '请先登录',
             icon: 'none'
@@ -64,7 +62,7 @@ const uploadFile = (filePath) => {
     const token = wx.getStorageSync('token') || app.globalData.token
     
     wx.uploadFile({
-      url: BASE_URL + '/file/upload',
+      url: env.getApiBaseUrl() + '/file/upload',
       filePath: filePath,
       name: 'file',
       header: {
