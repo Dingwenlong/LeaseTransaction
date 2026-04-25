@@ -1467,6 +1467,13 @@ select.field-control {
   line-height: 1.7;
 }
 
+.auth-quick-btn {
+  width: 100%;
+  font-size: 13px;
+  color: var(--text-secondary);
+  border-style: dashed;
+}
+
 @media (max-width: 1280px) {
   .metric-grid,
   .card-grid {

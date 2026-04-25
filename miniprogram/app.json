@@ -2,6 +2,7 @@
   "pages": [
     "pages/index/index",
     "pages/login/login",
+    "pages/register/register",
     "pages/verify/index",
     "pages/item/detail",
     "pages/item/publish",

@@ -4,7 +4,9 @@ const { showLoading, hideLoading, showToast } = require('../../utils/util.js')
 Page({
   data: {
     username: '',
-    password: ''
+    password: '',
+    confirmPassword: '',
+    nickname: ''
   },
 
   onUsernameInput(e) {
@@ -15,34 +17,57 @@ Page({
     this.setData({ password: e.detail.value })
   },
 
-  handleLogin() {
-    const { username, password } = this.data
-    
+  onConfirmPasswordInput(e) {
+    this.setData({ confirmPassword: e.detail.value })
+  },
+
+  onNicknameInput(e) {
+    this.setData({ nickname: e.detail.value })
+  },
+
+  handleRegister() {
+    const { username, password, confirmPassword, nickname } = this.data
+
     if (!username) {
       showToast('请输入学号/手机号')
       return
     }
-    
+
     if (!password) {
       showToast('请输入密码')
       return
     }
 
-    showLoading('登录中...')
+    if (password.length < 6) {
+      showToast('密码长度不能少于6位')
+      return
+    }
 
-    api.user.login({ username, password })
+    if (!confirmPassword) {
+      showToast('请确认密码')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      showToast('两次密码输入不一致')
+      return
+    }
+
+    showLoading('注册中...')
+
+    api.user.register({ username, password, confirmPassword, nickname })
       .then(res => {
         hideLoading()
-        
+
         const app = getApp()
         app.globalData.token = res.token
         app.globalData.userInfo = res.userInfo
-        
+
         wx.setStorageSync('token', res.token)
         wx.setStorageSync('userInfo', res.userInfo)
-        
-        showToast('登录成功', 'success')
-        
+
+        showToast('注册成功', 'success')
+
         setTimeout(() => {
           wx.switchTab({
             url: '/pages/index/index'
@@ -51,13 +76,13 @@ Page({
       })
       .catch(err => {
         hideLoading()
-        console.error('登录失败:', err)
+        console.error('注册失败:', err)
       })
   },
 
-  goToRegister() {
+  goToLogin() {
     wx.navigateTo({
-      url: '/pages/register/register'
+      url: '/pages/login/login'
     })
   }
 })

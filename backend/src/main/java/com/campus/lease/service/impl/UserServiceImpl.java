@@ -8,6 +8,7 @@ import com.campus.lease.common.exception.BusinessException;
 import com.campus.lease.dto.CampusVerifyRequest;
 import com.campus.lease.dto.LoginRequest;
 import com.campus.lease.dto.LoginResponse;
+import com.campus.lease.dto.RegisterRequest;
 import com.campus.lease.dto.UserInfo;
 import com.campus.lease.dto.UserCreditAdjustRequest;
 import com.campus.lease.dto.UserProfileUpdateRequest;
@@ -32,6 +33,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     private final JwtUtil jwtUtil;
     private final CreditService creditService;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -45,11 +47,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 user = createUser(openid, nickname, avatar);
             }
         } else if (StringUtils.isNotBlank(request.getUsername())) {
-            user = getOrCreateUserByUsername(
-                    request.getUsername(),
-                    StringUtils.defaultIfBlank(request.getNickname(), request.getUsername()),
-                    StringUtils.defaultString(request.getAvatarUrl())
-            );
+            user = findUserByUsername(request.getUsername());
+            if (user == null) {
+                throw new BusinessException("账号不存在，请先注册");
+            }
+            if (StringUtils.isNotBlank(user.getPassword())) {
+                if (StringUtils.isBlank(request.getPassword())) {
+                    throw new BusinessException("请输入密码");
+                }
+                if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                    throw new BusinessException("密码错误");
+                }
+            }
         } else {
             throw new BusinessException("缺少登录凭证");
         }
@@ -65,10 +74,51 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public LoginResponse register(RegisterRequest request) {
+        if (StringUtils.isBlank(request.getUsername())) {
+            throw new BusinessException("请输入用户名");
+        }
+        if (StringUtils.isBlank(request.getPassword())) {
+            throw new BusinessException("请输入密码");
+        }
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new BusinessException("两次密码输入不一致");
+        }
+        if (request.getPassword().length() < 6) {
+            throw new BusinessException("密码长度不能少于6位");
+        }
+
+        User existing = findUserByUsername(request.getUsername());
+        if (existing != null) {
+            throw new BusinessException("该用户名已被注册");
+        }
+
+        String openid = "account_" + request.getUsername();
+        String nickname = StringUtils.defaultIfBlank(request.getNickname(), request.getUsername());
+        User user = createUser(openid, nickname, "");
+        user.setStudentId(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        updateById(user);
+
+        String token = jwtUtil.generateToken(user.getId(), user.getOpenid());
+        UserInfo userInfo = convertToUserInfo(user);
+
+        return new LoginResponse(token, userInfo);
+    }
+
+    @Override
     public User getUserByOpenid(String openid) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getOpenid, openid);
         return getOne(wrapper);
+    }
+
+    private User findUserByUsername(String username) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getStudentId, username)
+                .or()
+                .eq(User::getOpenid, "account_" + username);
+        return getOne(wrapper, false);
     }
 
     @Override
@@ -86,11 +136,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public User getOrCreateUserByUsername(String username, String nickname, String avatar) {
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getStudentId, username)
-                .or()
-                .eq(User::getOpenid, "account_" + username);
-        User user = getOne(wrapper, false);
+        User user = findUserByUsername(username);
         if (user != null) {
             if (StringUtils.isBlank(user.getNickname()) && StringUtils.isNotBlank(nickname)) {
                 user.setNickname(nickname);

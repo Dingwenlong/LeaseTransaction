@@ -4,6 +4,7 @@ import com.campus.lease.common.result.Result;
 import com.campus.lease.dto.CampusVerifyRequest;
 import com.campus.lease.dto.LoginRequest;
 import com.campus.lease.dto.LoginResponse;
+import com.campus.lease.dto.RegisterRequest;
 import com.campus.lease.dto.UserInfo;
 import com.campus.lease.dto.UserCreditAdjustRequest;
 import com.campus.lease.dto.UserProfileUpdateRequest;
@@ -36,6 +37,14 @@ public class UserController {
     public Result<LoginResponse> login(@RequestBody LoginRequest request) {
         log.info("用户登录请求，code: {}, username: {}", request.getCode(), request.getUsername());
         LoginResponse response = userService.login(request);
+        return Result.success(response);
+    }
+
+    @Operation(summary = "用户注册", description = "通过用户名和密码注册新账号")
+    @PostMapping("/register")
+    public Result<LoginResponse> register(@RequestBody RegisterRequest request) {
+        log.info("用户注册请求，username: {}", request.getUsername());
+        LoginResponse response = userService.register(request);
         return Result.success(response);
     }
 

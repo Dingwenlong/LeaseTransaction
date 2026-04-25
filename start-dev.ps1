@@ -35,7 +35,7 @@ function Wait-Port($Port, $Name) {
 }
 
 Write-Host "[2/4] Waiting for dependencies..."
-Wait-Port 3306 "MySQL"
+Wait-Port 3307 "MySQL"
 Wait-Port 6379 "Redis"
 
 Write-Host "[3/4] Starting backend..."

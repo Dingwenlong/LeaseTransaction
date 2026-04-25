@@ -1,6 +1,8 @@
 package com.campus.lease.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.campus.lease.common.constant.BusinessConstants;
 import com.campus.lease.common.exception.BusinessException;
@@ -137,5 +139,19 @@ public class ReviewServiceImpl extends ServiceImpl<ReviewMapper, Review> impleme
             return "校园用户";
         }
         return StringUtils.defaultIfBlank(user.getNickname(), user.getStudentId());
+    }
+
+    @Override
+    public IPage<Map<String, Object>> getAdminReviewList(Integer page, Integer size, Integer rating, Long orderId, Long reviewerId, Long revieweeId) {
+        LambdaQueryWrapper<Review> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(rating != null, Review::getRating, rating)
+                .eq(orderId != null, Review::getOrderId, orderId)
+                .eq(reviewerId != null, Review::getReviewerId, reviewerId)
+                .eq(revieweeId != null, Review::getRevieweeId, revieweeId)
+                .orderByDesc(Review::getCreateTime);
+        IPage<Review> reviewPage = page(new Page<>(page, size), wrapper);
+        IPage<Map<String, Object>> resultPage = new Page<>(reviewPage.getCurrent(), reviewPage.getSize(), reviewPage.getTotal());
+        resultPage.setRecords(reviewPage.getRecords().stream().map(this::convertToReviewMap).toList());
+        return resultPage;
     }
 }

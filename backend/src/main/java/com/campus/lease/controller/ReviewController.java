@@ -1,5 +1,6 @@
 package com.campus.lease.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.campus.lease.common.result.Result;
 import com.campus.lease.dto.ReviewSubmitRequest;
 import com.campus.lease.service.ReviewService;
@@ -45,5 +46,18 @@ public class ReviewController {
             @PathVariable Long userId
     ) {
         return Result.success(reviewService.getUserReviews(userId));
+    }
+
+    @Operation(summary = "管理员评价列表", description = "管理员分页查询所有评价，支持按评分、订单、评价人、被评价人筛选")
+    @GetMapping("/admin/list")
+    public Result<IPage<Map<String, Object>>> getAdminReviewList(
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer size,
+            @Parameter(description = "评分筛选") @RequestParam(required = false) Integer rating,
+            @Parameter(description = "订单ID") @RequestParam(required = false) Long orderId,
+            @Parameter(description = "评价人ID") @RequestParam(required = false) Long reviewerId,
+            @Parameter(description = "被评价人ID") @RequestParam(required = false) Long revieweeId
+    ) {
+        return Result.success(reviewService.getAdminReviewList(page, size, rating, orderId, reviewerId, revieweeId));
     }
 }

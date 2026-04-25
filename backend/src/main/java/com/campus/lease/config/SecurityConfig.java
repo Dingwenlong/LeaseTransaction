@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.Customizer;
 
 @Configuration
 @EnableWebSecurity
@@ -38,6 +39,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception
@@ -46,6 +48,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/user/login",
+                                "/api/user/register",
                                 "/api/admin/auth/login",
                                 "/api/item/list",
                                 "/api/item/detail/**",
@@ -66,7 +69,8 @@ public class SecurityConfig {
                                 "/api/user/status/**",
                                 "/api/user/credit/**",
                                 "/api/item/approve/**",
-                                "/api/item/reject/**"
+                                "/api/item/reject/**",
+                                "/api/review/admin/**"
                         ).hasRole("ADMIN")
                         .requestMatchers("/api/**").hasAnyRole("CLIENT", "ADMIN")
                         .anyRequest().authenticated()

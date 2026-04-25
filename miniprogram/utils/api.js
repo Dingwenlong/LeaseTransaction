@@ -5,6 +5,7 @@ const websocket = require('./websocket.js')
 module.exports = {
   user: {
     login: (data) => request.post('/user/login', data),
+    register: (data) => request.post('/user/register', data),
     getInfo: () => request.get('/user/info'),
     profile: (id) => request.get('/user/profile/' + id),
     updateProfile: (data) => request.put('/user/profile', data),

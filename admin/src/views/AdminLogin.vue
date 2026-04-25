@@ -36,6 +36,10 @@
           <button class="button button-primary auth-submit" type="submit" :disabled="submitting">
             {{ submitting ? '登录中...' : '进入后台' }}
           </button>
+
+          <button class="button button-ghost auth-quick-btn" type="button" @click="fillTestAccount">
+            快捷填入测试账号
+          </button>
         </form>
 
         <p class="auth-note">首次登录后请尽快修改密码。</p>
@@ -60,6 +64,11 @@ const form = reactive({
 })
 
 const submitting = ref(false)
+
+const fillTestAccount = () => {
+  form.username = 'admin'
+  form.password = 'Admin@123456'
+}
 
 const handleLogin = async () => {
   if (!form.username || !form.password) {

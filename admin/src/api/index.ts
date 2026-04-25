@@ -78,6 +78,22 @@ export interface Order {
   updatedAt: string
 }
 
+export interface Review {
+  id: number
+  orderId: number
+  itemId: number
+  itemTitle: string
+  reviewerId: number
+  reviewerName: string
+  revieweeId: number
+  revieweeName: string
+  rating: number
+  content: string
+  images: string
+  isAnonymous: number
+  createdAt: string
+}
+
 export interface Metric {
   label: string
   value: string
@@ -201,6 +217,17 @@ export const orderApi = {
 
   updateStatus: (id: number, status: number, remark = '') =>
     request.post(`/order/status/${id}`, { status, remark })
+}
+
+export const reviewApi = {
+  getAdminList: (params?: Record<string, unknown>) =>
+    request.get<PageResult<Review>>('/review/admin/list', { params }),
+
+  getOrderReviews: (orderId: number) =>
+    request.get<Review[]>(`/review/order/${orderId}`),
+
+  getUserReviews: (userId: number) =>
+    request.get<Review[]>(`/review/user/${userId}`)
 }
 
 export const statsApi = {

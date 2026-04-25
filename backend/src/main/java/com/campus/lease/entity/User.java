@@ -10,6 +10,8 @@ public class User {
 
     private String openid;
 
+    private String password;
+
     private String nickname;
 
     private String avatar;
@@ -49,6 +51,14 @@ public class User {
 
     public void setOpenid(String openid) {
         this.openid = openid;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getNickname() {

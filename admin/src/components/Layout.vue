@@ -128,6 +128,14 @@ const menuItems: MenuItem[] = [
     description: '跟进订单状态和异常。'
   },
   {
+    path: '/reviews',
+    name: '评价管理',
+    short: '评价',
+    icon: '⭐',
+    hint: '评分、反馈与差评',
+    description: '查看评价记录和差评反馈。'
+  },
+  {
     path: '/stats',
     name: '数据统计',
     short: '统计',
