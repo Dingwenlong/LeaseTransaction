@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -30,8 +31,14 @@ public class DemoDataInitializer implements ApplicationRunner {
     private final OrderService orderService;
     private final MessageService messageService;
 
+    @Value("${demo.data.enabled:true}")
+    private boolean demoDataEnabled;
+
     @Override
     public void run(ApplicationArguments args) {
+        if (!demoDataEnabled) {
+            return;
+        }
         if (userService.count() > 0 || itemService.count() > 0) {
             return;
         }

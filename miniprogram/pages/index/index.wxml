@@ -6,6 +6,7 @@
           <view class="mp-eyebrow">Campus Lease</view>
           <view class="mp-title">校园租赁交易</view>
           <view class="mp-subtitle">支持搜索、分类筛选和附近推荐。</view>
+          <view wx:if="{{usingMockData}}" class="mp-meta-pill">首页演示数据</view>
         </view>
       </view>
 
@@ -21,6 +22,25 @@
         <view class="home-search-action" bindtap="onSearch">搜索</view>
       </view>
 
+      <view wx:if="{{searchHistory.length > 0 && !hasSearchKeyword}}" class="home-history">
+        <view class="home-history-head">
+          <view class="home-history-title">最近搜索</view>
+          <view class="home-history-clear" bindtap="onClearHistory">清空</view>
+        </view>
+        <view class="mp-chip-row home-history-row">
+          <view
+            wx:for="{{searchHistory}}"
+            wx:key="index"
+            class="mp-chip home-history-chip"
+            bindtap="onHistoryTap"
+            data-keyword="{{item}}"
+          >
+            <text class="home-history-icon">⏱</text>
+            <text class="home-history-text mp-ellipsis">{{item}}</text>
+          </view>
+        </view>
+      </view>
+
       <view class="mp-chip-row home-tabs">
         <view
           wx:for="{{tabs}}"
@@ -34,7 +54,7 @@
       </view>
     </view>
 
-    <swiper wx:if="{{banners.length > 0}}" class="home-banner-swiper" indicator-dots autoplay circular interval="4000">
+    <swiper wx:if="{{showHomeHighlights && banners.length > 0}}" class="home-banner-swiper" indicator-dots autoplay circular interval="4000">
       <swiper-item wx:for="{{banners}}" wx:key="index">
         <view class="mp-panel home-banner">
           <view class="mp-panel-body">
@@ -45,7 +65,7 @@
       </swiper-item>
     </swiper>
 
-    <view class="mp-panel" wx:if="{{announcements.length > 0}}">
+    <view class="mp-panel" wx:if="{{showHomeHighlights && announcements.length > 0}}">
       <view class="mp-panel-body">
         <view class="mp-section-head">
           <view>

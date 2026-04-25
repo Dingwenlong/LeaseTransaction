@@ -10,4 +10,5 @@ import java.util.Map;
 public interface ReviewService extends IService<Review> {
     Map<String, Object> submitReview(Long userId, ReviewSubmitRequest request);
     List<Map<String, Object>> getOrderReviews(Long orderId);
+    List<Map<String, Object>> getUserReviews(Long userId);
 }

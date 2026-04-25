@@ -11,6 +11,6 @@ import java.util.Map;
 public interface OrderService extends IService<Order> {
     Map<String, Object> createOrder(Long userId, CreateOrderRequest request);
     Page<Map<String, Object>> getOrderList(Long userId, Integer pageNum, Integer pageSize, Integer status, Integer type, String keyword, boolean adminView);
-    Map<String, Object> getOrderDetail(Long orderId);
+    Map<String, Object> getOrderDetail(Long orderId, Long requesterUserId, boolean adminView);
     void updateOrderStatus(Long operatorUserId, Long orderId, OrderStatusUpdateRequest request);
 }

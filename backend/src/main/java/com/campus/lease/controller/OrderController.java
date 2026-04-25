@@ -1,7 +1,6 @@
 package com.campus.lease.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.campus.lease.common.exception.UnauthorizedException;
 import com.campus.lease.common.result.Result;
 import com.campus.lease.dto.CreateOrderRequest;
 import com.campus.lease.dto.OrderStatusUpdateRequest;
@@ -32,7 +31,7 @@ public class OrderController {
     @PostMapping("/create")
     public Result<Map<String, Object>> createOrder(@RequestBody CreateOrderRequest request) {
         log.info("订单创建请求，itemId: {}", request.getItemId());
-        Long userId = authContext.getCurrentUserIdOrDefault(2L);
+        Long userId = authContext.requireCurrentUserId();
         return Result.success(orderService.createOrder(userId, request));
     }
 
@@ -52,11 +51,12 @@ public class OrderController {
             @Parameter(description = "是否启用后台视图", example = "false")
             @RequestParam(defaultValue = "false") Boolean adminView
     ) {
-        Long userId = authContext.getCurrentUserIdOrDefault(2L);
         if (Boolean.TRUE.equals(adminView)) {
             adminAccessGuard.requireAdminId();
+            return Result.success(orderService.getOrderList(null, page, size, status, type, keyword, true));
         }
-        return Result.success(orderService.getOrderList(userId, page, size, status, type, keyword, adminView));
+        Long userId = authContext.requireCurrentUserId();
+        return Result.success(orderService.getOrderList(userId, page, size, status, type, keyword, false));
     }
 
     @Operation(summary = "获取订单详情", description = "根据订单 ID 查询订单详情")
@@ -65,7 +65,12 @@ public class OrderController {
             @Parameter(description = "订单 ID", example = "1")
             @PathVariable Long id
     ) {
-        return Result.success(orderService.getOrderDetail(id));
+        Long adminId = authContext.getCurrentAdminIdOrNull();
+        if (adminId != null) {
+            return Result.success(orderService.getOrderDetail(id, null, true));
+        }
+        Long userId = authContext.requireCurrentUserId();
+        return Result.success(orderService.getOrderDetail(id, userId, false));
     }
 
     @Operation(summary = "更新订单状态", description = "用户或后台根据业务流转修改订单状态，并可附带备注说明")
@@ -75,11 +80,8 @@ public class OrderController {
             @PathVariable Long id,
             @RequestBody OrderStatusUpdateRequest request
     ) {
-        Long adminId = authContext.getCurrentAdminId();
-        Long operatorUserId = adminId != null ? 0L : authContext.getCurrentUserId();
-        if (operatorUserId == null) {
-            throw new UnauthorizedException("请先登录后再操作订单");
-        }
+        Long adminId = authContext.getCurrentAdminIdOrNull();
+        Long operatorUserId = adminId != null ? 0L : authContext.requireCurrentUserId();
         orderService.updateOrderStatus(operatorUserId, id, request);
         return Result.success();
     }

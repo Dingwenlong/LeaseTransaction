@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,6 @@ public class ItemServiceImpl extends ServiceImpl<ItemMapper, Item> implements It
 
     @Override
     public Page<Map<String, Object>> getItemList(Integer pageNum, Integer pageSize, String category, Integer type, String campus, String keyword, Integer status) {
-        Page<Item> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Item> wrapper = new LambdaQueryWrapper<>();
 
         if (StringUtils.isNotBlank(category)) {
@@ -71,10 +71,21 @@ public class ItemServiceImpl extends ServiceImpl<ItemMapper, Item> implements It
             wrapper.eq(Item::getStatus, status);
         }
 
-        wrapper.orderByDesc(Item::getCreateTime);
-        Page<Item> entityPage = page(page, wrapper);
-        Page<Map<String, Object>> result = new Page<>(entityPage.getCurrent(), entityPage.getSize(), entityPage.getTotal());
-        result.setRecords(entityPage.getRecords().stream().map(this::convertToItemMap).toList());
+        List<Item> matchedItems = new ArrayList<>(list(wrapper));
+        Map<Long, User> ownerCache = buildOwnerCache(matchedItems);
+        matchedItems.sort(buildExposureComparator(ownerCache));
+
+        long total = matchedItems.size();
+        int fromIndex = Math.max(0, (pageNum - 1) * pageSize);
+        int toIndex = Math.min(matchedItems.size(), fromIndex + pageSize);
+        List<Map<String, Object>> records = fromIndex >= toIndex
+                ? new ArrayList<>()
+                : matchedItems.subList(fromIndex, toIndex).stream()
+                .map(item -> convertToItemMap(item, ownerCache.get(item.getUserId())))
+                .toList();
+
+        Page<Map<String, Object>> result = new Page<>(pageNum, pageSize, total);
+        result.setRecords(records);
         return result;
     }
 
@@ -89,7 +100,7 @@ public class ItemServiceImpl extends ServiceImpl<ItemMapper, Item> implements It
         if (item == null) {
             throw new BusinessException("物品不存在");
         }
-        return convertToItemMap(item);
+        return convertToItemMap(item, item.getUserId() == null ? null : userService.getById(item.getUserId()));
     }
 
     @Override
@@ -108,7 +119,9 @@ public class ItemServiceImpl extends ServiceImpl<ItemMapper, Item> implements It
         wrapper.eq(Item::getUserId, userId).orderByDesc(Item::getCreateTime);
         Page<Item> entityPage = page(page, wrapper);
         Page<Map<String, Object>> result = new Page<>(entityPage.getCurrent(), entityPage.getSize(), entityPage.getTotal());
-        result.setRecords(entityPage.getRecords().stream().map(this::convertToItemMap).toList());
+        result.setRecords(entityPage.getRecords().stream()
+                .map(item -> convertToItemMap(item, item.getUserId() == null ? null : userService.getById(item.getUserId())))
+                .toList());
         return result;
     }
 
@@ -162,12 +175,16 @@ public class ItemServiceImpl extends ServiceImpl<ItemMapper, Item> implements It
         if (StringUtils.isNotBlank(campus)) {
             wrapper.eq(Item::getCampus, campus);
         }
-        wrapper.orderByDesc(Item::getViewCount).last("limit " + Math.max(1, limit));
-        return list(wrapper).stream().map(this::convertToItemMap).toList();
+        List<Item> items = new ArrayList<>(list(wrapper));
+        Map<Long, User> ownerCache = buildOwnerCache(items);
+        items.sort(buildExposureComparator(ownerCache));
+        return items.stream()
+                .limit(Math.max(1, limit))
+                .map(item -> convertToItemMap(item, ownerCache.get(item.getUserId())))
+                .toList();
     }
 
-    private Map<String, Object> convertToItemMap(Item item) {
-        User owner = item.getUserId() == null ? null : userService.getById(item.getUserId());
+    private Map<String, Object> convertToItemMap(Item item, User owner) {
         List<String> imageList = parseImages(item.getImages());
         Map<String, Object> map = new HashMap<>();
         map.put("id", item.getId());
@@ -184,6 +201,8 @@ public class ItemServiceImpl extends ServiceImpl<ItemMapper, Item> implements It
         map.put("ownerId", item.getUserId());
         map.put("ownerName", owner == null ? "校园用户" : StringUtils.defaultIfBlank(owner.getNickname(), owner.getStudentId()));
         map.put("ownerVerified", owner != null && owner.getIsVerified() != null ? owner.getIsVerified() : 0);
+        map.put("ownerCreditScore", owner != null && owner.getCreditScore() != null ? owner.getCreditScore() : BusinessConstants.Credit.DEFAULT_SCORE);
+        map.put("ownerCreditLevel", resolveCreditLevel(owner == null ? null : owner.getCreditScore()));
         map.put("viewCount", item.getViewCount() == null ? 0 : item.getViewCount());
         map.put("favoriteCount", item.getFavoriteCount() == null ? 0 : item.getFavoriteCount());
         map.put("images", imageList);
@@ -192,6 +211,52 @@ public class ItemServiceImpl extends ServiceImpl<ItemMapper, Item> implements It
         map.put("updatedAt", item.getUpdateTime());
         map.put("reviewHint", getReviewHint(item.getStatus()));
         return map;
+    }
+
+    private Map<Long, User> buildOwnerCache(List<Item> items) {
+        Map<Long, User> cache = new HashMap<>();
+        for (Item item : items) {
+            if (item.getUserId() == null || cache.containsKey(item.getUserId())) {
+                continue;
+            }
+            cache.put(item.getUserId(), userService.getById(item.getUserId()));
+        }
+        return cache;
+    }
+
+    private Comparator<Item> buildExposureComparator(Map<Long, User> ownerCache) {
+        return Comparator
+                .comparing((Item item) -> resolveOwnerCreditScore(item, ownerCache), Comparator.reverseOrder())
+                .thenComparing((Item item) -> resolveOwnerVerified(item, ownerCache), Comparator.reverseOrder())
+                .thenComparing(item -> item.getViewCount() == null ? 0 : item.getViewCount(), Comparator.reverseOrder())
+                .thenComparing(item -> item.getFavoriteCount() == null ? 0 : item.getFavoriteCount(), Comparator.reverseOrder())
+                .thenComparing(Item::getCreateTime, Comparator.nullsLast(Comparator.reverseOrder()));
+    }
+
+    private int resolveOwnerCreditScore(Item item, Map<Long, User> ownerCache) {
+        User owner = item.getUserId() == null ? null : ownerCache.get(item.getUserId());
+        return owner == null || owner.getCreditScore() == null
+                ? BusinessConstants.Credit.DEFAULT_SCORE
+                : owner.getCreditScore();
+    }
+
+    private int resolveOwnerVerified(Item item, Map<Long, User> ownerCache) {
+        User owner = item.getUserId() == null ? null : ownerCache.get(item.getUserId());
+        return owner == null || owner.getIsVerified() == null ? 0 : owner.getIsVerified();
+    }
+
+    private String resolveCreditLevel(Integer score) {
+        int actualScore = score == null ? BusinessConstants.Credit.DEFAULT_SCORE : score;
+        if (actualScore >= 90) {
+            return "优秀";
+        }
+        if (actualScore >= 70) {
+            return "良好";
+        }
+        if (actualScore >= 50) {
+            return "一般";
+        }
+        return "较差";
     }
 
     private List<String> parseImages(String images) {

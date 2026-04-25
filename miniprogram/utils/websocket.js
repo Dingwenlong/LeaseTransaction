@@ -1,4 +1,4 @@
-const WS_URL = 'ws://127.0.0.1:8081/ws/websocket'
+const env = require('../mock/env.js')
 
 class WebSocketClient {
   constructor() {
@@ -16,9 +16,12 @@ class WebSocketClient {
       return
     }
 
+    const token = wx.getStorageSync('token')
+    const wsUrl = env.getWsUrl()
+    const url = token ? `${wsUrl}?token=${encodeURIComponent(token)}` : wsUrl
     console.log('正在连接WebSocket...')
     this.socket = wx.connectSocket({
-      url: WS_URL,
+      url,
       protocols: []
     })
 

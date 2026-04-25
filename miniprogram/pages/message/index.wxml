@@ -4,6 +4,7 @@
       <view class="mp-eyebrow">Inbox</view>
       <view class="mp-title">消息中心</view>
       <view class="mp-subtitle">查看订单消息、聊天提醒和系统通知。</view>
+      <view wx:if="{{usingMockData}}" class="mp-meta-pill message-meta-pill">消息演示数据</view>
       <view class="mp-chip-row message-tabs">
         <view
           wx:for="{{tabs}}"

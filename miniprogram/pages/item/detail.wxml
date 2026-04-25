@@ -39,6 +39,27 @@
     </view>
 
     <view class="mp-panel">
+      <view class="mp-panel-body detail-owner-card" bindtap="goToOwnerProfile">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">发布者信誉</view>
+            <view class="mp-section-desc">高信誉用户物品会获得更多曝光。</view>
+          </view>
+          <view class="detail-owner-arrow">›</view>
+        </view>
+        <view class="detail-owner-row">
+          <view>
+            <view class="detail-owner-name">{{item.ownerName}}</view>
+            <view class="detail-owner-meta">信用 {{item.ownerCreditScore}} · {{item.ownerCreditLevel}}</view>
+          </view>
+          <view class="mp-tag {{item.ownerCreditScore >= 90 ? 'mp-tag-green' : item.ownerCreditScore >= 70 ? 'mp-tag-yellow' : 'mp-tag-slate'}}">
+            {{item.ownerCreditLevel}}
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="mp-panel">
       <view class="mp-panel-body">
         <view class="mp-section-head">
           <view>

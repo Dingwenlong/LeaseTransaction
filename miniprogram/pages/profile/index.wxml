@@ -24,9 +24,12 @@
           <view class="profile-credit-label">信用分</view>
           <view class="profile-credit-value">{{userInfo.creditScore}}</view>
         </view>
-        <view class="mp-tag mp-tag-green" wx:if="{{userInfo.creditScore >= 100}}">信用优秀</view>
-        <view class="mp-tag mp-tag-yellow" wx:elif="{{userInfo.creditScore >= 80}}">信用良好</view>
-        <view class="mp-tag mp-tag-slate" wx:else>继续提升</view>
+        <view class="profile-credit-side">
+          <view class="mp-tag mp-tag-green" wx:if="{{userInfo.creditScore >= 90}}">信用{{userInfo.creditLevel}}</view>
+          <view class="mp-tag mp-tag-yellow" wx:elif="{{userInfo.creditScore >= 70}}">信用{{userInfo.creditLevel}}</view>
+          <view class="mp-tag mp-tag-slate" wx:else>信用{{userInfo.creditLevel}}</view>
+          <view class="profile-credit-meta">收到 {{reviewStats.reviewCount}} 条评价 · 平均 {{reviewStats.averageRating}} 星</view>
+        </view>
       </view>
     </view>
 
@@ -69,6 +72,11 @@
           </view>
         </view>
         <view class="profile-menu">
+          <view class="profile-menu-item" bindtap="goToMyCreditProfile">
+            <view class="profile-menu-icon">⭐</view>
+            <view class="profile-menu-text">信誉主页</view>
+            <view class="profile-menu-arrow">›</view>
+          </view>
           <view class="profile-menu-item" bindtap="goToVerify">
             <view class="profile-menu-icon">🎓</view>
             <view class="profile-menu-text">校园认证</view>
@@ -85,6 +93,28 @@
             <view class="profile-menu-arrow">›</view>
           </view>
         </view>
+      </view>
+    </view>
+
+    <view class="mp-panel" wx:if="{{isLoggedIn}}">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">历史评价</view>
+            <view class="mp-section-desc">评价会持续沉淀到你的信誉档案中。</view>
+          </view>
+        </view>
+        <view class="profile-review-list" wx:if="{{reviews.length > 0}}">
+          <view class="profile-review-item" wx:for="{{reviews}}" wx:key="id">
+            <view class="profile-review-head">
+              <view class="profile-review-name">{{item.reviewerName}}</view>
+              <view class="profile-review-rating">{{item.rating}} 星</view>
+            </view>
+            <view class="profile-review-meta">{{item.itemTitle}} · {{item.createdAt}}</view>
+            <view class="profile-review-content">{{item.content}}</view>
+          </view>
+        </view>
+        <view class="mp-section-desc" wx:else>还没有收到评价，完成订单后会在这里展示。</view>
       </view>
     </view>
 

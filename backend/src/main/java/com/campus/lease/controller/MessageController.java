@@ -33,14 +33,14 @@ public class MessageController {
             @Parameter(description = "消息类型，1 文本、2 图片、3 系统消息", example = "1")
             @RequestParam(required = false) Integer type
     ) {
-        Long userId = authContext.getCurrentUserIdOrDefault(2L);
+        Long userId = authContext.requireCurrentUserId();
         return Result.success(messageService.getMessagePage(userId, page, size, type));
     }
 
     @Operation(summary = "发送消息", description = "向指定接收者发送站内消息")
     @PostMapping("/send")
     public Result<Map<String, Object>> sendMessage(@RequestBody MessageSendRequest request) {
-        Long userId = authContext.getCurrentUserIdOrDefault(2L);
+        Long userId = authContext.requireCurrentUserId();
         return Result.success(messageService.sendMessage(userId, request));
     }
 
@@ -50,7 +50,7 @@ public class MessageController {
             @Parameter(description = "消息 ID", example = "1")
             @PathVariable Long id
     ) {
-        Long userId = authContext.getCurrentUserIdOrDefault(2L);
+        Long userId = authContext.requireCurrentUserId();
         messageService.markRead(userId, id);
         return Result.success();
     }
@@ -58,7 +58,7 @@ public class MessageController {
     @Operation(summary = "获取未读消息数量", description = "返回当前登录用户的未读消息总数")
     @GetMapping("/unread-count")
     public Result<Map<String, Object>> unreadCount() {
-        Long userId = authContext.getCurrentUserIdOrDefault(2L);
+        Long userId = authContext.requireCurrentUserId();
         Map<String, Object> result = new HashMap<>();
         result.put("count", messageService.countUnread(userId));
         return Result.success(result);

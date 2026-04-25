@@ -1,0 +1,66 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  datasource:
+    url: ${LEASE_DB_URL}
+    username: ${LEASE_DB_USERNAME}
+    password: ${LEASE_DB_PASSWORD}
+
+  sql:
+    init:
+      mode: never
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+  data:
+    redis:
+      host: ${LEASE_REDIS_HOST}
+      port: ${LEASE_REDIS_PORT}
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+logging:
+  level:
+    root: info
+    com.campus.lease: info
+
+demo:
+  data:
+    enabled: ${DEMO_DATA_ENABLED:false}
+
+admin:
+  bootstrap:
+    username: ${ADMIN_BOOTSTRAP_USERNAME}
+    password: ${ADMIN_BOOTSTRAP_PASSWORD}
+    display-name: ${ADMIN_BOOTSTRAP_DISPLAY_NAME}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+file:
+  upload:
+    path: ${FILE_UPLOAD_PATH}
+  access:
+    path: ${FILE_ACCESS_PATH:/uploads}
+  public-base-url: ${FILE_PUBLIC_BASE_URL}
+
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}
+
+wechat:
+  pay:
+    app-id: ${WECHAT_PAY_APP_ID}
+    mch-id: ${WECHAT_PAY_MCH_ID}
+    mch-serial-no: ${WECHAT_PAY_MCH_SERIAL_NO}
+    private-key-path: ${WECHAT_PAY_PRIVATE_KEY_PATH}
+    api-v3-key: ${WECHAT_PAY_API_V3_KEY}
+    notify-url: ${WECHAT_PAY_NOTIFY_URL}

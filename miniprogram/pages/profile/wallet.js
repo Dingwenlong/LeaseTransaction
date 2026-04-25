@@ -1,4 +1,5 @@
 const api = require('../../utils/api.js')
+const auth = require('../../utils/auth.js')
 const { showLoading, hideLoading, showToast } = require('../../utils/util.js')
 
 Page({
@@ -48,13 +49,6 @@ Page({
   },
 
   ensureLogin() {
-    const token = wx.getStorageSync('token')
-    if (token) {
-      return true
-    }
-    wx.navigateTo({
-      url: '/pages/login/login'
-    })
-    return false
+    return auth.ensureLogin()
   }
 })

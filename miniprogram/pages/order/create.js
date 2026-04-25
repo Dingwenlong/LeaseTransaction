@@ -1,4 +1,5 @@
 const api = require('../../utils/api.js')
+const auth = require('../../utils/auth.js')
 const { formatDate, showLoading, hideLoading, showToast } = require('../../utils/util.js')
 
 Page({
@@ -15,6 +16,9 @@ Page({
   },
 
   onLoad(options) {
+    if (!auth.ensureLogin()) {
+      return
+    }
     if (!options.itemId) {
       showToast('缺少物品信息')
       return

@@ -112,7 +112,7 @@
             </td>
             <td>
               <p class="table-primary table-amount">¥{{ Number(order.totalAmount).toFixed(2) }}</p>
-              <p class="table-secondary">{{ order.remark || '无额外备注' }}</p>
+              <p class="table-secondary">{{ order.paymentStatus ? `支付${order.paymentStatus}` : (order.remark || '无额外备注') }}</p>
             </td>
             <td>
               <span class="status-pill" :class="getStatusClass(order.status)">{{ order.statusText }}</span>
@@ -196,6 +196,18 @@
           <div class="detail-card">
             <p class="detail-label">押金</p>
             <p class="detail-value">{{ currentOrder.deposit ? `¥${currentOrder.deposit}` : '无' }}</p>
+          </div>
+          <div class="detail-card">
+            <p class="detail-label">支付状态</p>
+            <p class="detail-value">{{ currentOrder.paymentStatus || '未生成支付单' }}</p>
+          </div>
+          <div class="detail-card" v-if="currentOrder.paymentNo">
+            <p class="detail-label">支付单号</p>
+            <p class="detail-value wrap-break">{{ currentOrder.paymentNo }}</p>
+          </div>
+          <div class="detail-card" v-if="currentOrder.transactionId">
+            <p class="detail-label">交易流水</p>
+            <p class="detail-value wrap-break">{{ currentOrder.transactionId }}</p>
           </div>
           <div class="detail-card" v-if="currentOrder.startDate">
             <p class="detail-label">租赁开始</p>
@@ -339,8 +351,13 @@ const resetFilters = () => {
 }
 
 const viewOrder = async (order: Order) => {
-  currentOrder.value = await orderApi.getDetail(order.id)
-  showDetail.value = true
+  try {
+    currentOrder.value = await orderApi.getDetail(order.id)
+    showDetail.value = true
+  } catch (error) {
+    console.error('加载订单详情失败:', error)
+    ElMessage.error('加载订单详情失败')
+  }
 }
 
 const updateStatus = async (order: Order, status: number, remark: string) => {

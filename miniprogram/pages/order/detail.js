@@ -1,4 +1,5 @@
 const api = require('../../utils/api.js')
+const auth = require('../../utils/auth.js')
 const { showLoading, hideLoading, showToast } = require('../../utils/util.js')
 
 const DEFAULT_IMAGE = 'https://dummyimage.com/480x480/0f172a/67e8f9.png&text=Order'
@@ -188,14 +189,7 @@ Page({
   },
 
   ensureLogin() {
-    const token = wx.getStorageSync('token')
-    if (token) {
-      return true
-    }
-    wx.navigateTo({
-      url: '/pages/login/login'
-    })
-    return false
+    return auth.ensureLogin()
   },
 
   formatOrder(order) {
@@ -218,6 +212,9 @@ Page({
       status: order.status,
       statusText: order.statusText,
       statusDesc: this.getStatusDesc(order),
+      paymentNo: order.paymentNo || '',
+      paymentStatus: order.paymentStatus || '',
+      transactionId: order.transactionId || '',
       createTime: this.formatDate(order.createdAt),
       buyerId: order.buyerId,
       sellerId: order.sellerId

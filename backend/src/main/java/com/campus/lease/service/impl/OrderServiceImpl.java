@@ -7,16 +7,15 @@ import com.campus.lease.common.constant.BusinessConstants;
 import com.campus.lease.common.exception.BusinessException;
 import com.campus.lease.dto.CreateOrderRequest;
 import com.campus.lease.dto.OrderStatusUpdateRequest;
-import com.campus.lease.entity.CreditRecord;
 import com.campus.lease.entity.Item;
 import com.campus.lease.entity.LeaseRecord;
 import com.campus.lease.entity.Order;
 import com.campus.lease.entity.PaymentRecord;
 import com.campus.lease.entity.User;
-import com.campus.lease.mapper.CreditRecordMapper;
 import com.campus.lease.mapper.LeaseRecordMapper;
 import com.campus.lease.mapper.OrderMapper;
 import com.campus.lease.mapper.PaymentRecordMapper;
+import com.campus.lease.service.CreditService;
 import com.campus.lease.service.ItemService;
 import com.campus.lease.service.MessageService;
 import com.campus.lease.service.OrderService;
@@ -47,7 +46,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private final MessageService messageService;
     private final LeaseRecordMapper leaseRecordMapper;
     private final PaymentRecordMapper paymentRecordMapper;
-    private final CreditRecordMapper creditRecordMapper;
+    private final CreditService creditService;
 
     @Override
     @Transactional
@@ -150,10 +149,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public Map<String, Object> getOrderDetail(Long orderId) {
+    public Map<String, Object> getOrderDetail(Long orderId, Long requesterUserId, boolean adminView) {
         Order order = getById(orderId);
         if (order == null) {
             throw new BusinessException("订单不存在");
+        }
+        if (!adminView && requesterUserId != null
+                && !requesterUserId.equals(order.getBuyerId())
+                && !requesterUserId.equals(order.getSellerId())) {
+            throw new BusinessException("无权查看该订单");
         }
         return convertToOrderMap(order);
     }
@@ -170,7 +174,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             throw new BusinessException("订单不存在");
         }
 
+        Integer previousStatus = order.getStatus();
         int targetStatus = request.getStatus();
+        assertOperatorCanUpdateOrder(order, operatorUserId);
         if (StringUtils.isNotBlank(request.getRemark())) {
             order.setRemark(request.getRemark());
         }
@@ -180,25 +186,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         syncLeaseRecord(order);
         syncItemStatus(order, targetStatus);
 
-        if (targetStatus == BusinessConstants.OrderStatus.PAID) {
-            BigDecimal paymentAmount = order.getType() != null && order.getType() == BusinessConstants.OrderType.LEASE
-                    ? safeAmount(order.getRentalPrice())
-                    : safeAmount(order.getTotalAmount());
-            createPaymentRecordIfAbsent(order, order.getBuyerId(), BusinessConstants.PaymentType.PAYMENT, paymentAmount, "MOCK-PAID");
-            if (order.getType() != null
-                    && order.getType() == BusinessConstants.OrderType.LEASE
-                    && safeAmount(order.getDeposit()).compareTo(BigDecimal.ZERO) > 0) {
-                createPaymentRecordIfAbsent(order, order.getBuyerId(), BusinessConstants.PaymentType.DEPOSIT, safeAmount(order.getDeposit()), "MOCK-DEPOSIT");
-            }
-        }
         if (targetStatus == BusinessConstants.OrderStatus.COMPLETED) {
-            if (order.getType() != null && order.getType() == BusinessConstants.OrderType.LEASE && safeAmount(order.getDeposit()).compareTo(BigDecimal.ZERO) > 0) {
-                createPaymentRecordIfAbsent(order, order.getBuyerId(), BusinessConstants.PaymentType.REFUND, order.getDeposit(), "MOCK-REFUND");
-            }
-            rewardCredit(order.getBuyerId(), 2, "完成订单履约", order.getId());
-            rewardCredit(order.getSellerId(), 2, "完成订单履约", order.getId());
+            creditService.applyRule(order.getBuyerId(), BusinessConstants.Credit.SUCCESSFUL_TRANSACTION, order.getId(), null);
+            creditService.applyRule(order.getSellerId(), BusinessConstants.Credit.SUCCESSFUL_TRANSACTION, order.getId(), null);
         }
         if (targetStatus == BusinessConstants.OrderStatus.CANCELLED) {
+            if (operatorUserId != null
+                    && operatorUserId > 0
+                    && previousStatus != null
+                    && (previousStatus == BusinessConstants.OrderStatus.PAID
+                    || previousStatus == BusinessConstants.OrderStatus.IN_PROGRESS
+                    || previousStatus == BusinessConstants.OrderStatus.PENDING_RETURN)) {
+                creditService.applyRule(operatorUserId, BusinessConstants.Credit.BREACH, order.getId(), "订单取消造成违约");
+            }
             messageService.sendSystemMessage(order.getBuyerId(), "订单已取消", "订单 " + order.getOrderNo() + " 已取消。");
             messageService.sendSystemMessage(order.getSellerId(), "订单已取消", "订单 " + order.getOrderNo() + " 已被取消。");
             return;
@@ -355,52 +355,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         return count(wrapper) > 0;
     }
 
-    private void createPaymentRecordIfAbsent(Order order, Long userId, Integer type, BigDecimal amount, String transactionId) {
-        LambdaQueryWrapper<PaymentRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(PaymentRecord::getOrderId, order.getId())
-                .eq(PaymentRecord::getUserId, userId)
-                .eq(PaymentRecord::getType, type)
-                .eq(PaymentRecord::getStatus, 1);
-        if (paymentRecordMapper.selectCount(wrapper) > 0) {
+    private void assertOperatorCanUpdateOrder(Order order, Long operatorUserId) {
+        if (operatorUserId == null || operatorUserId == 0L) {
             return;
         }
-
-        PaymentRecord paymentRecord = new PaymentRecord();
-        paymentRecord.setPaymentNo("PAY" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 4).toUpperCase());
-        paymentRecord.setOrderId(order.getId());
-        paymentRecord.setUserId(userId);
-        paymentRecord.setType(type);
-        paymentRecord.setAmount(amount);
-        paymentRecord.setPaymentMethod(1);
-        paymentRecord.setTransactionId(transactionId);
-        paymentRecord.setStatus(1);
-        paymentRecordMapper.insert(paymentRecord);
-    }
-
-    private void rewardCredit(Long userId, int scoreChange, String reason, Long orderId) {
-        if (userId == null) {
-            return;
+        if (!operatorUserId.equals(order.getBuyerId()) && !operatorUserId.equals(order.getSellerId())) {
+            throw new BusinessException("无权操作该订单");
         }
-
-        User user = userService.getById(userId);
-        if (user == null) {
-            return;
-        }
-
-        int beforeScore = user.getCreditScore() == null ? 100 : user.getCreditScore();
-        int afterScore = Math.min(200, Math.max(0, beforeScore + scoreChange));
-        user.setCreditScore(afterScore);
-        userService.updateById(user);
-
-        CreditRecord record = new CreditRecord();
-        record.setUserId(userId);
-        record.setType(scoreChange >= 0 ? 1 : 2);
-        record.setScoreChange(Math.abs(scoreChange));
-        record.setBeforeScore(beforeScore);
-        record.setAfterScore(afterScore);
-        record.setReason(reason);
-        record.setRelatedOrderId(orderId);
-        creditRecordMapper.insert(record);
     }
 
     private boolean matchesKeyword(Map<String, Object> orderMap, String keyword) {
@@ -448,7 +409,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         map.put("remark", order.getRemark());
         map.put("createdAt", order.getCreateTime());
         map.put("updatedAt", order.getUpdateTime());
+        putPaymentSummary(map, order.getId());
         return map;
+    }
+
+    private void putPaymentSummary(Map<String, Object> map, Long orderId) {
+        LambdaQueryWrapper<PaymentRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PaymentRecord::getOrderId, orderId)
+                .eq(PaymentRecord::getType, BusinessConstants.PaymentType.PAYMENT)
+                .orderByDesc(PaymentRecord::getCreateTime)
+                .last("limit 1");
+        PaymentRecord record = paymentRecordMapper.selectOne(wrapper);
+        map.put("paymentNo", record == null ? "" : record.getPaymentNo());
+        map.put("paymentStatus", record == null ? "" : getPaymentStatusText(record.getStatus()));
+        map.put("transactionId", record == null ? "" : StringUtils.defaultString(record.getTransactionId()));
     }
 
     private String resolveItemImage(Item item) {
@@ -472,6 +446,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             case BusinessConstants.OrderStatus.DISPUTE -> "纠纷中";
             case BusinessConstants.OrderStatus.REFUNDING -> "退款中";
             default -> "未知状态";
+        };
+    }
+
+    private String getPaymentStatusText(Integer status) {
+        return switch (status == null ? -1 : status) {
+            case BusinessConstants.PaymentStatus.SUCCESS -> "成功";
+            case BusinessConstants.PaymentStatus.PROCESSING -> "处理中";
+            case BusinessConstants.PaymentStatus.FAILED -> "失败";
+            default -> "";
         };
     }
 

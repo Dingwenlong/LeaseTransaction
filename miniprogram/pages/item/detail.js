@@ -1,4 +1,6 @@
 const api = require('../../utils/api.js')
+const auth = require('../../utils/auth.js')
+const homeMock = require('../../mock/home.js')
 const { showLoading, hideLoading, showToast } = require('../../utils/util.js')
 
 const DEFAULT_IMAGE = 'https://dummyimage.com/640x640/0f172a/67e8f9.png&text=Campus+Lease'
@@ -27,13 +29,23 @@ Page({
   async loadItem() {
     showLoading()
     try {
+      if (homeMock.isEnabled()) {
+        const mockItem = homeMock.getMockItemDetail(this.itemId)
+        if (mockItem) {
+          this.setItemData(mockItem)
+          return
+        }
+      }
+
       const detail = await api.item.detail(this.itemId)
-      const userInfo = wx.getStorageSync('userInfo') || {}
-      this.setData({
-        item: this.formatItem(detail),
-        isOwner: Boolean(userInfo.id && detail.ownerId === userInfo.id)
-      })
+      this.setItemData(detail)
     } catch (error) {
+      const mockItem = homeMock.getMockItemDetail(this.itemId)
+      if (mockItem) {
+        this.setItemData(mockItem)
+        return
+      }
+
       console.error('加载物品详情失败:', error)
       showToast('加载详情失败')
     } finally {
@@ -42,10 +54,14 @@ Page({
   },
 
   async handleContact() {
-    if (!this.ensureLogin()) {
+    if (!this.data.item) {
       return
     }
-    if (!this.data.item) {
+    if (this.data.item.isMock) {
+      showToast('演示数据仅供预览')
+      return
+    }
+    if (!this.ensureLogin()) {
       return
     }
     if (this.data.isOwner) {
@@ -76,10 +92,14 @@ Page({
   },
 
   handleRent() {
-    if (!this.ensureLogin()) {
+    if (!this.data.item) {
       return
     }
-    if (!this.data.item) {
+    if (this.data.item.isMock) {
+      showToast('演示数据暂不支持下单')
+      return
+    }
+    if (!this.ensureLogin()) {
       return
     }
     if (this.data.isOwner) {
@@ -93,21 +113,32 @@ Page({
     })
   },
 
-  ensureLogin() {
-    const token = wx.getStorageSync('token')
-    if (token) {
-      return true
+  goToOwnerProfile() {
+    if (!this.data.item || !this.data.item.ownerId) {
+      return
     }
     wx.navigateTo({
-      url: '/pages/login/login'
+      url: `/pages/profile/user?id=${this.data.item.ownerId}`
     })
-    return false
+  },
+
+  ensureLogin() {
+    return auth.ensureLogin()
+  },
+
+  setItemData(detail) {
+    const userInfo = wx.getStorageSync('userInfo') || {}
+    this.setData({
+      item: this.formatItem(detail),
+      isOwner: Boolean(userInfo.id && detail.ownerId === userInfo.id)
+    })
   },
 
   formatItem(item) {
     const images = item.images && item.images.length ? item.images : [item.coverImage || DEFAULT_IMAGE]
     return {
       id: item.id,
+      isMock: Boolean(item.isMock),
       title: item.title,
       description: item.description || '暂无描述',
       images: images.map((image) => image || DEFAULT_IMAGE),
@@ -122,6 +153,8 @@ Page({
       ownerName: item.ownerName || '校园用户',
       ownerId: item.ownerId,
       ownerVerified: item.ownerVerified === 1,
+      ownerCreditScore: Number(item.ownerCreditScore || 100),
+      ownerCreditLevel: item.ownerCreditLevel || '优秀',
       viewCount: item.viewCount || 0,
       favoriteCount: item.favoriteCount || 0,
       reviewHint: item.reviewHint || '建议优先校内当面验货。',

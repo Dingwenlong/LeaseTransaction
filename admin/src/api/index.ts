@@ -16,6 +16,12 @@ export interface User {
   updatedAt: string
 }
 
+export interface CreditAdjustResponse {
+  userId: number
+  creditScore: number
+  creditLevel: string
+}
+
 export interface Item {
   id: number
   title: string
@@ -31,6 +37,8 @@ export interface Item {
   ownerId: number
   ownerName: string
   ownerVerified: number
+  ownerCreditScore: number
+  ownerCreditLevel: string
   viewCount: number
   favoriteCount: number
   images: string[]
@@ -63,6 +71,9 @@ export interface Order {
   endDate?: string
   deliveryMethod?: string
   remark?: string
+  paymentNo?: string
+  paymentStatus?: string
+  transactionId?: string
   createdAt: string
   updatedAt: string
 }
@@ -133,7 +144,10 @@ export const userApi = {
     request.post('/user/verify', data),
 
   updateStatus: (id: number, status: number) =>
-    request.post(`/user/status/${id}`, { status })
+    request.post(`/user/status/${id}`, { status }),
+
+  adjustCredit: (id: number, data: { action: string; relatedOrderId?: number; note?: string }) =>
+    request.post<CreditAdjustResponse>(`/user/credit/${id}`, data)
 }
 
 export const adminAuthApi = {

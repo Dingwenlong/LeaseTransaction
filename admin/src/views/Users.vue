@@ -234,6 +234,15 @@
             <p class="detail-value">{{ formatDate(currentUser.updatedAt) }}</p>
           </div>
         </div>
+
+        <div class="detail-card">
+          <p class="detail-label">信用处理</p>
+          <p class="detail-value">人工核实后可直接记录违约或投诉成立。</p>
+          <div class="table-actions" style="margin-top: 16px;">
+            <button class="button button-danger button-sm" @click="adjustCredit('BREACH', '违约扣分')">违约 -10</button>
+            <button class="button button-danger button-sm" @click="adjustCredit('COMPLAINT_CONFIRMED', '投诉成立扣分')">投诉成立 -15</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -304,22 +313,22 @@ const userMetrics = computed(() => {
     {
       label: '平均信用分',
       value: `${averageCredit}`,
-      tag: averageCredit >= 100 ? '优秀' : averageCredit >= 80 ? '良好' : '偏低',
-      tone: averageCredit >= 100 ? 'green' : averageCredit >= 80 ? 'yellow' : 'red',
+      tag: averageCredit >= 90 ? '优秀' : averageCredit >= 70 ? '良好' : averageCredit >= 50 ? '一般' : '较差',
+      tone: averageCredit >= 90 ? 'green' : averageCredit >= 70 ? 'yellow' : averageCredit >= 50 ? 'magenta' : 'red',
       note: '信用条和分值同位呈现，更利于巡检。'
     }
   ]
 })
 
 const getCreditClass = (score: number) => {
-  if (score >= 100) return 'credit-good'
-  if (score >= 80) return 'credit-warn'
+  if (score >= 90) return 'credit-good'
+  if (score >= 70) return 'credit-warn'
   return 'credit-danger'
 }
 
 const getCreditBarClass = (score: number) => {
-  if (score >= 100) return 'credit-bar-good'
-  if (score >= 80) return 'credit-bar-warn'
+  if (score >= 90) return 'credit-bar-good'
+  if (score >= 70) return 'credit-bar-warn'
   return 'credit-bar-danger'
 }
 
@@ -366,6 +375,14 @@ const viewUser = (user: User) => {
   showDetail.value = true
 }
 
+const syncCurrentUser = () => {
+  if (!currentUser.value) return
+  const latest = users.value.find((user) => user.id === currentUser.value?.id)
+  if (latest) {
+    currentUser.value = latest
+  }
+}
+
 const toggleStatus = async (user: User) => {
   try {
     await ElMessageBox.confirm(`确定要${user.status === 1 ? '禁用' : '启用'}该用户吗？`, '提示', {
@@ -380,6 +397,29 @@ const toggleStatus = async (user: User) => {
     if (error !== 'cancel') {
       console.error('操作失败:', error)
       ElMessage.error('操作失败')
+    }
+  }
+}
+
+const adjustCredit = async (action: string, label: string) => {
+  if (!currentUser.value) return
+  try {
+    await ElMessageBox.confirm(`确定执行“${label}”吗？`, '信用处理', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    await userApi.adjustCredit(currentUser.value.id, {
+      action,
+      note: label
+    })
+    ElMessage.success('信用分已更新')
+    await loadUsers()
+    syncCurrentUser()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('信用处理失败:', error)
+      ElMessage.error('信用处理失败')
     }
   }
 }

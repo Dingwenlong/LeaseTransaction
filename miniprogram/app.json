@@ -11,6 +11,7 @@
     "pages/order/detail",
     "pages/message/index",
     "pages/profile/index",
+    "pages/profile/user",
     "pages/profile/items",
     "pages/profile/wallet"
   ],

@@ -25,7 +25,7 @@ public class ReviewController {
     @Operation(summary = "提交评价", description = "用户对订单完成后的交易对象提交评分和评价内容")
     @PostMapping("/submit")
     public Result<Map<String, Object>> submitReview(@RequestBody ReviewSubmitRequest request) {
-        Long userId = authContext.getCurrentUserIdOrDefault(2L);
+        Long userId = authContext.requireCurrentUserId();
         return Result.success(reviewService.submitReview(userId, request));
     }
 
@@ -36,5 +36,14 @@ public class ReviewController {
             @PathVariable Long orderId
     ) {
         return Result.success(reviewService.getOrderReviews(orderId));
+    }
+
+    @Operation(summary = "查询用户历史评价", description = "根据用户 ID 查询该用户收到的历史评价")
+    @GetMapping("/user/{userId}")
+    public Result<List<Map<String, Object>>> getUserReviews(
+            @Parameter(description = "用户 ID", example = "1")
+            @PathVariable Long userId
+    ) {
+        return Result.success(reviewService.getUserReviews(userId));
     }
 }

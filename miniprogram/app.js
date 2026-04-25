@@ -4,6 +4,8 @@ App({
   },
   globalData: {
     userInfo: null,
-    token: null
+    token: null,
+    apiBaseUrl: '',
+    wsUrl: ''
   }
 })

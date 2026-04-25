@@ -34,6 +34,31 @@
       </view>
     </view>
 
+    <view class="mp-panel" wx:if="{{order.paymentNo}}">
+      <view class="mp-panel-body">
+        <view class="mp-section-head">
+          <view>
+            <view class="mp-section-title">支付信息</view>
+            <view class="mp-section-desc">查看支付流水和交易状态。</view>
+          </view>
+        </view>
+        <view class="order-detail-list">
+          <view class="order-detail-row">
+            <text class="order-detail-label">支付单号</text>
+            <text class="order-detail-value mp-break-all">{{order.paymentNo}}</text>
+          </view>
+          <view class="order-detail-row">
+            <text class="order-detail-label">支付状态</text>
+            <text class="order-detail-value">{{order.paymentStatus || '待支付'}}</text>
+          </view>
+          <view class="order-detail-row" wx:if="{{order.transactionId}}">
+            <text class="order-detail-label">交易流水</text>
+            <text class="order-detail-value mp-break-all">{{order.transactionId}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
     <view class="mp-panel">
       <view class="mp-panel-body">
         <view class="mp-section-head">
